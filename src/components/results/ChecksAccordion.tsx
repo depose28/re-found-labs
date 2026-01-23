@@ -4,7 +4,48 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { CheckCircle2, AlertTriangle, XCircle, Search, Zap, CreditCard, Shield } from "lucide-react";
+import { CheckCircle2, AlertTriangle, XCircle, Search, Zap, CreditCard, Shield, Bot, Globe, Tag, Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+
+interface CheckData {
+  // Bot access data
+  botsAllowed?: string[];
+  botsBlocked?: string[];
+  totalBots?: number;
+  
+  // Schema validation data
+  missingFields?: string[];
+  invalidFields?: string[];
+  warnings?: string[];
+  
+  // Sitemap data
+  sitemapUrl?: string;
+  urlCount?: number;
+  
+  // PageSpeed data
+  performanceScore?: number;
+  lcp?: string;
+  cls?: string;
+  tti?: string;
+  
+  // Offer data
+  price?: string | number;
+  currency?: string;
+  availability?: string;
+  issues?: string[];
+  
+  // Organization data
+  name?: string;
+  type?: string;
+  hasContact?: boolean;
+  
+  // Return policy data
+  returnDays?: number;
+  returnMethod?: string;
+  
+  // Generic
+  isHttps?: boolean;
+}
 
 interface Check {
   id: string;
@@ -14,7 +55,7 @@ interface Check {
   score: number;
   maxScore: number;
   details: string;
-  data?: any;
+  data?: CheckData;
 }
 
 interface ChecksAccordionProps {
@@ -22,16 +63,188 @@ interface ChecksAccordionProps {
 }
 
 const categoryConfig = {
-  discovery: { icon: Search, label: "Discovery" },
-  performance: { icon: Zap, label: "Performance" },
-  transaction: { icon: CreditCard, label: "Transaction" },
-  trust: { icon: Shield, label: "Trust" },
+  discovery: { icon: Search, label: "Discovery", description: "AI agent visibility" },
+  performance: { icon: Zap, label: "Performance", description: "Speed & Core Web Vitals" },
+  transaction: { icon: CreditCard, label: "Transaction", description: "Purchase capability" },
+  trust: { icon: Shield, label: "Trust", description: "Business credibility" },
 };
 
 const statusConfig = {
   pass: { icon: CheckCircle2, color: "text-success", bg: "bg-success/10", label: "Passed" },
   partial: { icon: AlertTriangle, color: "text-warning", bg: "bg-warning/10", label: "Partial" },
   fail: { icon: XCircle, color: "text-destructive", bg: "bg-destructive/10", label: "Failed" },
+};
+
+const CheckDataDisplay = ({ check }: { check: Check }) => {
+  const data = check.data;
+  if (!data) return null;
+
+  // Bot access check - show which bots are allowed/blocked
+  if (check.id === "D1" && (data.botsAllowed || data.botsBlocked)) {
+    return (
+      <div className="mt-3 space-y-2">
+        {data.botsAllowed && data.botsAllowed.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            <span className="text-xs text-muted-foreground mr-1">Allowed:</span>
+            {data.botsAllowed.slice(0, 5).map((bot) => (
+              <Badge key={bot} variant="outline" className="text-xs bg-success/10 text-success border-success/20">
+                <Bot className="h-3 w-3 mr-1" />
+                {bot}
+              </Badge>
+            ))}
+            {data.botsAllowed.length > 5 && (
+              <Badge variant="outline" className="text-xs">+{data.botsAllowed.length - 5} more</Badge>
+            )}
+          </div>
+        )}
+        {data.botsBlocked && data.botsBlocked.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            <span className="text-xs text-muted-foreground mr-1">Blocked:</span>
+            {data.botsBlocked.map((bot) => (
+              <Badge key={bot} variant="outline" className="text-xs bg-destructive/10 text-destructive border-destructive/20">
+                <Bot className="h-3 w-3 mr-1" />
+                {bot}
+              </Badge>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Schema validation checks - show missing/invalid fields
+  if ((data.missingFields && data.missingFields.length > 0) || 
+      (data.invalidFields && data.invalidFields.length > 0) ||
+      (data.warnings && data.warnings.length > 0)) {
+    return (
+      <div className="mt-3 space-y-2">
+        {data.missingFields && data.missingFields.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            <span className="text-xs text-destructive mr-1">Missing:</span>
+            {data.missingFields.map((field) => (
+              <Badge key={field} variant="outline" className="text-xs bg-destructive/10 text-destructive border-destructive/20">
+                {field}
+              </Badge>
+            ))}
+          </div>
+        )}
+        {data.invalidFields && data.invalidFields.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            <span className="text-xs text-warning mr-1">Invalid:</span>
+            {data.invalidFields.map((field) => (
+              <Badge key={field} variant="outline" className="text-xs bg-warning/10 text-warning border-warning/20">
+                {field}
+              </Badge>
+            ))}
+          </div>
+        )}
+        {data.warnings && data.warnings.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            <span className="text-xs text-muted-foreground mr-1">Warnings:</span>
+            {data.warnings.map((warning) => (
+              <Badge key={warning} variant="outline" className="text-xs">
+                {warning}
+              </Badge>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Sitemap check
+  if (check.id === "D3" && data.urlCount) {
+    return (
+      <div className="mt-3">
+        <Badge variant="outline" className="text-xs">
+          <Globe className="h-3 w-3 mr-1" />
+          {data.urlCount} URLs indexed
+        </Badge>
+      </div>
+    );
+  }
+
+  // PageSpeed check
+  if (check.id === "N1" && data.performanceScore !== undefined) {
+    return (
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Badge variant="outline" className={`text-xs ${
+          data.performanceScore >= 90 ? "bg-success/10 text-success border-success/20" :
+          data.performanceScore >= 50 ? "bg-warning/10 text-warning border-warning/20" :
+          "bg-destructive/10 text-destructive border-destructive/20"
+        }`}>
+          Score: {data.performanceScore}/100
+        </Badge>
+        {data.lcp && (
+          <Badge variant="outline" className="text-xs">
+            <Clock className="h-3 w-3 mr-1" />
+            LCP: {data.lcp}
+          </Badge>
+        )}
+        {data.cls && (
+          <Badge variant="outline" className="text-xs">
+            CLS: {data.cls}
+          </Badge>
+        )}
+        {data.tti && (
+          <Badge variant="outline" className="text-xs">
+            TTI: {data.tti}
+          </Badge>
+        )}
+      </div>
+    );
+  }
+
+  // Offer check
+  if (check.id === "T1" && data.price) {
+    return (
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/20">
+          <Tag className="h-3 w-3 mr-1" />
+          {data.currency} {data.price}
+        </Badge>
+        {data.availability && (
+          <Badge variant="outline" className="text-xs">
+            {data.availability.replace("https://schema.org/", "")}
+          </Badge>
+        )}
+      </div>
+    );
+  }
+
+  // Organization check
+  if (check.id === "R1" && data.name) {
+    return (
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Badge variant="outline" className="text-xs">
+          {data.type}: {data.name}
+        </Badge>
+        {data.hasContact && (
+          <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/20">
+            Contact info present
+          </Badge>
+        )}
+      </div>
+    );
+  }
+
+  // Return policy check
+  if (check.id === "R2" && data.returnDays) {
+    return (
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Badge variant="outline" className="text-xs">
+          {data.returnDays} day returns
+        </Badge>
+        {data.returnMethod && (
+          <Badge variant="outline" className="text-xs">
+            {data.returnMethod.replace("https://schema.org/", "")}
+          </Badge>
+        )}
+      </div>
+    );
+  }
+
+  return null;
 };
 
 const ChecksAccordion = ({ checks }: ChecksAccordionProps) => {
@@ -49,9 +262,14 @@ const ChecksAccordion = ({ checks }: ChecksAccordionProps) => {
     const score = categoryChecks.reduce((sum, check) => sum + check.score, 0);
     const max = categoryChecks.reduce((sum, check) => sum + check.maxScore, 0);
     const passCount = categoryChecks.filter(c => c.status === "pass").length;
+    const partialCount = categoryChecks.filter(c => c.status === "partial").length;
     const failCount = categoryChecks.filter(c => c.status === "fail").length;
-    return { category, score, max, checks: categoryChecks, passCount, failCount };
+    return { category, score, max, checks: categoryChecks, passCount, partialCount, failCount };
   });
+
+  // Sort categories in order: discovery, performance, transaction, trust
+  const categoryOrder = ["discovery", "performance", "transaction", "trust"];
+  categoryScores.sort((a, b) => categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category));
 
   return (
     <section>
@@ -60,13 +278,17 @@ const ChecksAccordion = ({ checks }: ChecksAccordionProps) => {
         <h2 className="font-display text-2xl text-foreground">
           Individual Checks
         </h2>
+        <p className="text-sm text-muted-foreground mt-2">
+          {checks.length} checks across {categoryScores.length} categories
+        </p>
       </div>
 
-      <Accordion type="multiple" className="border border-border divide-y divide-border">
-        {categoryScores.map(({ category, score, max, checks: categoryChecks, passCount, failCount }) => {
+      <Accordion type="multiple" defaultValue={categoryScores.filter(c => c.failCount > 0 || c.partialCount > 0).map(c => c.category)} className="border border-border divide-y divide-border">
+        {categoryScores.map(({ category, score, max, checks: categoryChecks, passCount, partialCount, failCount }) => {
           const config = categoryConfig[category as keyof typeof categoryConfig];
           if (!config) return null;
           const Icon = config.icon;
+          const percentage = max > 0 ? Math.round((score / max) * 100) : 0;
 
           return (
             <AccordionItem
@@ -80,16 +302,47 @@ const ChecksAccordion = ({ checks }: ChecksAccordionProps) => {
                     <Icon className="h-5 w-5 text-foreground" strokeWidth={1.5} />
                   </div>
                   <div className="flex-1 text-left">
-                    <p className="font-medium text-foreground">
-                      {config.label}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {passCount} passed · {failCount} failed
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-foreground">
+                        {config.label}
+                      </p>
+                      <span className="text-xs text-muted-foreground">
+                        {config.description}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      {passCount > 0 && (
+                        <span className="text-success">{passCount} passed</span>
+                      )}
+                      {partialCount > 0 && (
+                        <>
+                          {passCount > 0 && <span className="text-muted-foreground">·</span>}
+                          <span className="text-warning">{partialCount} partial</span>
+                        </>
+                      )}
+                      {failCount > 0 && (
+                        <>
+                          {(passCount > 0 || partialCount > 0) && <span className="text-muted-foreground">·</span>}
+                          <span className="text-destructive">{failCount} failed</span>
+                        </>
+                      )}
+                    </div>
                   </div>
-                  <span className="text-sm font-mono text-muted-foreground mr-2">
-                    {score}/{max}
-                  </span>
+                  <div className="flex items-center gap-3 mr-2">
+                    <div className="hidden sm:block w-20 h-2 bg-secondary overflow-hidden rounded-full">
+                      <div
+                        className={`h-full transition-all duration-500 ${
+                          percentage >= 80 ? "bg-success" :
+                          percentage >= 50 ? "bg-warning" :
+                          "bg-destructive"
+                        }`}
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-mono text-muted-foreground min-w-[50px] text-right">
+                      {score}/{max}
+                    </span>
+                  </div>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="px-5 pb-5">
@@ -101,23 +354,31 @@ const ChecksAccordion = ({ checks }: ChecksAccordionProps) => {
                     return (
                       <div
                         key={check.id}
-                        className="flex items-start gap-4 p-4 bg-secondary/30 border border-border"
+                        className="p-4 bg-secondary/30 border border-border"
                       >
-                        <div className={`w-8 h-8 flex items-center justify-center ${status.bg} flex-shrink-0`}>
-                          <StatusIcon className={`h-4 w-4 ${status.color}`} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2 mb-1">
-                            <span className="font-medium text-foreground">
-                              {check.name}
-                            </span>
-                            <span className="text-sm font-mono text-muted-foreground">
-                              {check.score}/{check.maxScore}
-                            </span>
+                        <div className="flex items-start gap-4">
+                          <div className={`w-8 h-8 flex items-center justify-center ${status.bg} flex-shrink-0`}>
+                            <StatusIcon className={`h-4 w-4 ${status.color}`} />
                           </div>
-                          <p className="text-sm text-muted-foreground leading-relaxed">
-                            {check.details}
-                          </p>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-foreground">
+                                  {check.name}
+                                </span>
+                                <Badge variant="outline" className={`text-xs ${status.bg} ${status.color} border-current/20`}>
+                                  {status.label}
+                                </Badge>
+                              </div>
+                              <span className="text-sm font-mono text-muted-foreground">
+                                {check.score}/{check.maxScore}
+                              </span>
+                            </div>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                              {check.details}
+                            </p>
+                            <CheckDataDisplay check={check} />
+                          </div>
                         </div>
                       </div>
                     );
