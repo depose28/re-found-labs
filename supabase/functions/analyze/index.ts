@@ -1054,6 +1054,57 @@ Link from Product schema:
 }
 
 // ============================================
+// RATE LIMITING
+// ============================================
+
+const RATE_LIMIT_MAX = 10; // Max requests per window
+const RATE_LIMIT_WINDOW_MS = 3600000; // 1 hour in milliseconds
+
+async function checkRateLimit(supabase: any, ip: string): Promise<{ allowed: boolean; remaining: number }> {
+  const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
+  
+  // Get current count for this IP in the current window
+  const { data: existing, error: selectError } = await supabase
+    .from("rate_limits")
+    .select("id, count")
+    .eq("ip", ip)
+    .eq("endpoint", "analyze")
+    .gte("window_start", windowStart)
+    .order("window_start", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (selectError) {
+    console.error("Rate limit check error:", selectError);
+    // Fail open - allow the request but log the error
+    return { allowed: true, remaining: RATE_LIMIT_MAX };
+  }
+
+  if (!existing) {
+    // No record exists, create new one
+    await supabase.from("rate_limits").insert({
+      ip,
+      endpoint: "analyze",
+      window_start: new Date().toISOString(),
+      count: 1
+    });
+    return { allowed: true, remaining: RATE_LIMIT_MAX - 1 };
+  }
+
+  if (existing.count >= RATE_LIMIT_MAX) {
+    return { allowed: false, remaining: 0 };
+  }
+
+  // Increment counter
+  await supabase
+    .from("rate_limits")
+    .update({ count: existing.count + 1 })
+    .eq("id", existing.id);
+
+  return { allowed: true, remaining: RATE_LIMIT_MAX - existing.count - 1 };
+}
+
+// ============================================
 // MAIN HANDLER
 // ============================================
 
@@ -1063,15 +1114,50 @@ serve(async (req) => {
   }
 
   const startTime = Date.now();
+  
+  // Initialize Supabase client early for rate limiting
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!, 
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+  );
+
+  // Get client IP
+  const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || 
+                   req.headers.get("x-real-ip") || 
+                   "unknown";
 
   try {
+    // Check rate limit
+    const { allowed, remaining } = await checkRateLimit(supabase, clientIp);
+    
+    if (!allowed) {
+      console.log(`Rate limit exceeded for IP: ${clientIp}`);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Rate limit exceeded. Please try again later.",
+          retryAfter: "1 hour"
+        }), 
+        { 
+          status: 429, 
+          headers: { 
+            ...corsHeaders, 
+            "Content-Type": "application/json",
+            "X-RateLimit-Limit": String(RATE_LIMIT_MAX),
+            "X-RateLimit-Remaining": "0",
+            "Retry-After": "3600"
+          } 
+        }
+      );
+    }
+
     const { url } = await req.json();
     if (!url) throw new Error("URL is required");
 
     const normalizedUrl = normalizeUrl(url);
     const domain = new URL(normalizedUrl).origin;
     
-    console.log("Starting analysis for:", normalizedUrl);
+    console.log(`Starting analysis for: ${normalizedUrl} (IP: ${clientIp}, remaining: ${remaining})`);
 
     // Parallel fetch: Firecrawl + PageSpeed + Robots + Sitemap
     const [scrapeResult, pageSpeedMetrics, botAccessResult, sitemapCheck] = await Promise.all([
@@ -1129,12 +1215,7 @@ serve(async (req) => {
 
     console.log(`Analysis complete: ${totalScore}/100 (${grade}) in ${analysisDuration}ms`);
 
-    // Store in database
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!, 
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
-
+    // Store in database (reuse existing supabase client)
     const { data, error } = await supabase.from("analyses").insert({
       url: normalizedUrl,
       domain: new URL(normalizedUrl).hostname,

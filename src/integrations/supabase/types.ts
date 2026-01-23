@@ -115,12 +115,39 @@ export type Database = {
           },
         ]
       }
+      rate_limits: {
+        Row: {
+          count: number
+          created_at: string
+          endpoint: string
+          id: string
+          ip: string
+          window_start: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          endpoint?: string
+          id?: string
+          ip: string
+          window_start?: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          endpoint?: string
+          id?: string
+          ip?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cleanup_old_rate_limits: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
