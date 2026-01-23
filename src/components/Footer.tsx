@@ -3,7 +3,7 @@ import PulseDot from "@/components/ui/PulseDot";
 const Footer = () => {
   return (
     <footer className="border-t border-border bg-background">
-      <div className="container mx-auto px-4 py-16">
+      <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20 py-16">
         <div className="flex flex-col md:flex-row items-start justify-between gap-8">
           {/* Logo & Info */}
           <div className="flex flex-col gap-4">
