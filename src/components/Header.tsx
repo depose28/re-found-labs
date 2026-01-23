@@ -42,14 +42,14 @@ const Header = () => {
             <a
               href="#how-it-works"
               onClick={(e) => handleAnchorClick(e, "#how-it-works")}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wide"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               How It Works
             </a>
             <a
               href="#what-we-check"
               onClick={(e) => handleAnchorClick(e, "#what-we-check")}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wide"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               What We Check
             </a>

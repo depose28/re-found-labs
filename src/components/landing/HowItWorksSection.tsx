@@ -1,25 +1,24 @@
-import { Link2, BarChart3, Lightbulb } from "lucide-react";
+import { Link2, BarChart3, Wrench } from "lucide-react";
 import PulseDot from "@/components/ui/PulseDot";
 
 const steps = [
   {
     icon: Link2,
     number: "01",
-    title: "Enter Your URL",
-    description: "Paste any product page or homepage from your store.",
+    title: "Enter any URL",
+    description: "Product page, collection page, or homepage. We analyze whatever you give us.",
   },
   {
     icon: BarChart3,
     number: "02",
-    title: "Get Your Score",
-    description:
-      "We analyze 8 critical factors across 4 categories in under 60 seconds.",
+    title: "Get your Agent Score",
+    description: "8 technical checks across 4 categories. Results in under 60 seconds.",
   },
   {
-    icon: Lightbulb,
+    icon: Wrench,
     number: "03",
-    title: "Fix the Gaps",
-    description: "Get prioritized recommendations to become agent-ready.",
+    title: "See what's broken",
+    description: "Prioritized fixes with code examples. No guesswork, no generic advice.",
   },
 ];
 
@@ -37,7 +36,7 @@ const HowItWorksSection = () => {
 
         {/* Section Title */}
         <h2 className="font-display text-4xl md:text-5xl text-foreground mb-16 max-w-2xl">
-          Three steps to agent readiness
+          Score. Diagnose. Fix.
         </h2>
 
         {/* Steps */}
@@ -48,15 +47,10 @@ const HowItWorksSection = () => {
               className="group"
             >
               <div className="border-t border-border pt-8">
-                {/* Number & Label */}
-                <div className="flex items-center gap-3 mb-6">
-                  <span className="text-accent font-mono text-sm font-medium">
-                    {step.number}
-                  </span>
-                  <span className="text-muted-foreground font-mono text-sm uppercase tracking-wide">
-                    Step
-                  </span>
-                </div>
+                {/* Number */}
+                <span className="text-accent font-mono text-sm font-medium mb-6 block">
+                  {step.number}
+                </span>
 
                 {/* Icon */}
                 <div className="mb-6">
@@ -67,7 +61,7 @@ const HowItWorksSection = () => {
                 <h3 className="font-display text-2xl text-foreground mb-4">
                   {step.title}
                 </h3>
-                <p className="text-muted-foreground leading-relaxed font-mono text-sm">
+                <p className="text-muted-foreground leading-relaxed">
                   {step.description}
                 </p>
               </div>

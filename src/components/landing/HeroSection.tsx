@@ -52,28 +52,19 @@ const HeroSection = () => {
             <div className="flex items-center gap-3 mb-8 animate-fade-in">
               <PulseDot size="md" />
               <span className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
-                AI Readiness
+                Free Audit
               </span>
             </div>
 
             {/* Headline */}
-            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-foreground leading-[1.1] mb-8 animate-slide-up">
-              Agent-Ready
-              <br />
-              Store Analysis
+            <h1 className="font-display text-4xl md:text-5xl lg:text-[3.5rem] text-foreground leading-[1.1] mb-8 animate-slide-up">
+              Can AI agents actually shop your store?
             </h1>
 
             {/* Subheadline */}
-            <p className="text-lg text-muted-foreground leading-relaxed mb-10 animate-slide-up max-w-md" style={{ animationDelay: "0.1s" }}>
-              The only tool that tells you if AI shopping
-              agents can find and recommend your products.
-            </p>
-
-            {/* Description */}
-            <p className="text-sm text-muted-foreground mb-10 animate-slide-up" style={{ animationDelay: "0.15s" }}>
-              From discovery to transaction – analyze how agents
-              see your store, identify gaps, and get actionable
-              fixes without changing your platform.
+            <p className="text-lg text-muted-foreground leading-relaxed mb-10 animate-slide-up" style={{ animationDelay: "0.1s" }}>
+              If your product data isn't structured for agents, they'll recommend your competitors instead. 
+              Get your Agent Score in 60 seconds — discover exactly where you're invisible.
             </p>
 
             {/* URL Input Form */}
@@ -94,7 +85,7 @@ const HeroSection = () => {
                     type="submit"
                     className="h-12 px-6 bg-foreground text-background hover:bg-foreground/90 font-medium"
                   >
-                    Analyze Store
+                    Analyze Your Store
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
@@ -111,7 +102,7 @@ const HeroSection = () => {
               </span>
               <span className="text-muted-foreground">·</span>
               <span className="text-sm text-muted-foreground">
-                Results in 60 seconds
+                Free forever
               </span>
             </div>
           </div>
@@ -141,68 +132,80 @@ const SampleReportPreview = () => {
       {/* Document-style Report Card */}
       <div className="bg-card border border-border shadow-card max-w-sm ml-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border">
-          <div className="flex items-center gap-2">
-            <PulseDot size="sm" />
-            <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-              Agent Pulse
-            </span>
-          </div>
-          <span className="text-xs text-muted-foreground">
-            agentpulse.com
+        <div className="flex items-center justify-between p-5 border-b border-border">
+          <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+            Agent Pulse Report
           </span>
         </div>
 
-        {/* Company Info */}
-        <div className="p-6 border-b border-border">
-          <h3 className="font-display text-lg text-foreground mb-1">
-            Sample Brand
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            The E-Commerce Store
-          </p>
+        {/* Meta Info */}
+        <div className="p-5 border-b border-border space-y-1">
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">analyzed:</span>
+            <span className="text-foreground">yourstore.com</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">date:</span>
+            <span className="text-foreground">January 24, 2025</span>
+          </div>
         </div>
 
         {/* Main Score */}
-        <div className="p-8 flex flex-col items-center justify-center min-h-[160px]">
-          <h2 className="font-display text-4xl text-foreground mb-2">
-            Agent Score
-          </h2>
-          <div className="flex items-baseline gap-1">
-            <span className="font-display text-6xl text-accent">72</span>
-            <span className="text-2xl text-muted-foreground">/100</span>
+        <div className="p-6 border-b border-border text-center">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Agent Score</p>
+          <div className="flex items-baseline justify-center gap-2">
+            <span className="font-display text-5xl text-foreground">72</span>
+            <span className="text-xl text-muted-foreground">/ 100</span>
+          </div>
+          <span className="inline-block mt-2 px-3 py-1 text-xs font-medium uppercase tracking-wide bg-accent/10 text-accent">
+            Optimized
+          </span>
+        </div>
+
+        {/* Category Breakdown */}
+        <div className="p-5 space-y-3">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Discovery</span>
+            <div className="flex items-center gap-3">
+              <div className="w-20 h-1.5 bg-secondary overflow-hidden">
+                <div className="h-full bg-accent" style={{ width: '80%' }} />
+              </div>
+              <span className="text-foreground w-10 text-right">32/40</span>
+            </div>
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Performance</span>
+            <div className="flex items-center gap-3">
+              <div className="w-20 h-1.5 bg-secondary overflow-hidden">
+                <div className="h-full bg-success" style={{ width: '80%' }} />
+              </div>
+              <span className="text-foreground w-10 text-right">12/15</span>
+            </div>
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Transaction</span>
+            <div className="flex items-center gap-3">
+              <div className="w-20 h-1.5 bg-secondary overflow-hidden">
+                <div className="h-full bg-warning" style={{ width: '50%' }} />
+              </div>
+              <span className="text-foreground w-10 text-right">10/20</span>
+            </div>
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Trust</span>
+            <div className="flex items-center gap-3">
+              <div className="w-20 h-1.5 bg-secondary overflow-hidden">
+                <div className="h-full bg-primary" style={{ width: '72%' }} />
+              </div>
+              <span className="text-foreground w-10 text-right">18/25</span>
+            </div>
           </div>
         </div>
 
-        {/* Report Details */}
-        <div className="px-6 py-4 bg-secondary/30 border-t border-border">
-          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-3">
-            Report
-          </p>
-          <div className="space-y-1 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Client:</span>
-              <span className="text-foreground">Sample Brand</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Domain:</span>
-              <span className="text-foreground">www.sample.com</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Scoring Date:</span>
-              <span className="text-foreground">January 23, 2025</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-border">
-          <span className="text-xs text-muted-foreground">
-            ©2025 Agent Pulse
-          </span>
-          <span className="text-xs text-muted-foreground">
-            Bring on the Agents
-          </span>
+        {/* Top Issue */}
+        <div className="px-5 py-4 bg-secondary/30 border-t border-border">
+          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Top issue</p>
+          <p className="text-sm text-foreground">Missing availability in Offer schema</p>
         </div>
       </div>
     </div>
