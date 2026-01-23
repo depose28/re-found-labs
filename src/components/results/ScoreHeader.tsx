@@ -1,53 +1,76 @@
 import { useState, useEffect } from "react";
 import PulseDot from "@/components/ui/PulseDot";
+import { Clock, ExternalLink, RefreshCw, Share2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface ScoreHeaderProps {
   score: number;
   grade: string;
   url: string;
   createdAt: string;
-}
-
-interface CategoryScores {
-  discovery: { score: number; max: number };
-  performance: { score: number; max: number };
-  transaction: { score: number; max: number };
-  trust: { score: number; max: number };
+  analysisDuration?: number;
+  checksCount?: number;
+  issuesCount?: number;
 }
 
 const gradeConfig = {
   "Agent-Native": {
     label: "AGENT-NATIVE",
-    message: "Excellent! Your store is fully optimized for AI shopping agents.",
+    message: "Excellent! Your store is fully optimized for AI shopping agents. All critical checks passed.",
+    color: "bg-success",
+    textColor: "text-success",
   },
   Optimized: {
     label: "OPTIMIZED",
-    message: "Good foundation with room for improvement. Fix the gaps below to maximize AI visibility.",
+    message: "Good foundation with room for improvement. Address the priority fixes below to maximize AI visibility.",
+    color: "bg-accent",
+    textColor: "text-accent",
   },
   "Needs Work": {
     label: "NEEDS WORK",
-    message: "Your store has significant gaps. Focus on the priority fixes below.",
+    message: "Your store has significant gaps that prevent AI agents from fully understanding your products.",
+    color: "bg-warning",
+    textColor: "text-warning",
   },
   Invisible: {
     label: "INVISIBLE",
-    message: "AI agents cannot effectively discover or recommend your products.",
+    message: "AI agents cannot effectively discover or recommend your products. Critical fixes required.",
+    color: "bg-destructive",
+    textColor: "text-destructive",
   },
 };
 
 const scoreLegend = [
-  { range: "80+", label: "Excellent", color: "bg-success" },
-  { range: "65-79", label: "Good", color: "bg-accent" },
-  { range: "50-64", label: "Average", color: "bg-warning" },
-  { range: "<50", label: "Poor", color: "bg-destructive" },
+  { range: "85+", label: "Agent-Native", color: "bg-success" },
+  { range: "70-84", label: "Optimized", color: "bg-accent" },
+  { range: "50-69", label: "Needs Work", color: "bg-warning" },
+  { range: "<50", label: "Invisible", color: "bg-destructive" },
 ];
 
-const ScoreHeader = ({ score, grade, url, createdAt }: ScoreHeaderProps) => {
+const ScoreHeader = ({ 
+  score, 
+  grade, 
+  url, 
+  createdAt, 
+  analysisDuration,
+  checksCount = 8,
+  issuesCount = 0
+}: ScoreHeaderProps) => {
   const [animatedScore, setAnimatedScore] = useState(0);
+  const navigate = useNavigate();
   const config = gradeConfig[grade as keyof typeof gradeConfig] || gradeConfig["Needs Work"];
+  
   const formattedDate = new Date(createdAt).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
+  });
+
+  const formattedTime = new Date(createdAt).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
   });
 
   const domain = (() => {
@@ -78,6 +101,19 @@ const ScoreHeader = ({ score, grade, url, createdAt }: ScoreHeaderProps) => {
     return () => clearInterval(timer);
   }, [score]);
 
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success("Report link copied to clipboard!");
+    } catch {
+      toast.error("Failed to copy link");
+    }
+  };
+
+  const handleReanalyze = () => {
+    navigate(`/?url=${encodeURIComponent(url)}`);
+  };
+
   return (
     <section className="pt-32 pb-16 bg-secondary/30 border-b border-border">
       <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
@@ -89,9 +125,21 @@ const ScoreHeader = ({ score, grade, url, createdAt }: ScoreHeaderProps) => {
               Agent Pulse Report
             </span>
           </div>
-          <span className="text-xs font-mono text-muted-foreground">
-            {formattedDate}
-          </span>
+          <div className="flex items-center gap-4">
+            <span className="text-xs font-mono text-muted-foreground hidden sm:block">
+              {formattedDate} at {formattedTime}
+            </span>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleShare} className="h-8">
+                <Share2 className="h-3.5 w-3.5 mr-1.5" />
+                Share
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleReanalyze} className="h-8">
+                <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                Re-analyze
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* Main Content Grid */}
@@ -100,21 +148,21 @@ const ScoreHeader = ({ score, grade, url, createdAt }: ScoreHeaderProps) => {
           <div className="lg:col-span-5 space-y-8">
             <div>
               <h1 className="font-display text-3xl md:text-4xl text-foreground leading-tight mb-4">
-                Analyze how well your brand is understood by AI agents — then take action.
+                AI Agent Readiness Report
               </h1>
               <p className="text-muted-foreground leading-relaxed">
-                The Agent Score reveals how well AI agents can interpret and act on your site. It's a snapshot of your readiness for the AI web.
+                This report shows how well AI shopping agents can discover, understand, and transact on your site.
               </p>
             </div>
 
             {/* Score Legend */}
             <div className="space-y-3 pt-4">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Score Guide</p>
               {scoreLegend.map((item) => (
                 <div key={item.range} className="flex items-center gap-3">
-                  <span className={`w-1 h-5 ${item.color}`} />
-                  <span className="text-sm text-foreground">
-                    {item.range} {item.label}
-                  </span>
+                  <span className={`w-1.5 h-5 ${item.color}`} />
+                  <span className="text-sm text-muted-foreground font-mono w-12">{item.range}</span>
+                  <span className="text-sm text-foreground">{item.label}</span>
                 </div>
               ))}
             </div>
@@ -122,11 +170,29 @@ const ScoreHeader = ({ score, grade, url, createdAt }: ScoreHeaderProps) => {
             {/* Analyzed URL */}
             <div className="pt-4 border-t border-border">
               <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
-                Analyzed
+                Analyzed URL
               </p>
-              <p className="text-sm font-medium text-foreground truncate">
+              <a 
+                href={url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm font-medium text-foreground hover:text-accent transition-colors"
+              >
                 {domain}
-              </p>
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+              
+              {/* Analysis metadata */}
+              <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
+                {analysisDuration && (
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {(analysisDuration / 1000).toFixed(1)}s
+                  </span>
+                )}
+                <span>{checksCount} checks</span>
+                <span>{issuesCount} issues found</span>
+              </div>
             </div>
           </div>
 
@@ -147,9 +213,9 @@ const ScoreHeader = ({ score, grade, url, createdAt }: ScoreHeaderProps) => {
               </div>
 
               {/* Grade Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/50 border border-border mb-8">
-                <span className="w-2 h-2 rounded-full bg-accent" />
-                <span className="font-mono text-xs uppercase tracking-wide text-foreground">
+              <div className={`inline-flex items-center gap-2 px-4 py-2 ${config.color}/10 border border-current/20 mb-8`}>
+                <span className={`w-2 h-2 rounded-full ${config.color}`} />
+                <span className={`font-mono text-xs uppercase tracking-wide ${config.textColor}`}>
                   {config.label}
                 </span>
               </div>
@@ -158,6 +224,16 @@ const ScoreHeader = ({ score, grade, url, createdAt }: ScoreHeaderProps) => {
               <p className="text-muted-foreground text-sm leading-relaxed max-w-md">
                 {config.message}
               </p>
+
+              {/* Quick Stats */}
+              {issuesCount > 0 && (
+                <div className="mt-6 pt-6 border-t border-border">
+                  <p className="text-xs text-muted-foreground">
+                    Found <span className="text-foreground font-medium">{issuesCount} issues</span> that can be improved.
+                    Scroll down for detailed recommendations.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

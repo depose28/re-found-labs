@@ -28,6 +28,7 @@ interface AnalysisResult {
   checks: any;
   recommendations: any;
   created_at: string;
+  analysis_duration_ms: number | null;
 }
 
 const Results = () => {
@@ -116,6 +117,9 @@ const Results = () => {
           grade={analysis.grade}
           url={analysis.url}
           createdAt={analysis.created_at}
+          analysisDuration={analysis.analysis_duration_ms || undefined}
+          checksCount={analysis.checks?.length || 8}
+          issuesCount={analysis.checks?.filter((c: any) => c.status !== "pass").length || 0}
         />
 
         <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20 py-16 space-y-16">
