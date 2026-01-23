@@ -3,7 +3,7 @@ import PulseDot from "@/components/ui/PulseDot";
 const stats = [
   {
     value: "4,700%",
-    label: "YoY growth in AI-referred traffic",
+    label: "YoY growth in AI-referred traffic to retail sites",
   },
   {
     value: "$17.5T",
@@ -11,7 +11,7 @@ const stats = [
   },
   {
     value: "73%",
-    label: "of stores fail basic agent readiness checks",
+    label: "of e-commerce stores fail basic agent readiness checks",
   },
 ];
 
@@ -23,22 +23,22 @@ const ProblemSection = () => {
         <div className="flex items-center gap-3 mb-8">
           <PulseDot size="md" />
           <span className="text-sm font-medium uppercase tracking-widest text-background/60">
-            The Shift
+            The Agentic Shift
           </span>
         </div>
 
         {/* Section Title */}
         <div className="grid lg:grid-cols-2 gap-16 mb-20">
           <h2 className="font-display text-4xl md:text-5xl text-background leading-tight">
-            One platform.
+            Your store speaks human.
             <br />
-            Every workflow.
+            Agents don't.
           </h2>
           <div className="flex items-end">
-            <p className="text-lg text-background/70 leading-relaxed max-w-md">
-              Your store was built for human browsers. AI agents need structured data, 
-              open access, and machine-readable signals. Without these, you're invisible 
-              to the next generation of shoppers.
+            <p className="text-lg text-background/70 leading-relaxed max-w-lg">
+              AI shopping agents are becoming the new front door to commerce. They read structured data, 
+              not product pages. They parse schemas, not marketing copy. If your store can't communicate 
+              in their language, you're invisible — and your competitors aren't.
             </p>
           </div>
         </div>
@@ -53,7 +53,7 @@ const ProblemSection = () => {
               <div className="font-display text-4xl md:text-5xl lg:text-6xl text-background mb-4">
                 {stat.value}
               </div>
-              <p className="text-background/60 font-mono text-sm">{stat.label}</p>
+              <p className="text-background/60 text-sm">{stat.label}</p>
             </div>
           ))}
         </div>

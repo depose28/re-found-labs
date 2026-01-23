@@ -13,21 +13,24 @@ const Footer = () => {
                 Agent Pulse
               </span>
             </div>
-            <span className="text-sm text-muted-foreground font-mono">
-              Built in Berlin
-            </span>
+            <p className="text-sm text-muted-foreground max-w-xs">
+              Free AI agent readiness audits for e-commerce.
+              <br />
+              Built in Berlin.
+            </p>
           </div>
 
           {/* Contact */}
-          <div className="text-sm text-muted-foreground font-mono">
-            hello@agentpulse.com
+          <div className="text-sm text-muted-foreground">
+            <a href="mailto:hello@agentpulse.com" className="hover:text-foreground transition-colors">
+              hello@agentpulse.com
+            </a>
           </div>
         </div>
 
         <div className="mt-16 pt-8 border-t border-border">
-          <p className="text-xs text-muted-foreground font-mono">
-            © 2025 Agent Pulse. This tool is free and does not store your data
-            beyond analysis results.
+          <p className="text-xs text-muted-foreground">
+            © 2025 Agent Pulse. Your data is analyzed in real-time and not stored beyond your session.
           </p>
         </div>
       </div>

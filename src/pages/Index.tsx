@@ -4,6 +4,7 @@ import HeroSection from "@/components/landing/HeroSection";
 import ProblemSection from "@/components/landing/ProblemSection";
 import HowItWorksSection from "@/components/landing/HowItWorksSection";
 import WhatWeCheckSection from "@/components/landing/WhatWeCheckSection";
+import CTASection from "@/components/landing/CTASection";
 
 const Index = () => {
   return (
@@ -14,6 +15,7 @@ const Index = () => {
         <ProblemSection />
         <HowItWorksSection />
         <WhatWeCheckSection />
+        <CTASection />
       </main>
       <Footer />
     </div>
