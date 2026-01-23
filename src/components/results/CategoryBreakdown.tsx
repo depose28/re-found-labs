@@ -13,10 +13,30 @@ interface CategoryBreakdownProps {
 }
 
 const categories = [
-  { key: "discovery", label: "Discovery", icon: Search, number: "01" },
-  { key: "performance", label: "Performance", icon: Zap, number: "02" },
-  { key: "transaction", label: "Transaction", icon: CreditCard, number: "03" },
-  { key: "trust", label: "Trust", icon: Shield, number: "04" },
+  { 
+    key: "discovery", 
+    label: "Discovery", 
+    icon: Search, 
+    description: "Can AI agents find and interpret your products?" 
+  },
+  { 
+    key: "performance", 
+    label: "Performance", 
+    icon: Zap, 
+    description: "Is your site fast enough for agent timeouts?" 
+  },
+  { 
+    key: "transaction", 
+    label: "Transaction", 
+    icon: CreditCard, 
+    description: "Can agents complete a purchase?" 
+  },
+  { 
+    key: "trust", 
+    label: "Trust", 
+    icon: Shield, 
+    description: "Will agents recommend you to their users?" 
+  },
 ];
 
 const CategoryBreakdown = ({ discovery, performance, transaction, trust }: CategoryBreakdownProps) => {
@@ -29,43 +49,68 @@ const CategoryBreakdown = ({ discovery, performance, transaction, trust }: Categ
 
   const getBarColor = (percentage: number) => {
     if (percentage >= 80) return "bg-success";
-    if (percentage >= 50) return "bg-accent";
-    return "bg-warning";
+    if (percentage >= 65) return "bg-accent";
+    if (percentage >= 50) return "bg-warning";
+    return "bg-destructive";
+  };
+
+  const getScoreColor = (percentage: number) => {
+    if (percentage >= 80) return "text-success";
+    if (percentage >= 65) return "text-accent";
+    if (percentage >= 50) return "text-warning";
+    return "text-destructive";
   };
 
   return (
-    <section className="bg-card border border-border p-6 md:p-8">
-      <h2 className="font-display text-2xl text-foreground mb-8">
-        Category Breakdown
-      </h2>
+    <section>
+      <div className="mb-8">
+        <p className="text-sm text-muted-foreground mb-2">Scoring Variables</p>
+        <h2 className="font-display text-2xl text-foreground">
+          Category Breakdown
+        </h2>
+      </div>
 
-      <div className="space-y-6">
+      <div className="border border-border divide-y divide-border">
         {categories.map((category) => {
           const { score, max } = scores[category.key];
-          const percentage = (score / max) * 100;
+          const percentage = max > 0 ? (score / max) * 100 : 0;
+          const Icon = category.icon;
 
           return (
-            <div key={category.key} className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="text-accent font-mono text-xs">
-                    {category.number}
-                  </span>
-                  <span className="text-sm font-mono uppercase tracking-wide text-foreground">
-                    {category.label}
-                  </span>
+            <div 
+              key={category.key} 
+              className="flex items-center justify-between p-5 hover:bg-secondary/30 transition-colors"
+            >
+              <div className="flex items-center gap-4 flex-1 min-w-0">
+                <div className="w-10 h-10 flex items-center justify-center bg-secondary/50 border border-border">
+                  <Icon className="h-5 w-5 text-foreground" strokeWidth={1.5} />
                 </div>
-                <span className="text-sm font-mono text-muted-foreground">
-                  {score}/{max}
-                </span>
+                <div className="min-w-0">
+                  <p className="font-medium text-foreground">
+                    {category.label}
+                  </p>
+                  <p className="text-sm text-muted-foreground truncate">
+                    {category.description}
+                  </p>
+                </div>
               </div>
 
-              {/* Progress Bar */}
-              <div className="h-1.5 bg-secondary overflow-hidden">
-                <div
-                  className={`h-full transition-all duration-500 ${getBarColor(percentage)}`}
-                  style={{ width: `${percentage}%` }}
-                />
+              <div className="flex items-center gap-6">
+                {/* Progress Bar */}
+                <div className="hidden sm:block w-32 h-2 bg-secondary overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-500 ${getBarColor(percentage)}`}
+                    style={{ width: `${percentage}%` }}
+                  />
+                </div>
+
+                {/* Score */}
+                <div className="text-right min-w-[80px]">
+                  <span className={`font-mono text-lg font-medium ${getScoreColor(percentage)}`}>
+                    {score}
+                  </span>
+                  <span className="text-muted-foreground font-mono text-sm"> / {max}</span>
+                </div>
               </div>
             </div>
           );
