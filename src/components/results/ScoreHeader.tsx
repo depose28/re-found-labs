@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import PulseDot from "@/components/ui/PulseDot";
 
 interface ScoreHeaderProps {
@@ -41,6 +42,7 @@ const scoreLegend = [
 ];
 
 const ScoreHeader = ({ score, grade, url, createdAt }: ScoreHeaderProps) => {
+  const [animatedScore, setAnimatedScore] = useState(0);
   const config = gradeConfig[grade as keyof typeof gradeConfig] || gradeConfig["Needs Work"];
   const formattedDate = new Date(createdAt).toLocaleDateString("en-US", {
     year: "numeric",
@@ -55,6 +57,26 @@ const ScoreHeader = ({ score, grade, url, createdAt }: ScoreHeaderProps) => {
       return url;
     }
   })();
+
+  // Animate score from 0 to actual value
+  useEffect(() => {
+    const duration = 1500;
+    const steps = 40;
+    const increment = score / steps;
+    let current = 0;
+    
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= score) {
+        setAnimatedScore(score);
+        clearInterval(timer);
+      } else {
+        setAnimatedScore(current);
+      }
+    }, duration / steps);
+
+    return () => clearInterval(timer);
+  }, [score]);
 
   return (
     <section className="pt-32 pb-16 bg-secondary/30 border-b border-border">
@@ -116,10 +138,10 @@ const ScoreHeader = ({ score, grade, url, createdAt }: ScoreHeaderProps) => {
                 Agent Score
               </p>
 
-              {/* Large Score */}
+              {/* Large Score - Animated */}
               <div className="flex items-baseline gap-3 mb-8">
                 <span className="font-display text-7xl md:text-8xl text-foreground tabular-nums">
-                  {score.toFixed(1)}
+                  {animatedScore.toFixed(1)}
                 </span>
                 <span className="text-3xl text-muted-foreground/50">/ 100</span>
               </div>
