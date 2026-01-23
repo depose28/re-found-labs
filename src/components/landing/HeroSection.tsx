@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, UserX, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import PulseDot from "@/components/ui/PulseDot";
@@ -65,10 +65,10 @@ const HeroSection = () => {
               AI agents recommend structured stores. If yours isn't one of them, you're invisible. Find out in 60 seconds.
             </p>
 
-            {/* URL Input Form */}
+            {/* URL Input Form - Bigger */}
             <form onSubmit={handleSubmit} className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
-              <div className="border border-border bg-card p-1">
-                <div className="flex flex-col sm:flex-row">
+              <div className="border border-border bg-card p-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Input
                     type="text"
                     placeholder="https://yourstore.com/products/..."
@@ -77,11 +77,11 @@ const HeroSection = () => {
                       setUrl(e.target.value);
                       if (error) setError("");
                     }}
-                    className="flex-1 h-12 border-0 bg-transparent text-base focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/50"
+                    className="flex-1 h-14 border-0 bg-transparent text-base focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/50 px-4"
                   />
                   <Button
                     type="submit"
-                    className="h-12 px-6 bg-foreground text-background hover:bg-foreground/90 font-medium"
+                    className="h-14 px-8 bg-foreground text-background hover:bg-foreground/90 font-medium text-base shrink-0"
                   >
                     Get Your Agent Score
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -93,19 +93,23 @@ const HeroSection = () => {
               )}
             </form>
 
-            {/* Trust indicators + Social Proof */}
-            <div className="flex items-center gap-6 mt-6 animate-fade-in" style={{ animationDelay: "0.3s" }}>
-              <span className="text-sm text-muted-foreground">
+            {/* Trust indicators with icons */}
+            <div className="flex items-center gap-6 mt-5 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+              <span className="text-sm text-muted-foreground inline-flex items-center gap-2">
+                <UserX className="h-4 w-4" />
                 No signup required
               </span>
-              <span className="text-muted-foreground">·</span>
-              <span className="text-sm text-muted-foreground">
-                Free forever
+              <span className="text-sm text-muted-foreground inline-flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Free report
               </span>
-              <span className="text-muted-foreground">·</span>
-              <span className="text-sm text-muted-foreground">
-                <span className="text-lg font-semibold text-foreground">142</span> analyzed this week
-              </span>
+            </div>
+
+            {/* Social Proof Counter - Below in whitespace */}
+            <div className="mt-10 animate-fade-in" style={{ animationDelay: "0.4s" }}>
+              <p className="text-sm text-muted-foreground">
+                <span className="text-xl font-semibold text-foreground">142</span> stores analyzed this week
+              </p>
             </div>
           </div>
 
