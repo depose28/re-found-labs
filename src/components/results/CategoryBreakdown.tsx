@@ -13,10 +13,10 @@ interface CategoryBreakdownProps {
 }
 
 const categories = [
-  { key: "discovery", label: "Discovery", icon: Search, color: "accent" },
-  { key: "performance", label: "Performance", icon: Zap, color: "warning" },
-  { key: "transaction", label: "Transaction", icon: CreditCard, color: "success" },
-  { key: "trust", label: "Trust", icon: Shield, color: "primary" },
+  { key: "discovery", label: "Discovery", icon: Search, number: "01" },
+  { key: "performance", label: "Performance", icon: Zap, number: "02" },
+  { key: "transaction", label: "Transaction", icon: CreditCard, number: "03" },
+  { key: "trust", label: "Trust", icon: Shield, number: "04" },
 ];
 
 const CategoryBreakdown = ({ discovery, performance, transaction, trust }: CategoryBreakdownProps) => {
@@ -27,51 +27,43 @@ const CategoryBreakdown = ({ discovery, performance, transaction, trust }: Categ
     trust,
   };
 
+  const getBarColor = (percentage: number) => {
+    if (percentage >= 80) return "bg-success";
+    if (percentage >= 50) return "bg-accent";
+    return "bg-warning";
+  };
+
   return (
-    <section className="bg-card rounded-2xl p-6 md:p-8 shadow-card">
-      <h2 className="font-display text-xl font-bold text-foreground mb-6">
+    <section className="bg-card border border-border p-6 md:p-8">
+      <h2 className="font-display text-2xl text-foreground mb-8">
         Category Breakdown
       </h2>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         {categories.map((category) => {
           const { score, max } = scores[category.key];
           const percentage = (score / max) * 100;
 
           return (
-            <div key={category.key} className="space-y-2">
+            <div key={category.key} className="space-y-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <category.icon className={`h-4 w-4 ${
-                    category.color === "accent"
-                      ? "text-accent"
-                      : category.color === "warning"
-                      ? "text-warning"
-                      : category.color === "success"
-                      ? "text-success"
-                      : "text-primary"
-                  }`} />
-                  <span className="text-sm font-medium text-foreground">
+                <div className="flex items-center gap-3">
+                  <span className="text-accent font-mono text-xs">
+                    {category.number}
+                  </span>
+                  <span className="text-sm font-mono uppercase tracking-wide text-foreground">
                     {category.label}
                   </span>
                 </div>
-                <span className="text-sm font-semibold text-muted-foreground">
+                <span className="text-sm font-mono text-muted-foreground">
                   {score}/{max}
                 </span>
               </div>
 
               {/* Progress Bar */}
-              <div className="h-3 bg-secondary rounded-full overflow-hidden">
+              <div className="h-1.5 bg-secondary overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    category.color === "accent"
-                      ? "bg-gradient-accent"
-                      : category.color === "warning"
-                      ? "bg-gradient-warning"
-                      : category.color === "success"
-                      ? "bg-gradient-success"
-                      : "bg-gradient-hero"
-                  }`}
+                  className={`h-full transition-all duration-500 ${getBarColor(percentage)}`}
                   style={{ width: `${percentage}%` }}
                 />
               </div>

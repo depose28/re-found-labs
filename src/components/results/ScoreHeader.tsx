@@ -1,4 +1,4 @@
-import { Rocket, CheckCircle, AlertTriangle, XCircle } from "lucide-react";
+import PulseDot from "@/components/ui/PulseDot";
 
 interface ScoreHeaderProps {
   score: number;
@@ -9,27 +9,19 @@ interface ScoreHeaderProps {
 
 const gradeConfig = {
   "Agent-Native": {
-    icon: Rocket,
-    emoji: "🚀",
-    color: "success",
+    label: "AGENT-NATIVE",
     message: "Excellent! Your store is fully optimized for AI shopping agents.",
   },
   Optimized: {
-    icon: CheckCircle,
-    emoji: "✅",
-    color: "success",
+    label: "OPTIMIZED",
     message: "Good foundation with room for improvement. Fix the gaps below to maximize AI visibility.",
   },
   "Needs Work": {
-    icon: AlertTriangle,
-    emoji: "⚠️",
-    color: "warning",
+    label: "NEEDS WORK",
     message: "Your store has significant gaps. Focus on the priority fixes below.",
   },
   Invisible: {
-    icon: XCircle,
-    emoji: "🚫",
-    color: "destructive",
+    label: "INVISIBLE",
     message: "AI agents cannot effectively discover or recommend your products.",
   },
 };
@@ -40,44 +32,63 @@ const ScoreHeader = ({ score, grade, url, createdAt }: ScoreHeaderProps) => {
     year: "numeric",
     month: "long",
     day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
   });
 
-  const getGradientClass = () => {
-    if (score >= 70) return "bg-gradient-success";
-    if (score >= 50) return "bg-gradient-warning";
-    return "bg-gradient-error";
+  const getScoreColor = () => {
+    if (score >= 70) return "text-success";
+    if (score >= 50) return "text-warning";
+    return "text-destructive";
   };
 
   return (
-    <section className={`pt-24 pb-12 ${getGradientClass()}`}>
+    <section className="pt-28 pb-16 bg-background border-b border-border">
       <div className="container mx-auto px-4">
-        <div className="max-w-2xl mx-auto text-center text-success-foreground">
-          <p className="text-sm font-medium opacity-90 mb-2">Your AgentReady Score</p>
-          
-          {/* Score Circle */}
-          <div className="relative inline-flex items-center justify-center w-32 h-32 rounded-full bg-background/20 backdrop-blur-sm mb-4">
-            <span className="font-display text-5xl font-bold">{score}</span>
+        <div className="max-w-4xl">
+          {/* Label */}
+          <div className="flex items-center gap-3 mb-8">
+            <PulseDot size="md" />
+            <span className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
+              Analysis Results
+            </span>
           </div>
 
-          {/* Grade */}
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <span className="text-2xl">{config.emoji}</span>
-            <h1 className="font-display text-2xl font-bold uppercase tracking-wide">
-              {grade}
-            </h1>
-          </div>
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
+            {/* Score */}
+            <div>
+              <div className="flex items-baseline gap-3 mb-2">
+                <span className={`font-display text-7xl md:text-8xl ${getScoreColor()}`}>
+                  {score}
+                </span>
+                <span className="text-3xl text-muted-foreground">/100</span>
+              </div>
+              <p className="text-lg text-muted-foreground font-mono mb-6">
+                Agent Readiness Score
+              </p>
+              
+              {/* Grade Badge */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 border border-border">
+                <span className="w-2 h-2 rounded-full bg-accent" />
+                <span className="font-mono text-sm uppercase tracking-wide">
+                  {config.label}
+                </span>
+              </div>
+            </div>
 
-          {/* Message */}
-          <p className="text-lg opacity-90 mb-6 max-w-md mx-auto">
-            {config.message}
-          </p>
-
-          {/* URL & Date */}
-          <div className="text-sm opacity-75 space-y-1">
-            <p className="truncate max-w-xs mx-auto">URL: {url}</p>
-            <p>Analyzed: {formattedDate}</p>
+            {/* Message & Meta */}
+            <div className="space-y-6">
+              <p className="text-lg text-foreground leading-relaxed">
+                {config.message}
+              </p>
+              
+              <div className="space-y-2 pt-4 border-t border-border">
+                <p className="text-sm text-muted-foreground font-mono truncate">
+                  {url}
+                </p>
+                <p className="text-sm text-muted-foreground font-mono">
+                  {formattedDate}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
