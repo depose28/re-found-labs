@@ -1,4 +1,4 @@
-import { Search, Zap, CreditCard, Shield } from "lucide-react";
+import { Search, Zap, CreditCard, Shield, ArrowRight } from "lucide-react";
 import PulseDot from "@/components/ui/PulseDot";
 
 const categories = [
@@ -7,49 +7,28 @@ const categories = [
     number: "01",
     title: "Discovery",
     points: "40 points",
-    question: "Can agents find and interpret your products?",
-    checks: [
-      "robots.txt for AI bot access (OAI-SearchBot, ClaudeBot, ChatGPT-User)",
-      "JSON-LD Product schema with required properties",
-      "XML sitemap for catalog discovery",
-    ],
-    consequence: "If blocked: Agents can't crawl. If unstructured: Agents can't understand.",
+    description: "We evaluate how effectively AI agents can locate and interpret your product catalog. This includes crawlability, structured data implementation, and catalog indexing protocols.",
   },
   {
     icon: Zap,
     number: "02",
     title: "Performance",
     points: "15 points",
-    question: "Is your site fast enough for agents that timeout?",
-    checks: [
-      "Time to Interactive (TTI) — agents abandon after 30 seconds",
-      "Lighthouse performance score",
-    ],
-    consequence: "Slow sites get skipped. Agents don't wait.",
+    description: "Agent interactions have strict timeout thresholds. We measure critical performance indicators that determine whether agents can reliably access your store within acceptable latency windows.",
   },
   {
     icon: CreditCard,
     number: "03",
     title: "Transaction",
     points: "20 points",
-    question: "Can agents complete a purchase?",
-    checks: [
-      "Offer schema: price, currency, availability (as Schema.org enumerations)",
-      "HTTPS — agents won't transact over insecure connections",
-    ],
-    consequence: "Missing availability? Agents assume out of stock. No HTTPS? Purchase blocked.",
+    description: "For agents to facilitate purchases, they require machine-readable pricing, availability, and security signals. We assess your transactional data layer completeness.",
   },
   {
     icon: Shield,
     number: "04",
     title: "Trust",
     points: "25 points",
-    question: "Will agents recommend you to their users?",
-    checks: [
-      "Organization schema: name, contact, address, social proof",
-      "MerchantReturnPolicy schema: return window, method",
-    ],
-    consequence: "Agents verify legitimacy before recommending. No trust signals = no recommendations.",
+    description: "Before recommending a merchant, agents verify legitimacy through organizational signals and consumer protection policies. We analyze your trust architecture.",
   },
 ];
 
@@ -66,12 +45,23 @@ const WhatWeCheckSection = () => {
         </div>
 
         {/* Section Title */}
-        <h2 className="font-display text-4xl md:text-5xl text-foreground mb-4 max-w-2xl">
-          The 8 signals that determine agent visibility
-        </h2>
-        <p className="text-lg text-muted-foreground mb-16 max-w-xl">
-          Every check maps to a real decision agents make. Miss one, and you're filtered out.
-        </p>
+        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-16">
+          <div>
+            <h2 className="font-display text-4xl md:text-5xl text-foreground mb-4 max-w-2xl">
+              Four dimensions of agent compatibility
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-xl">
+              Our proprietary analysis framework evaluates your store across the critical signals that AI shopping agents use to discover, evaluate, and recommend products.
+            </p>
+          </div>
+          <a 
+            href="#" 
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group whitespace-nowrap"
+          >
+            View full methodology
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </a>
+        </div>
 
         {/* Categories Grid */}
         <div className="grid md:grid-cols-2 gap-px bg-border">
@@ -95,31 +85,22 @@ const WhatWeCheckSection = () => {
                 </span>
               </div>
 
-              {/* Question */}
-              <h3 className="font-display text-xl text-foreground mb-4">
-                {category.question}
-              </h3>
-
-              {/* Checks */}
-              <p className="text-sm text-muted-foreground mb-4">We check:</p>
-              <ul className="space-y-2 mb-6">
-                {category.checks.map((check, checkIndex) => (
-                  <li
-                    key={checkIndex}
-                    className="flex items-start gap-3 text-sm text-foreground"
-                  >
-                    <span className="w-1 h-1 rounded-full bg-accent mt-2 flex-shrink-0" />
-                    {check}
-                  </li>
-                ))}
-              </ul>
-
-              {/* Consequence */}
-              <p className="text-sm text-muted-foreground italic">
-                {category.consequence}
+              {/* Description */}
+              <p className="text-foreground leading-relaxed">
+                {category.description}
               </p>
             </div>
           ))}
+        </div>
+
+        {/* Bottom Note */}
+        <div className="mt-8 pt-8 border-t border-border">
+          <p className="text-sm text-muted-foreground">
+            Our scoring methodology is based on analysis of major AI agent implementations including shopping assistants, comparison engines, and autonomous purchasing systems.{" "}
+            <a href="#" className="text-foreground hover:text-accent transition-colors underline underline-offset-4">
+              Read the documentation
+            </a>
+          </p>
         </div>
       </div>
     </section>
