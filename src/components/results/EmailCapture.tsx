@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import PulseDot from "@/components/ui/PulseDot";
 
 interface EmailCaptureProps {
   analysisId: string;
@@ -57,16 +58,14 @@ const EmailCapture = ({ analysisId }: EmailCaptureProps) => {
 
   if (submitted) {
     return (
-      <section className="bg-success/10 rounded-2xl p-6 md:p-8 border border-success/20">
+      <section className="bg-success/10 border border-success/20 p-6 md:p-8">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0">
-            <CheckCircle2 className="h-6 w-6 text-success" />
-          </div>
+          <CheckCircle2 className="h-6 w-6 text-success flex-shrink-0" />
           <div>
-            <h2 className="font-display text-xl font-bold text-foreground">
+            <h2 className="font-display text-xl text-foreground">
               Report Sent!
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground font-mono text-sm">
               Check your inbox for the detailed analysis report.
             </p>
           </div>
@@ -76,48 +75,50 @@ const EmailCapture = ({ analysisId }: EmailCaptureProps) => {
   }
 
   return (
-    <section className="bg-card rounded-2xl p-6 md:p-8 shadow-card border border-border">
-      <div className="flex items-start gap-4 mb-6">
-        <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
-          <Mail className="h-6 w-6 text-accent" />
-        </div>
-        <div>
-          <h2 className="font-display text-xl font-bold text-foreground">
-            Get the Full Report
-          </h2>
-          <p className="text-muted-foreground text-sm mt-1">
-            Receive a detailed PDF with step-by-step fix instructions and schema code examples you can copy-paste.
-          </p>
-        </div>
+    <section className="bg-card border border-border p-6 md:p-8">
+      <div className="flex items-center gap-3 mb-6">
+        <PulseDot size="md" />
+        <span className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
+          Get the Report
+        </span>
       </div>
 
+      <h2 className="font-display text-2xl text-foreground mb-2">
+        Full Report
+      </h2>
+      <p className="text-muted-foreground text-sm mb-8 font-mono max-w-md">
+        Receive a detailed PDF with step-by-step fix instructions and schema code examples.
+      </p>
+
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              if (error) setError("");
-            }}
-            className="flex-1 h-12"
-            disabled={loading}
-          />
-          <Button
-            type="submit"
-            disabled={loading}
-            className="h-12 px-6 bg-gradient-accent hover:opacity-90"
-          >
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              "Send Report"
-            )}
-          </Button>
+        <div className="border border-border p-1">
+          <div className="flex flex-col sm:flex-row">
+            <Input
+              type="email"
+              placeholder="you@company.com"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (error) setError("");
+              }}
+              className="flex-1 h-12 border-0 bg-transparent font-mono focus-visible:ring-0 focus-visible:ring-offset-0"
+              disabled={loading}
+            />
+            <Button
+              type="submit"
+              disabled={loading}
+              className="h-12 px-6 bg-foreground text-background hover:bg-foreground/90 font-medium"
+            >
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Send Report"
+              )}
+            </Button>
+          </div>
         </div>
-        {error && <p className="text-destructive text-sm">{error}</p>}
-        <p className="text-xs text-muted-foreground">
+        {error && <p className="text-destructive text-sm font-mono">{error}</p>}
+        <p className="text-xs text-muted-foreground font-mono">
           We'll also send you updates on AI commerce trends. Unsubscribe anytime.
         </p>
       </form>
