@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,9 +48,8 @@ const HeroSection = () => {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
           {/* Left Column - Content */}
           <div className="max-w-xl">
-            {/* Eyebrow with Stat */}
-            <div className="flex items-center gap-3 mb-8 animate-fade-in">
-              <PulseDot size="md" />
+            {/* Eyebrow with Stat - no dot */}
+            <div className="mb-8 animate-fade-in">
               <span className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
                 73% of stores fail this test
               </span>
@@ -94,7 +93,7 @@ const HeroSection = () => {
               )}
             </form>
 
-            {/* Trust indicators */}
+            {/* Trust indicators + Social Proof */}
             <div className="flex items-center gap-6 mt-6 animate-fade-in" style={{ animationDelay: "0.3s" }}>
               <span className="text-sm text-muted-foreground">
                 No signup required
@@ -103,36 +102,10 @@ const HeroSection = () => {
               <span className="text-sm text-muted-foreground">
                 Free forever
               </span>
-            </div>
-
-            {/* Example Report Link */}
-            <div className="mt-4 animate-fade-in" style={{ animationDelay: "0.35s" }}>
-              <Link 
-                to="/results?demo=true" 
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 group"
-              >
-                or see an example report
-                <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-              </Link>
-            </div>
-
-            {/* Platform Logos */}
-            <div className="mt-10 pt-8 border-t border-border animate-fade-in" style={{ animationDelay: "0.4s" }}>
-              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-4">Works with</p>
-              <div className="flex items-center gap-6 flex-wrap">
-                <PlatformBadge name="Shopify" />
-                <PlatformBadge name="WooCommerce" />
-                <PlatformBadge name="Magento" />
-                <PlatformBadge name="BigCommerce" />
-                <PlatformBadge name="Any platform" />
-              </div>
-            </div>
-
-            {/* Social Proof Counter */}
-            <div className="mt-6 animate-fade-in" style={{ animationDelay: "0.45s" }}>
-              <p className="text-sm text-muted-foreground">
-                <span className="text-foreground font-medium">142</span> stores analyzed this week
-              </p>
+              <span className="text-muted-foreground">·</span>
+              <span className="text-sm text-muted-foreground">
+                <span className="text-lg font-semibold text-foreground">142</span> analyzed this week
+              </span>
             </div>
           </div>
 
@@ -145,12 +118,6 @@ const HeroSection = () => {
     </section>
   );
 };
-
-const PlatformBadge = ({ name }: { name: string }) => (
-  <span className="text-sm text-muted-foreground/70 hover:text-muted-foreground transition-colors cursor-default">
-    {name}
-  </span>
-);
 
 const SampleReportPreview = () => {
   const [animatedScore, setAnimatedScore] = useState(0);
