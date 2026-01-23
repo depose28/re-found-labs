@@ -83,6 +83,8 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          report_error: string | null
+          report_sent_at: string | null
           source: string | null
         }
         Insert: {
@@ -90,6 +92,8 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          report_error?: string | null
+          report_sent_at?: string | null
           source?: string | null
         }
         Update: {
@@ -97,6 +101,8 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          report_error?: string | null
+          report_sent_at?: string | null
           source?: string | null
         }
         Relationships: [

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, CheckCircle2, Loader2, FileText } from "lucide-react";
+import { CheckCircle2, Loader2, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,18 +37,33 @@ const EmailCapture = ({ analysisId }: EmailCaptureProps) => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.from("email_captures").insert({
-        email: email.trim().toLowerCase(),
+      const trimmedEmail = email.trim().toLowerCase();
+      
+      // First, save the email capture
+      const { error: insertError } = await supabase.from("email_captures").insert({
+        email: trimmedEmail,
         analysis_id: analysisId,
         source: "results_page",
       });
 
-      if (error) throw error;
+      if (insertError) throw insertError;
+
+      // Then, trigger the report generation and email
+      const response = await supabase.functions.invoke("generate-report", {
+        body: { email: trimmedEmail, analysisId },
+      });
+
+      if (response.error) {
+        console.error("Report generation error:", response.error);
+        // Still show success since email was captured
+        toast.warning("Email saved! Report will be sent shortly.");
+      } else {
+        toast.success("Report sent! Check your inbox.");
+      }
 
       setSubmitted(true);
-      toast.success("Report sent! Check your inbox.");
     } catch (err: any) {
-      console.error("Failed to save email:", err);
+      console.error("Failed to process request:", err);
       setError("Failed to submit. Please try again.");
     } finally {
       setLoading(false);
@@ -92,7 +107,7 @@ const EmailCapture = ({ analysisId }: EmailCaptureProps) => {
             Get the Full Report
           </h2>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            Receive a detailed PDF with step-by-step fix instructions and schema code examples you can share with your team.
+            Receive a detailed report with step-by-step fix instructions and schema code examples you can share with your team.
           </p>
         </div>
 
