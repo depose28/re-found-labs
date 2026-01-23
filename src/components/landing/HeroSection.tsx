@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,11 +48,11 @@ const HeroSection = () => {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
           {/* Left Column - Content */}
           <div className="max-w-xl">
-            {/* Section Label */}
+            {/* Eyebrow with Stat */}
             <div className="flex items-center gap-3 mb-8 animate-fade-in">
               <PulseDot size="md" />
               <span className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
-                Free Audit
+                73% of stores fail this test
               </span>
             </div>
 
@@ -61,10 +61,9 @@ const HeroSection = () => {
               Can AI agents actually shop your store?
             </h1>
 
-            {/* Subheadline */}
+            {/* Subheadline - Tighter */}
             <p className="text-lg text-muted-foreground leading-relaxed mb-10 animate-slide-up" style={{ animationDelay: "0.1s" }}>
-              If your product data isn't structured for agents, they'll recommend your competitors instead. 
-              Get your Agent Score in 60 seconds — discover exactly where you're invisible.
+              AI agents recommend structured stores. If yours isn't one of them, you're invisible. Find out in 60 seconds.
             </p>
 
             {/* URL Input Form */}
@@ -73,19 +72,19 @@ const HeroSection = () => {
                 <div className="flex flex-col sm:flex-row">
                   <Input
                     type="text"
-                    placeholder="yourstore.com"
+                    placeholder="https://yourstore.com/products/..."
                     value={url}
                     onChange={(e) => {
                       setUrl(e.target.value);
                       if (error) setError("");
                     }}
-                    className="flex-1 h-12 border-0 bg-transparent text-base focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className="flex-1 h-12 border-0 bg-transparent text-base focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/50"
                   />
                   <Button
                     type="submit"
                     className="h-12 px-6 bg-foreground text-background hover:bg-foreground/90 font-medium"
                   >
-                    Analyze Your Store
+                    Get Your Agent Score
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
@@ -96,7 +95,7 @@ const HeroSection = () => {
             </form>
 
             {/* Trust indicators */}
-            <div className="flex items-center gap-6 mt-8 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+            <div className="flex items-center gap-6 mt-6 animate-fade-in" style={{ animationDelay: "0.3s" }}>
               <span className="text-sm text-muted-foreground">
                 No signup required
               </span>
@@ -104,6 +103,36 @@ const HeroSection = () => {
               <span className="text-sm text-muted-foreground">
                 Free forever
               </span>
+            </div>
+
+            {/* Example Report Link */}
+            <div className="mt-4 animate-fade-in" style={{ animationDelay: "0.35s" }}>
+              <Link 
+                to="/results?demo=true" 
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 group"
+              >
+                or see an example report
+                <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            </div>
+
+            {/* Platform Logos */}
+            <div className="mt-10 pt-8 border-t border-border animate-fade-in" style={{ animationDelay: "0.4s" }}>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-4">Works with</p>
+              <div className="flex items-center gap-6 flex-wrap">
+                <PlatformBadge name="Shopify" />
+                <PlatformBadge name="WooCommerce" />
+                <PlatformBadge name="Magento" />
+                <PlatformBadge name="BigCommerce" />
+                <PlatformBadge name="Any platform" />
+              </div>
+            </div>
+
+            {/* Social Proof Counter */}
+            <div className="mt-6 animate-fade-in" style={{ animationDelay: "0.45s" }}>
+              <p className="text-sm text-muted-foreground">
+                <span className="text-foreground font-medium">142</span> stores analyzed this week
+              </p>
             </div>
           </div>
 
@@ -117,7 +146,35 @@ const HeroSection = () => {
   );
 };
 
+const PlatformBadge = ({ name }: { name: string }) => (
+  <span className="text-sm text-muted-foreground/70 hover:text-muted-foreground transition-colors cursor-default">
+    {name}
+  </span>
+);
+
 const SampleReportPreview = () => {
+  const [animatedScore, setAnimatedScore] = useState(0);
+  const targetScore = 72;
+
+  useEffect(() => {
+    const duration = 1500;
+    const steps = 30;
+    const increment = targetScore / steps;
+    let current = 0;
+    
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= targetScore) {
+        setAnimatedScore(targetScore);
+        clearInterval(timer);
+      } else {
+        setAnimatedScore(Math.floor(current));
+      }
+    }, duration / steps);
+
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <div className="relative mt-8">
       {/* Decorative dot grid background */}
@@ -130,12 +187,13 @@ const SampleReportPreview = () => {
       </div>
 
       {/* Document-style Report Card */}
-      <div className="bg-card border border-border shadow-card max-w-sm ml-auto">
+      <div className="bg-card border border-border shadow-card max-w-sm ml-auto transition-all duration-300 hover:shadow-lg hover:border-accent/30">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-border">
           <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
             Agent Pulse Report
           </span>
+          <PulseDot size="sm" />
         </div>
 
         {/* Meta Info */}
@@ -150,11 +208,11 @@ const SampleReportPreview = () => {
           </div>
         </div>
 
-        {/* Main Score */}
+        {/* Main Score - Animated */}
         <div className="p-6 border-b border-border text-center">
           <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Agent Score</p>
           <div className="flex items-baseline justify-center gap-2">
-            <span className="font-display text-5xl text-foreground">72</span>
+            <span className="font-display text-5xl text-foreground tabular-nums">{animatedScore}</span>
             <span className="text-xl text-muted-foreground">/ 100</span>
           </div>
           <span className="inline-block mt-2 px-3 py-1 text-xs font-medium uppercase tracking-wide bg-accent/10 text-accent">
@@ -162,51 +220,60 @@ const SampleReportPreview = () => {
           </span>
         </div>
 
-        {/* Category Breakdown */}
+        {/* Category Breakdown with hover states */}
         <div className="p-5 space-y-3">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Discovery</span>
-            <div className="flex items-center gap-3">
-              <div className="w-20 h-1.5 bg-secondary overflow-hidden">
-                <div className="h-full bg-accent" style={{ width: '80%' }} />
-              </div>
-              <span className="text-foreground w-10 text-right">32/40</span>
-            </div>
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Performance</span>
-            <div className="flex items-center gap-3">
-              <div className="w-20 h-1.5 bg-secondary overflow-hidden">
-                <div className="h-full bg-success" style={{ width: '80%' }} />
-              </div>
-              <span className="text-foreground w-10 text-right">12/15</span>
-            </div>
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Transaction</span>
-            <div className="flex items-center gap-3">
-              <div className="w-20 h-1.5 bg-secondary overflow-hidden">
-                <div className="h-full bg-warning" style={{ width: '50%' }} />
-              </div>
-              <span className="text-foreground w-10 text-right">10/20</span>
-            </div>
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Trust</span>
-            <div className="flex items-center gap-3">
-              <div className="w-20 h-1.5 bg-secondary overflow-hidden">
-                <div className="h-full bg-primary" style={{ width: '72%' }} />
-              </div>
-              <span className="text-foreground w-10 text-right">18/25</span>
-            </div>
-          </div>
+          <CategoryBar label="Discovery" score={32} max={40} percentage={80} color="accent" />
+          <CategoryBar label="Performance" score={12} max={15} percentage={80} color="success" />
+          <CategoryBar label="Transaction" score={10} max={20} percentage={50} color="warning" />
+          <CategoryBar label="Trust" score={18} max={25} percentage={72} color="primary" />
         </div>
 
         {/* Top Issue */}
-        <div className="px-5 py-4 bg-secondary/30 border-t border-border">
-          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Top issue</p>
-          <p className="text-sm text-foreground">Missing availability in Offer schema</p>
+        <div className="px-5 py-4 bg-secondary/30 border-t border-border group cursor-default">
+          <div className="flex items-start gap-2">
+            <span className="text-warning text-sm mt-0.5">▲</span>
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Top issue</p>
+              <p className="text-sm text-foreground">Missing availability in Offer schema</p>
+            </div>
+          </div>
         </div>
+      </div>
+    </div>
+  );
+};
+
+const CategoryBar = ({ 
+  label, 
+  score, 
+  max, 
+  percentage, 
+  color 
+}: { 
+  label: string; 
+  score: number; 
+  max: number; 
+  percentage: number; 
+  color: string;
+}) => {
+  const [width, setWidth] = useState(0);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setWidth(percentage), 300);
+    return () => clearTimeout(timer);
+  }, [percentage]);
+
+  return (
+    <div className="flex items-center justify-between text-sm group cursor-default transition-all duration-200 hover:bg-secondary/20 -mx-2 px-2 py-1 rounded">
+      <span className="text-muted-foreground group-hover:text-foreground transition-colors">{label}</span>
+      <div className="flex items-center gap-3">
+        <div className="w-20 h-1.5 bg-secondary overflow-hidden rounded-full">
+          <div 
+            className={`h-full bg-${color} transition-all duration-1000 ease-out`}
+            style={{ width: `${width}%` }} 
+          />
+        </div>
+        <span className="text-foreground w-10 text-right tabular-nums">{score}/{max}</span>
       </div>
     </div>
   );
