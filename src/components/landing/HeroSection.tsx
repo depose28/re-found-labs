@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, UserX, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import PulseDot from "@/components/ui/PulseDot";
@@ -95,12 +95,14 @@ const HeroSection = () => {
 
             {/* Trust indicators + Social Proof */}
             <div className="flex items-center gap-6 mt-6 animate-fade-in" style={{ animationDelay: "0.3s" }}>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+                <UserX className="h-3.5 w-3.5" />
                 No signup required
               </span>
               <span className="text-muted-foreground">·</span>
-              <span className="text-sm text-muted-foreground">
-                Free forever
+              <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+                <FileText className="h-3.5 w-3.5" />
+                Free report
               </span>
               <span className="text-muted-foreground">·</span>
               <span className="text-sm text-muted-foreground">
