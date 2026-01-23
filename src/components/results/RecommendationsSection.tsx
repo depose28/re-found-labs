@@ -55,7 +55,7 @@ const RecommendationsSection = ({ recommendations }: RecommendationsSectionProps
 
       <div className="space-y-4">
         {recommendations.map((rec, index) => {
-          const config = priorityConfig[rec.priority];
+          const config = priorityConfig[rec.priority as keyof typeof priorityConfig] || priorityConfig.medium;
           const PriorityIcon = config.icon;
           const isExpanded = expandedId === rec.checkId;
 
