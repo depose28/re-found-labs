@@ -73,11 +73,13 @@ const Results = () => {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Header />
-        <main className="flex-1 container mx-auto px-4 py-24">
-          <div className="max-w-4xl mx-auto space-y-8">
-            <Skeleton className="h-64 w-full rounded-2xl" />
-            <Skeleton className="h-32 w-full rounded-xl" />
-            <Skeleton className="h-48 w-full rounded-xl" />
+        <main className="flex-1 pt-32 pb-16">
+          <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
+            <div className="space-y-8">
+              <Skeleton className="h-80 w-full" />
+              <Skeleton className="h-48 w-full" />
+              <Skeleton className="h-64 w-full" />
+            </div>
           </div>
         </main>
       </div>
@@ -88,14 +90,14 @@ const Results = () => {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Header />
-        <main className="flex-1 flex items-center justify-center px-4">
+        <main className="flex-1 flex items-center justify-center px-6">
           <div className="text-center space-y-6">
             <h1 className="font-display text-2xl font-bold text-foreground">
               {error || "Analysis not found"}
             </h1>
             <button
               onClick={() => navigate("/")}
-              className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity"
+              className="inline-flex items-center justify-center px-6 py-3 bg-foreground text-background font-medium hover:opacity-90 transition-opacity"
             >
               Run New Analysis
             </button>
@@ -116,23 +118,21 @@ const Results = () => {
           createdAt={analysis.created_at}
         />
 
-        <div className="container mx-auto px-4 py-12 space-y-12">
-          <div className="max-w-4xl mx-auto space-y-12">
-            <CategoryBreakdown
-              discovery={{ score: analysis.discovery_score, max: analysis.discovery_max }}
-              performance={{ score: analysis.performance_score, max: analysis.performance_max }}
-              transaction={{ score: analysis.transaction_score, max: analysis.transaction_max }}
-              trust={{ score: analysis.trust_score, max: analysis.trust_max }}
-            />
+        <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20 py-16 space-y-16">
+          <CategoryBreakdown
+            discovery={{ score: analysis.discovery_score, max: analysis.discovery_max ?? 40 }}
+            performance={{ score: analysis.performance_score, max: analysis.performance_max ?? 15 }}
+            transaction={{ score: analysis.transaction_score, max: analysis.transaction_max ?? 20 }}
+            trust={{ score: analysis.trust_score, max: analysis.trust_max ?? 25 }}
+          />
 
-            <ChecksAccordion checks={analysis.checks} />
+          <ChecksAccordion checks={analysis.checks} />
 
-            <RecommendationsSection recommendations={analysis.recommendations} />
+          <RecommendationsSection recommendations={analysis.recommendations} />
 
-            <EmailCapture analysisId={analysis.id} />
+          <EmailCapture analysisId={analysis.id} />
 
-            <CTASection />
-          </div>
+          <CTASection />
         </div>
       </main>
       <Footer />

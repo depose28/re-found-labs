@@ -1,6 +1,5 @@
-import { AlertCircle, AlertTriangle, Info, ChevronDown } from "lucide-react";
+import { AlertCircle, AlertTriangle, Info, ChevronDown, Wrench } from "lucide-react";
 import { useState } from "react";
-import PulseDot from "@/components/ui/PulseDot";
 
 interface Recommendation {
   priority: "critical" | "high" | "medium";
@@ -16,9 +15,9 @@ interface RecommendationsSectionProps {
 }
 
 const priorityConfig = {
-  critical: { icon: AlertCircle, color: "destructive", label: "Critical" },
-  high: { icon: AlertTriangle, color: "warning", label: "High" },
-  medium: { icon: Info, color: "accent", label: "Medium" },
+  critical: { icon: AlertCircle, color: "destructive", label: "Critical", order: 1 },
+  high: { icon: AlertTriangle, color: "warning", label: "High", order: 2 },
+  medium: { icon: Info, color: "accent", label: "Medium", order: 3 },
 };
 
 const RecommendationsSection = ({ recommendations }: RecommendationsSectionProps) => {
@@ -26,51 +25,84 @@ const RecommendationsSection = ({ recommendations }: RecommendationsSectionProps
 
   if (!recommendations || recommendations.length === 0) {
     return (
-      <section className="bg-success/10 border border-success/20 p-6 md:p-8">
-        <div className="text-center">
-          <span className="text-4xl mb-4 block">🎉</span>
-          <h2 className="font-display text-2xl text-foreground mb-2">
-            No Issues Found!
+      <section>
+        <div className="mb-8">
+          <p className="text-sm text-muted-foreground mb-2">Recommendations</p>
+          <h2 className="font-display text-2xl text-foreground">
+            Priority Fixes
           </h2>
-          <p className="text-muted-foreground font-mono text-sm">
-            Your store is well-optimized for AI shopping agents.
+        </div>
+
+        <div className="bg-success/10 border border-success/20 p-8 text-center">
+          <span className="text-4xl mb-4 block">🎉</span>
+          <h3 className="font-display text-xl text-foreground mb-2">
+            No Issues Found!
+          </h3>
+          <p className="text-muted-foreground text-sm max-w-md mx-auto">
+            Your store is well-optimized for AI shopping agents. Keep up the great work!
           </p>
         </div>
       </section>
     );
   }
 
+  // Sort by priority
+  const sortedRecs = [...recommendations].sort((a, b) => {
+    const orderA = priorityConfig[a.priority as keyof typeof priorityConfig]?.order || 99;
+    const orderB = priorityConfig[b.priority as keyof typeof priorityConfig]?.order || 99;
+    return orderA - orderB;
+  });
+
+  const criticalCount = recommendations.filter(r => r.priority === "critical").length;
+  const highCount = recommendations.filter(r => r.priority === "high").length;
+
   return (
-    <section className="bg-card border border-border p-6 md:p-8">
-      <div className="flex items-center gap-3 mb-8">
-        <PulseDot size="md" />
-        <span className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
+    <section>
+      <div className="mb-8">
+        <p className="text-sm text-muted-foreground mb-2">Recommendations</p>
+        <h2 className="font-display text-2xl text-foreground mb-2">
           Priority Fixes
-        </span>
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          {criticalCount > 0 && <span className="text-destructive font-medium">{criticalCount} critical</span>}
+          {criticalCount > 0 && highCount > 0 && " · "}
+          {highCount > 0 && <span className="text-warning font-medium">{highCount} high priority</span>}
+          {(criticalCount > 0 || highCount > 0) && " — "}
+          These changes will have the biggest impact on your score.
+        </p>
       </div>
 
-      <h2 className="font-display text-2xl text-foreground mb-2">
-        Recommended Actions
-      </h2>
-      <p className="text-muted-foreground font-mono text-sm mb-8">
-        These changes will have the biggest impact on your score
-      </p>
-
-      <div className="space-y-0 border-t border-border">
-        {recommendations.map((rec, index) => {
+      <div className="border border-border divide-y divide-border">
+        {sortedRecs.map((rec, index) => {
           const config = priorityConfig[rec.priority as keyof typeof priorityConfig] || priorityConfig.medium;
           const isExpanded = expandedId === rec.checkId;
+          const PriorityIcon = config.icon;
 
           return (
-            <div
-              key={rec.checkId}
-              className="border-b border-border"
-            >
-              <div className="py-5">
+            <div key={rec.checkId} className="bg-card">
+              <div className="p-5">
                 <div className="flex items-start gap-4">
-                  <span className="text-accent font-mono text-xs mt-1">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
+                  {/* Priority Badge */}
+                  <div 
+                    className={`w-10 h-10 flex items-center justify-center flex-shrink-0 ${
+                      config.color === "destructive"
+                        ? "bg-destructive/10"
+                        : config.color === "warning"
+                        ? "bg-warning/10"
+                        : "bg-accent/10"
+                    }`}
+                  >
+                    <PriorityIcon 
+                      className={`h-5 w-5 ${
+                        config.color === "destructive"
+                          ? "text-destructive"
+                          : config.color === "warning"
+                          ? "text-warning"
+                          : "text-accent"
+                      }`} 
+                    />
+                  </div>
+
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
                       <span
@@ -84,31 +116,35 @@ const RecommendationsSection = ({ recommendations }: RecommendationsSectionProps
                       >
                         {config.label}
                       </span>
+                      <span className="text-xs text-muted-foreground font-mono">
+                        #{String(index + 1).padStart(2, "0")}
+                      </span>
                     </div>
-                    <h3 className="font-display text-lg text-foreground mb-2">{rec.title}</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <h3 className="font-medium text-lg text-foreground mb-2">{rec.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
                       {rec.description}
                     </p>
+
+                    <button
+                      onClick={() => setExpandedId(isExpanded ? null : rec.checkId)}
+                      className="flex items-center gap-2 text-sm font-medium text-accent mt-4 hover:opacity-80 transition-opacity"
+                    >
+                      <Wrench className="h-4 w-4" />
+                      How to fix
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform ${
+                          isExpanded ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
                   </div>
                 </div>
-
-                <button
-                  onClick={() => setExpandedId(isExpanded ? null : rec.checkId)}
-                  className="flex items-center gap-1 text-sm font-mono text-accent mt-4 ml-8 hover:opacity-80 transition-opacity"
-                >
-                  How to fix
-                  <ChevronDown
-                    className={`h-4 w-4 transition-transform ${
-                      isExpanded ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
               </div>
 
               {isExpanded && (
-                <div className="pb-5 ml-8">
-                  <div className="p-4 bg-secondary/50 border border-border">
-                    <pre className="text-sm text-foreground whitespace-pre-wrap font-mono">
+                <div className="px-5 pb-5">
+                  <div className="ml-14 p-4 bg-secondary/50 border border-border">
+                    <pre className="text-sm text-foreground whitespace-pre-wrap font-mono leading-relaxed">
                       {rec.howToFix}
                     </pre>
                   </div>
