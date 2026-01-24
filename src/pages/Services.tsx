@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, TrendingUp, Layers, Lightbulb } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -247,22 +247,31 @@ const Services = () => {
                 Mid-market e-commerce brands serious about the AI channel.
               </h2>
 
-              <div className="grid sm:grid-cols-3 gap-6 mb-8">
-                <div className="text-center sm:text-left">
+              <div className="grid sm:grid-cols-3 gap-8 mb-10">
+                <div className="bg-card border border-border p-6 text-center">
+                  <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-4">
+                    <TrendingUp className="h-5 w-5 text-accent" />
+                  </div>
                   <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-2">
                     Revenue
                   </p>
                   <p className="text-foreground font-medium">€5M – €200M annually</p>
                 </div>
-                <div className="text-center sm:text-left">
+                <div className="bg-card border border-border p-6 text-center">
+                  <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-4">
+                    <Layers className="h-5 w-5 text-accent" />
+                  </div>
                   <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-2">
                     Platforms
                   </p>
                   <p className="text-foreground font-medium text-sm">
-                    Shopify · Shopify Plus · WooCommerce · Magento · BigCommerce · Custom
+                    Shopify · WooCommerce · Magento · BigCommerce · Custom
                   </p>
                 </div>
-                <div className="text-center sm:text-left">
+                <div className="bg-card border border-border p-6 text-center">
+                  <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-4">
+                    <Lightbulb className="h-5 w-5 text-accent" />
+                  </div>
                   <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-2">
                     Mindset
                   </p>
