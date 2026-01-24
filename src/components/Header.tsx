@@ -53,6 +53,18 @@ const Header = () => {
             >
               What We Check
             </a>
+            <Link
+              to="/services"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Services
+            </Link>
+            <Link
+              to="/blog"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Blog
+            </Link>
             {!isHomePage && (
               <Link
                 to="/"
