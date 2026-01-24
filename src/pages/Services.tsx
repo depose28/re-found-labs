@@ -150,11 +150,8 @@ const Services = () => {
                   <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-2">
                     Best for
                   </p>
-                  <p className="text-sm text-foreground mb-2">
+                  <p className="text-sm text-foreground mb-6">
                     Brands that need proof — and a plan.
-                  </p>
-                  <p className="text-sm text-muted-foreground italic mb-6">
-                    "Show me ChatGPT recommending my competitor."
                   </p>
                   <a href={CALENDLY_URL} target="_blank" rel="noopener noreferrer">
                     <Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
