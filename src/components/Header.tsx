@@ -65,27 +65,8 @@ const Header = () => {
             >
               Blog
             </Link>
-            {!isHomePage && (
-              <Link
-                to="/"
-                className="text-sm font-medium px-4 py-2 border border-foreground text-foreground hover:bg-foreground hover:text-background transition-colors"
-              >
-                New Analysis
-              </Link>
-            )}
           </nav>
 
-          {/* Mobile: New Analysis button when not on home */}
-          <div className="md:hidden">
-            {!isHomePage && (
-              <Link
-                to="/"
-                className="text-sm font-medium px-3 py-1.5 border border-foreground text-foreground"
-              >
-                New Analysis
-              </Link>
-            )}
-          </div>
         </div>
       </div>
     </header>
