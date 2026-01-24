@@ -7,49 +7,44 @@ const categories = [
     number: "01",
     title: "Discovery",
     points: "40 points",
-    question: "Can agents find and interpret your products?",
-    checks: [
-      "robots.txt for AI bot access (OAI-SearchBot, ClaudeBot, ChatGPT-User)",
-      "JSON-LD Product schema with required properties",
-      "XML sitemap for catalog discovery",
-    ],
-    consequence: "If blocked: Agents can't crawl. If unstructured: Agents can't understand.",
+    question: "Can agents find and understand your products?",
+    description:
+      "AI agents need permission to access your site and structured data to interpret what you sell. We check whether your store speaks the language agents understand—and whether you've accidentally locked them out.",
+    whatBreaks: "Blocked crawlers. Missing product data. Incomplete catalogs.",
+    whatAgentsDo: "Skip you entirely. Recommend competitors who are visible.",
   },
   {
     icon: Zap,
     number: "02",
     title: "Performance",
     points: "15 points",
-    question: "Is your site fast enough for agents that timeout?",
-    checks: [
-      "Time to Interactive (TTI) — agents abandon after 30 seconds",
-      "Lighthouse performance score",
-    ],
-    consequence: "Slow sites get skipped. Agents don't wait.",
+    question: "Is your site fast enough for agents?",
+    description:
+      "Agents operate on tight timeouts. If your pages load slowly, they move on. We measure the metrics that determine whether agents wait—or walk.",
+    whatBreaks: "Slow page loads. Heavy scripts. Server delays.",
+    whatAgentsDo: "Abandon the request. Return \"I couldn't find information about that.\"",
   },
   {
     icon: CreditCard,
     number: "03",
     title: "Transaction",
     points: "20 points",
-    question: "Can agents complete a purchase?",
-    checks: [
-      "Offer schema: price, currency, availability (as Schema.org enumerations)",
-      "HTTPS — agents won't transact over insecure connections",
-    ],
-    consequence: "Missing availability? Agents assume out of stock. No HTTPS? Purchase blocked.",
+    question: "Can agents help users buy from you?",
+    description:
+      "When an agent recommends a product, it needs to confirm it's available, priced, and purchasable. We check whether your store provides the signals that let agents close the loop.",
+    whatBreaks: "Missing availability. Unclear pricing. No secure checkout.",
+    whatAgentsDo: "Hedge recommendations. Suggest \"check the website directly.\"",
   },
   {
     icon: Shield,
     number: "04",
     title: "Trust",
     points: "25 points",
-    question: "Will agents recommend you to their users?",
-    checks: [
-      "Organization schema: name, contact, address, social proof",
-      "MerchantReturnPolicy schema: return window, method",
-    ],
-    consequence: "Agents verify legitimacy before recommending. No trust signals = no recommendations.",
+    question: "Will agents stake their reputation on you?",
+    description:
+      "AI agents are cautious—they won't recommend a store they can't verify. We check whether your brand has the signals that make agents confident enough to recommend you by name.",
+    whatBreaks: "No business information. Missing return policies. Inconsistent data.",
+    whatAgentsDo: "Recommend established competitors instead. Or say nothing at all.",
   },
 ];
 
@@ -66,11 +61,11 @@ const WhatWeCheckSection = () => {
         </div>
 
         {/* Section Title */}
-        <h2 className="font-display text-4xl md:text-5xl text-foreground mb-4 max-w-2xl">
-          The 8 signals that determine agent visibility
+        <h2 className="font-display text-4xl md:text-5xl text-foreground mb-4 max-w-3xl">
+          Four pillars that determine whether AI agents recommend you—or your competitors.
         </h2>
-        <p className="text-lg text-muted-foreground mb-16 max-w-xl">
-          Every check maps to a real decision agents make. Miss one, and you're filtered out.
+        <p className="text-lg text-muted-foreground mb-16 max-w-2xl">
+          AI agents don't browse like humans. They scan structured data, check access permissions, verify trust signals, and make split-second decisions. Miss one signal, and you're filtered out before the conversation even starts.
         </p>
 
         {/* Categories Grid */}
@@ -100,24 +95,22 @@ const WhatWeCheckSection = () => {
                 {category.question}
               </h3>
 
-              {/* Checks */}
-              <p className="text-sm text-muted-foreground mb-4">We check:</p>
-              <ul className="space-y-2 mb-6">
-                {category.checks.map((check, checkIndex) => (
-                  <li
-                    key={checkIndex}
-                    className="flex items-start gap-3 text-sm text-foreground"
-                  >
-                    <span className="w-1 h-1 rounded-full bg-accent mt-2 flex-shrink-0" />
-                    {check}
-                  </li>
-                ))}
-              </ul>
-
-              {/* Consequence */}
-              <p className="text-sm text-muted-foreground italic">
-                {category.consequence}
+              {/* Description */}
+              <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+                {category.description}
               </p>
+
+              {/* What breaks it */}
+              <div className="mb-3">
+                <p className="text-sm font-medium text-foreground mb-1">What breaks it:</p>
+                <p className="text-sm text-muted-foreground">{category.whatBreaks}</p>
+              </div>
+
+              {/* What agents do */}
+              <div>
+                <p className="text-sm font-medium text-foreground mb-1">What agents do:</p>
+                <p className="text-sm text-muted-foreground italic">{category.whatAgentsDo}</p>
+              </div>
             </div>
           ))}
         </div>
