@@ -233,6 +233,113 @@ const Services = () => {
           </div>
         </section>
 
+        {/* Feature Comparison Table */}
+        <section className="py-12 md:py-16 border-t border-border">
+          <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
+            <div className="text-center mb-8">
+              <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3 block">
+                Compare Plans
+              </span>
+              <h2 className="font-display text-2xl md:text-3xl text-foreground">
+                Feature Breakdown
+              </h2>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px]">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-4 pr-4 text-sm font-medium text-muted-foreground w-1/3">Feature</th>
+                    <th className="text-center py-4 px-4 text-sm font-medium text-foreground">Free Audit</th>
+                    <th className="text-center py-4 px-4 text-sm font-medium text-foreground bg-accent/5">Deep Audit</th>
+                    <th className="text-center py-4 px-4 text-sm font-medium text-foreground">Implementation</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm">
+                  <tr className="border-b border-border/50">
+                    <td className="py-3 pr-4 text-muted-foreground">Agent Score (0-100)</td>
+                    <td className="py-3 px-4 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                    <td className="py-3 px-4 text-center bg-accent/5"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                    <td className="py-3 px-4 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                  </tr>
+                  <tr className="border-b border-border/50">
+                    <td className="py-3 pr-4 text-muted-foreground">Automated checks</td>
+                    <td className="py-3 px-4 text-center text-foreground">8</td>
+                    <td className="py-3 px-4 text-center bg-accent/5 text-foreground">40+</td>
+                    <td className="py-3 px-4 text-center text-foreground">40+</td>
+                  </tr>
+                  <tr className="border-b border-border/50">
+                    <td className="py-3 pr-4 text-muted-foreground">Schema & bot access analysis</td>
+                    <td className="py-3 px-4 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                    <td className="py-3 px-4 text-center bg-accent/5"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                    <td className="py-3 px-4 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                  </tr>
+                  <tr className="border-b border-border/50">
+                    <td className="py-3 pr-4 text-muted-foreground">Core Web Vitals check</td>
+                    <td className="py-3 px-4 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                    <td className="py-3 px-4 text-center bg-accent/5"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                    <td className="py-3 px-4 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                  </tr>
+                  <tr className="border-b border-border/50">
+                    <td className="py-3 pr-4 text-muted-foreground">Expert review</td>
+                    <td className="py-3 px-4 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-4 text-center bg-accent/5"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                    <td className="py-3 px-4 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                  </tr>
+                  <tr className="border-b border-border/50">
+                    <td className="py-3 pr-4 text-muted-foreground">Real AI agent testing</td>
+                    <td className="py-3 px-4 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-4 text-center bg-accent/5"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                    <td className="py-3 px-4 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                  </tr>
+                  <tr className="border-b border-border/50">
+                    <td className="py-3 pr-4 text-muted-foreground">Competitor comparison</td>
+                    <td className="py-3 px-4 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-4 text-center bg-accent/5 text-foreground">2-3 competitors</td>
+                    <td className="py-3 px-4 text-center text-foreground">2-3 competitors</td>
+                  </tr>
+                  <tr className="border-b border-border/50">
+                    <td className="py-3 pr-4 text-muted-foreground">Video walkthrough</td>
+                    <td className="py-3 px-4 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-4 text-center bg-accent/5 text-foreground">45 min</td>
+                    <td className="py-3 px-4 text-center text-foreground">45 min</td>
+                  </tr>
+                  <tr className="border-b border-border/50">
+                    <td className="py-3 pr-4 text-muted-foreground">Implementation roadmap</td>
+                    <td className="py-3 px-4 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-4 text-center bg-accent/5 text-foreground">90-day plan</td>
+                    <td className="py-3 px-4 text-center text-foreground">90-day plan</td>
+                  </tr>
+                  <tr className="border-b border-border/50">
+                    <td className="py-3 pr-4 text-muted-foreground">Done-for-you fixes</td>
+                    <td className="py-3 px-4 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-4 text-center bg-accent/5 text-muted-foreground">—</td>
+                    <td className="py-3 px-4 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                  </tr>
+                  <tr className="border-b border-border/50">
+                    <td className="py-3 pr-4 text-muted-foreground">Post-launch support</td>
+                    <td className="py-3 px-4 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-4 text-center bg-accent/5 text-muted-foreground">—</td>
+                    <td className="py-3 px-4 text-center text-foreground">30 days</td>
+                  </tr>
+                  <tr className="border-b border-border/50">
+                    <td className="py-3 pr-4 text-muted-foreground">Monthly check-ins</td>
+                    <td className="py-3 px-4 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-4 text-center bg-accent/5 text-muted-foreground">—</td>
+                    <td className="py-3 px-4 text-center text-foreground">3 months</td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 pr-4 text-muted-foreground">Score guarantee</td>
+                    <td className="py-3 px-4 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-4 text-center bg-accent/5 text-muted-foreground">—</td>
+                    <td className="py-3 px-4 text-center text-foreground">+20 points</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
         {/* Who We Work With */}
         <section className="py-16 md:py-24 bg-secondary/30">
           <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
