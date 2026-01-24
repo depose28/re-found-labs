@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Menu } from "lucide-react";
+import { ArrowLeft, Menu, X } from "lucide-react";
+import PulseDot from "@/components/ui/PulseDot";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import Logo from "@/components/Logo";
-import PulseDot from "@/components/ui/PulseDot";
 
 const Header = () => {
   const location = useLocation();
@@ -41,7 +40,9 @@ const Header = () => {
             )}
             <Link to="/" className="flex items-center gap-2">
               <PulseDot size="md" />
-              <Logo size="md" />
+              <span className="font-display text-xl text-foreground">
+                Re:found Labs
+              </span>
             </Link>
           </div>
 
@@ -90,9 +91,11 @@ const Header = () => {
             <SheetContent side="right" className="w-[280px] p-0">
               <div className="flex flex-col h-full">
                 {/* Mobile menu header */}
-                <div className="flex items-center gap-2 p-6 border-b border-border">
-                  <PulseDot size="sm" />
-                  <Logo size="sm" />
+                <div className="flex items-center justify-between p-6 border-b border-border">
+                  <div className="flex items-center gap-2">
+                    <PulseDot size="sm" />
+                    <span className="font-display text-lg text-foreground">Re:found Labs</span>
+                  </div>
                 </div>
 
                 {/* Mobile menu links */}
