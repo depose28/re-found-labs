@@ -16,9 +16,9 @@ const Header = () => {
   };
 
   const navLinks = [
+    { to: "/#how-it-works", label: "How It Works", isAnchor: true },
     { to: "/services", label: "Services" },
     { to: "/products", label: "Products" },
-    { to: "/#how-it-works", label: "How It Works" },
     { to: "/about", label: "About Us" },
     { to: "/blog", label: "Blog" },
   ];
@@ -48,6 +48,12 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
+            <a
+              href="/#how-it-works"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              How It Works
+            </a>
             <Link
               to="/services"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -60,12 +66,6 @@ const Header = () => {
             >
               Products
             </Link>
-            <a
-              href="/#how-it-works"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              How It Works
-            </a>
             <Link
               to="/about"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
