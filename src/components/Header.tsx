@@ -4,6 +4,7 @@ import { ArrowLeft, Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/Logo";
+import PulseDot from "@/components/ui/PulseDot";
 
 const Header = () => {
   const location = useLocation();
@@ -38,7 +39,8 @@ const Header = () => {
                 <span className="hidden sm:inline">Back</span>
               </button>
             )}
-            <Link to="/" className="flex items-center">
+            <Link to="/" className="flex items-center gap-2">
+              <PulseDot size="md" />
               <Logo size="md" />
             </Link>
           </div>
@@ -88,7 +90,8 @@ const Header = () => {
             <SheetContent side="right" className="w-[280px] p-0">
               <div className="flex flex-col h-full">
                 {/* Mobile menu header */}
-                <div className="flex items-center justify-between p-6 border-b border-border">
+                <div className="flex items-center gap-2 p-6 border-b border-border">
+                  <PulseDot size="sm" />
                   <Logo size="sm" />
                 </div>
 
