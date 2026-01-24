@@ -3,18 +3,10 @@ import { ArrowRight, Check, TrendingUp, Layers, Lightbulb } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 const CALENDLY_URL = import.meta.env.VITE_CALENDLY_URL || "https://calendly.com/refoundlabs/strategy-call";
-
 const Services = () => {
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1">
         {/* Hero Section */}
@@ -47,7 +39,7 @@ const Services = () => {
 
                 <div className="mb-6">
                   <p className="text-3xl font-display text-foreground">€0</p>
-                  <span className="text-sm text-muted-foreground">Free forever</span>
+                  <span className="text-sm text-muted-foreground">Free</span>
                 </div>
 
                 <div className="border-t border-border pt-6 mb-6">
@@ -584,8 +576,6 @@ const Services = () => {
         </section>
       </main>
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default Services;
