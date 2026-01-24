@@ -43,75 +43,75 @@ const HeroSection = () => {
   };
 
   return (
-    <section className="relative pt-32 pb-20 md:pt-40 md:pb-32">
+    <section className="relative pt-28 pb-16 md:pt-40 md:pb-32">
       <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
           {/* Left Column - Content */}
-          <div className="max-w-xl">
-            {/* Eyebrow with Stat - no dot */}
-            <div className="mb-8 animate-fade-in">
-              <span className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
+          <div className="max-w-xl mx-auto lg:mx-0 text-center lg:text-left">
+            {/* Eyebrow with Stat */}
+            <div className="mb-6 md:mb-8 animate-fade-in">
+              <span className="text-xs md:text-sm font-medium uppercase tracking-widest text-muted-foreground">
                 73% of stores fail this test
               </span>
             </div>
 
-            {/* Headline */}
-            <h1 className="font-display text-4xl md:text-5xl lg:text-[3.5rem] text-foreground leading-[1.1] mb-8 animate-slide-up">
+            {/* Headline - Optimized for mobile */}
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] text-foreground leading-[1.15] mb-5 md:mb-8 animate-slide-up">
               Can AI agents actually shop your store?
             </h1>
 
-            {/* Subheadline - Tighter */}
-            <p className="text-lg text-muted-foreground leading-relaxed mb-10 animate-slide-up" style={{ animationDelay: "0.1s" }}>
-              AI agents recommend structured stores. If yours isn't one of them, you're invisible. Find out in 60 seconds.
+            {/* Subheadline - Shorter on mobile */}
+            <p className="text-base md:text-lg text-muted-foreground leading-relaxed mb-8 md:mb-10 animate-slide-up max-w-md mx-auto lg:mx-0" style={{ animationDelay: "0.1s" }}>
+              AI agents recommend structured stores. If yours isn't one of them, you're invisible.
             </p>
 
-            {/* URL Input Form */}
+            {/* URL Input Form - Stacked on mobile */}
             <form onSubmit={handleSubmit} className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
-              <div className="border border-border bg-card p-1">
-                <div className="flex flex-col sm:flex-row">
+              <div className="border border-border bg-card p-1.5 md:p-1">
+                <div className="flex flex-col gap-2 sm:flex-row sm:gap-0">
                   <Input
                     type="text"
-                    placeholder="https://yourstore.com/products/..."
+                    placeholder="yourstore.com"
                     value={url}
                     onChange={(e) => {
                       setUrl(e.target.value);
                       if (error) setError("");
                     }}
-                    className="flex-1 h-12 border-0 bg-transparent text-base focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/50"
+                    className="flex-1 h-12 md:h-12 border-0 bg-transparent text-base focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/50 text-center sm:text-left"
                   />
                   <Button
                     type="submit"
-                    className="h-12 px-6 bg-foreground text-background hover:bg-foreground/90 font-medium"
+                    className="h-12 px-6 bg-foreground text-background hover:bg-foreground/90 font-medium w-full sm:w-auto"
                   >
-                    Get Your Agent Score
+                    Get Your Score
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
               </div>
               {error && (
-                <p className="text-destructive text-sm mt-2">{error}</p>
+                <p className="text-destructive text-sm mt-2 text-center sm:text-left">{error}</p>
               )}
             </form>
 
-            {/* Trust indicators + Social Proof */}
-            <div className="flex items-center gap-6 mt-6 animate-fade-in" style={{ animationDelay: "0.3s" }}>
-              <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+            {/* Trust indicators - Simplified on mobile */}
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-4 gap-y-2 mt-5 md:mt-6 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+              <span className="text-xs md:text-sm text-muted-foreground flex items-center gap-1.5">
                 <UserX className="h-3.5 w-3.5" />
-                No signup required
+                No signup
               </span>
-              <span className="text-muted-foreground">·</span>
-              <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+              <span className="text-muted-foreground hidden sm:inline">·</span>
+              <span className="text-xs md:text-sm text-muted-foreground flex items-center gap-1.5">
                 <FileText className="h-3.5 w-3.5" />
                 Free report
               </span>
-              <span className="text-muted-foreground">·</span>
-              <span className="text-sm text-muted-foreground">
-                <span className="text-lg font-semibold text-foreground">142</span> analyzed this week
+              <span className="text-muted-foreground hidden sm:inline">·</span>
+              <span className="text-xs md:text-sm text-muted-foreground">
+                <span className="text-base md:text-lg font-semibold text-foreground">142</span> analyzed this week
               </span>
             </div>
           </div>
 
-          {/* Right Column - Sample Report Preview */}
+          {/* Right Column - Sample Report Preview (desktop only) */}
           <div className="hidden lg:block animate-fade-in" style={{ animationDelay: "0.3s" }}>
             <SampleReportPreview />
           </div>
