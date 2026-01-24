@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import refoundLabsLogo from "@/assets/refound-labs-logo.png";
+import Logo from "@/components/Logo";
 
 const Header = () => {
   const location = useLocation();
@@ -39,11 +39,7 @@ const Header = () => {
               </button>
             )}
             <Link to="/" className="flex items-center">
-              <img 
-                src={refoundLabsLogo} 
-                alt="Re:found Labs" 
-                className="h-8 w-auto"
-              />
+              <Logo size="md" />
             </Link>
           </div>
 
@@ -93,11 +89,7 @@ const Header = () => {
               <div className="flex flex-col h-full">
                 {/* Mobile menu header */}
                 <div className="flex items-center justify-between p-6 border-b border-border">
-                  <img 
-                    src={refoundLabsLogo} 
-                    alt="Re:found Labs" 
-                    className="h-6 w-auto"
-                  />
+                  <Logo size="sm" />
                 </div>
 
                 {/* Mobile menu links */}
