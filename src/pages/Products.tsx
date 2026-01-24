@@ -25,7 +25,7 @@ const Products = () => {
             </h1>
             
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-8 max-w-2xl">
-              We're building tools that don't just audit your store—they transform how AI agents discover, understand, and recommend your products.
+              We're building tools that don't just audit your store—they monitor, test, and optimize how AI agents discover and recommend your products.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -48,8 +48,8 @@ const Products = () => {
 
         {/* Teaser Grid */}
         <section className="pb-24">
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* Card 1 */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Card 1: Continuous Monitoring */}
             <div className="group relative p-8 border border-border bg-card hover:border-accent/30 transition-colors">
               <div className="absolute top-4 right-4">
                 <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
@@ -63,11 +63,11 @@ const Products = () => {
                 Continuous Monitoring
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Real-time alerts when AI agents change how they see your store. Stay ahead of the algorithm.
+                Track your agent readiness score over time. Get alerts when something changes. Stay ahead of the algorithm.
               </p>
             </div>
 
-            {/* Card 2 */}
+            {/* Card 2: Agent Simulation */}
             <div className="group relative p-8 border border-border bg-card hover:border-accent/30 transition-colors">
               <div className="absolute top-4 right-4">
                 <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
@@ -78,14 +78,14 @@ const Products = () => {
                 <div className="h-2 w-2 bg-accent rounded-full animate-pulse" />
               </div>
               <h3 className="font-display text-xl text-foreground mb-3">
-                Competitive Intelligence
+                Agent Simulation
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                See what AI agents say about your competitors. Identify gaps. Win the recommendation.
+                Watch real AI agents shop your store. Automated testing with ChatGPT, Claude, and Perplexity—see what they actually do.
               </p>
             </div>
 
-            {/* Card 3 */}
+            {/* Card 3: Policy Intelligence */}
             <div className="group relative p-8 border border-border bg-card hover:border-accent/30 transition-colors">
               <div className="absolute top-4 right-4">
                 <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
@@ -96,10 +96,28 @@ const Products = () => {
                 <div className="h-2 w-2 bg-accent rounded-full animate-pulse" />
               </div>
               <h3 className="font-display text-xl text-foreground mb-3">
-                Auto-Optimization
+                Policy Intelligence
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                One-click fixes that keep your store agent-ready without touching your codebase.
+                Detect contradictions between your structured data and content. Fix inconsistencies before agents get confused.
+              </p>
+            </div>
+
+            {/* Card 4: AI Insights */}
+            <div className="group relative p-8 border border-border bg-card hover:border-accent/30 transition-colors">
+              <div className="absolute top-4 right-4">
+                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                  Coming Soon
+                </span>
+              </div>
+              <div className="h-12 w-12 bg-accent/10 rounded-lg flex items-center justify-center mb-6">
+                <div className="h-2 w-2 bg-accent rounded-full animate-pulse" />
+              </div>
+              <h3 className="font-display text-xl text-foreground mb-3">
+                AI Insights
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Understand how AI-referred visitors behave. See what they search for, what they can't find, and where the opportunities are.
               </p>
             </div>
           </div>
