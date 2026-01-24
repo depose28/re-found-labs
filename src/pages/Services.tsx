@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Check, Video } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -54,35 +54,23 @@ const Services = () => {
                   <ul className="space-y-3 text-sm text-muted-foreground">
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span>8 automated checks across 4 categories</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
                       <span>Instant Agent Score (0-100)</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span>AI bot access analysis</span>
+                      <span>8 automated checks across 4 categories</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span>Product & Offer schema validation</span>
+                      <span>Schema validation & bot access analysis</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span>Organization & return policy checks</span>
+                      <span>Core Web Vitals performance check</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span>Sitemap and HTTPS verification</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span>Core Web Vitals via Lighthouse</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span>Prioritized recommendations with code examples</span>
+                      <span>Prioritized fixes with code examples</span>
                     </li>
                   </ul>
                 </div>
@@ -138,39 +126,15 @@ const Services = () => {
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span>Platform-specific recommendations (Shopify, WooCommerce, Magento, custom)</span>
+                      <span>Real AI agents test your store with recordings</span>
                     </li>
-                  </ul>
-
-                  {/* Agent Simulation Subsection */}
-                  <div className="mt-6 mb-4">
-                    <p className="text-xs font-bold uppercase tracking-widest text-foreground mb-3 flex items-center gap-2">
-                      <span className="text-base">🤖</span> Agent Simulation Included
-                    </p>
-                    <ul className="space-y-3 text-sm text-muted-foreground">
-                      <li className="flex items-start gap-2">
-                        <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                        <span>Real AI agents test your store (ChatGPT, Claude, Perplexity)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                        <span>Screen recordings of each agent session</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                        <span>Competitor comparison (same queries, 2-3 competitors)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                        <span>Transcript of all agent responses</span>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <ul className="space-y-3 text-sm text-muted-foreground">
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span>45-minute video walkthrough of findings</span>
+                      <span>Competitor comparison (2-3 competitors)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
+                      <span>45-minute video walkthrough</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
@@ -219,31 +183,23 @@ const Services = () => {
                   <ul className="space-y-3 text-sm text-muted-foreground">
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span>Everything in Deep Audit + Agent Simulation</span>
+                      <span>Everything in Deep Audit</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span>Full schema implementation (Product, Offer, Organization, MerchantReturnPolicy)</span>
+                      <span>Full schema & robots.txt implementation</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span>robots.txt configuration for all AI crawlers</span>
+                      <span>Performance & sitemap optimization</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span>Performance optimization (targeting LCP {"<"} 2.5s)</span>
+                      <span>30 days of post-launch support</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span>Sitemap optimization for product discovery</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span>30 days of support post-launch</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span>Monthly check-in calls for 3 months</span>
+                      <span>Monthly check-ins for 3 months</span>
                     </li>
                   </ul>
 
@@ -251,7 +207,7 @@ const Services = () => {
                   <div className="mt-6 bg-secondary/50 border border-border p-4">
                     <p className="text-sm font-medium text-foreground mb-1">Score Guarantee</p>
                     <p className="text-sm text-muted-foreground">
-                      +20 points improvement within 60 days — or we keep working at no extra cost.
+                      +20 points within 60 days — or we keep working at no extra cost.
                     </p>
                   </div>
                 </div>
@@ -261,7 +217,7 @@ const Services = () => {
                     Best for
                   </p>
                   <p className="text-sm text-foreground mb-6">
-                    Brands that want it done right, without internal engineering lift.
+                    Brands that want it done right, without internal lift.
                   </p>
                   <a href="mailto:hello@agentpulse.com">
                     <Button variant="outline" className="w-full border-foreground text-foreground hover:bg-foreground hover:text-background">
@@ -277,82 +233,8 @@ const Services = () => {
           </div>
         </section>
 
-        {/* Why Agent Simulation Matters */}
-        <section className="py-16 md:py-24 bg-secondary/30">
-          <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
-            <div className="text-center mb-12">
-              <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-4 block">
-                The Difference
-              </span>
-              <h2 className="font-display text-3xl md:text-4xl text-foreground mb-4">
-                Why Agent Simulation Matters
-              </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                Most tools check static signals — schema, robots.txt, speed. We go further. We send real AI agents shopping and record what happens.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6 lg:gap-8 max-w-5xl mx-auto">
-              {/* Static Audit Says */}
-              <div className="bg-card border border-border p-8">
-                <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-6">
-                  Static Audit Says
-                </p>
-                <div className="space-y-4">
-                  <div className="py-3 border-b border-border">
-                    <p className="text-sm text-muted-foreground font-mono">
-                      "Offer schema missing availability property"
-                    </p>
-                  </div>
-                  <div className="py-3 border-b border-border">
-                    <p className="text-sm text-muted-foreground font-mono">
-                      "robots.txt blocking PerplexityBot"
-                    </p>
-                  </div>
-                  <div className="py-3">
-                    <p className="text-sm text-muted-foreground font-mono">
-                      "Product description under 50 characters"
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Agent Simulation Shows */}
-              <div className="bg-card border-2 border-accent/50 p-8">
-                <p className="text-xs font-medium uppercase tracking-widest text-foreground mb-6">
-                  Agent Simulation Shows
-                </p>
-                <div className="space-y-4">
-                  <div className="py-3 border-b border-border flex items-start gap-3">
-                    <Video className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                    <p className="text-sm text-foreground">
-                      ChatGPT saying "I couldn't confirm stock status, so I'm recommending Brand X instead"
-                    </p>
-                  </div>
-                  <div className="py-3 border-b border-border flex items-start gap-3">
-                    <Video className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                    <p className="text-sm text-foreground">
-                      Perplexity returning "No results found for this brand"
-                    </p>
-                  </div>
-                  <div className="py-3 flex items-start gap-3">
-                    <Video className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                    <p className="text-sm text-foreground">
-                      Claude describing your product incorrectly to a potential customer
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <p className="text-center text-muted-foreground mt-8 font-medium">
-              Theory vs. reality. We show you both.
-            </p>
-          </div>
-        </section>
-
         {/* Who We Work With */}
-        <section className="py-16 md:py-24">
+        <section className="py-16 md:py-24 bg-secondary/30">
           <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
             <div className="max-w-3xl mx-auto">
               <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-4 block text-center">
@@ -399,7 +281,7 @@ const Services = () => {
         </section>
 
         {/* Process Section */}
-        <section className="py-16 md:py-24 bg-secondary/30">
+        <section className="py-16 md:py-24">
           <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
             <div className="text-center mb-12">
               <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-4 block">
@@ -451,7 +333,7 @@ const Services = () => {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-16 md:py-24">
+        <section className="py-16 md:py-24 bg-secondary/30">
           <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
             <div className="max-w-3xl mx-auto">
               <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-4 block text-center">
@@ -463,6 +345,18 @@ const Services = () => {
 
               <Accordion type="single" collapsible className="space-y-4">
                 <AccordionItem value="item-1" className="bg-card border border-border px-6">
+                  <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
+                    Why does Agent Simulation matter?
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground">
+                    <p className="mb-4">Most tools check static signals — schema, robots.txt, speed. We go further by sending real AI agents shopping and recording what happens.</p>
+                    <p className="mb-2"><strong className="text-foreground">Static audits say:</strong> "Offer schema missing availability property"</p>
+                    <p className="mb-4"><strong className="text-foreground">Agent simulation shows:</strong> ChatGPT saying "I couldn't confirm stock status, so I'm recommending Brand X instead"</p>
+                    <p>Theory vs. reality — we show you both.</p>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-2" className="bg-card border border-border px-6">
                   <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
                     What's included in the Agent Simulation?
                   </AccordionTrigger>
@@ -478,7 +372,7 @@ const Services = () => {
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="item-2" className="bg-card border border-border px-6">
+                <AccordionItem value="item-3" className="bg-card border border-border px-6">
                   <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
                     Why is Agent Simulation bundled with the Deep Audit?
                   </AccordionTrigger>
@@ -487,7 +381,7 @@ const Services = () => {
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="item-3" className="bg-card border border-border px-6">
+                <AccordionItem value="item-4" className="bg-card border border-border px-6">
                   <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
                     How long does the Deep Audit + Agent Simulation take?
                   </AccordionTrigger>
@@ -496,7 +390,7 @@ const Services = () => {
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="item-4" className="bg-card border border-border px-6">
+                <AccordionItem value="item-5" className="bg-card border border-border px-6">
                   <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
                     Can I just use the free audit and fix it myself?
                   </AccordionTrigger>
@@ -505,7 +399,7 @@ const Services = () => {
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="item-5" className="bg-card border border-border px-6">
+                <AccordionItem value="item-6" className="bg-card border border-border px-6">
                   <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
                     What's the difference between 8 checks and 40+ checks?
                   </AccordionTrigger>
@@ -524,7 +418,7 @@ const Services = () => {
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="item-6" className="bg-card border border-border px-6">
+                <AccordionItem value="item-7" className="bg-card border border-border px-6">
                   <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
                     What if my score doesn't improve after Implementation?
                   </AccordionTrigger>
@@ -533,7 +427,7 @@ const Services = () => {
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="item-7" className="bg-card border border-border px-6">
+                <AccordionItem value="item-8" className="bg-card border border-border px-6">
                   <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
                     Do you work with agencies?
                   </AccordionTrigger>
