@@ -11,24 +11,15 @@ const Header = () => {
   const isHomePage = location.pathname === "/";
   const [open, setOpen] = useState(false);
 
-  const handleAnchorClick = (e: React.MouseEvent<HTMLAnchorElement>, anchor: string) => {
-    if (!isHomePage) {
-      e.preventDefault();
-      navigate("/" + anchor);
-    }
-    setOpen(false);
-  };
-
   const handleLinkClick = () => {
     setOpen(false);
   };
 
   const navLinks = [
-    { href: "#how-it-works", label: "How It Works", isAnchor: true },
-    { href: "#what-we-check", label: "What We Check", isAnchor: true },
-    { to: "/products", label: "Products", isAnchor: false },
-    { to: "/services", label: "Services", isAnchor: false },
-    { to: "/blog", label: "Blog", isAnchor: false },
+    { to: "/services", label: "Services" },
+    { to: "/products", label: "Products" },
+    { to: "/about", label: "About Us" },
+    { to: "/blog", label: "Blog" },
   ];
 
   return (
@@ -56,20 +47,12 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
-            <a
-              href="#how-it-works"
-              onClick={(e) => handleAnchorClick(e, "#how-it-works")}
+            <Link
+              to="/services"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              How It Works
-            </a>
-            <a
-              href="#what-we-check"
-              onClick={(e) => handleAnchorClick(e, "#what-we-check")}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              What We Check
-            </a>
+              Services
+            </Link>
             <Link
               to="/products"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -77,10 +60,10 @@ const Header = () => {
               Products
             </Link>
             <Link
-              to="/services"
+              to="/about"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              Services
+              About Us
             </Link>
             <Link
               to="/blog"
@@ -113,23 +96,13 @@ const Header = () => {
                   <ul className="space-y-1">
                     {navLinks.map((link) => (
                       <li key={link.label}>
-                        {link.isAnchor ? (
-                          <a
-                            href={link.href}
-                            onClick={(e) => handleAnchorClick(e, link.href!)}
-                            className="flex items-center py-3 text-base text-foreground hover:text-accent transition-colors"
-                          >
-                            {link.label}
-                          </a>
-                        ) : (
-                          <Link
-                            to={link.to!}
-                            onClick={handleLinkClick}
-                            className="flex items-center py-3 text-base text-foreground hover:text-accent transition-colors"
-                          >
-                            {link.label}
-                          </Link>
-                        )}
+                        <Link
+                          to={link.to}
+                          onClick={handleLinkClick}
+                          className="flex items-center py-3 text-base text-foreground hover:text-accent transition-colors"
+                        >
+                          {link.label}
+                        </Link>
                       </li>
                     ))}
                   </ul>
