@@ -32,7 +32,7 @@ const Header = () => {
             <Link to="/" className="flex items-center gap-2">
               <PulseDot size="md" />
               <span className="font-display text-xl text-foreground">
-                Agent Pulse
+                Re:found Labs
               </span>
             </Link>
           </div>

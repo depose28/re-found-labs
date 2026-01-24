@@ -128,7 +128,7 @@ async function basicFetch(url: string): Promise<{ html: string; metadata: any }>
   try {
     const response = await fetch(url, {
       signal: controller.signal,
-      headers: { "User-Agent": "AgentReadyBot/1.0 (+https://agentready.com)" },
+      headers: { "User-Agent": "AgentPulseBot/1.0 (+https://refoundlabs.com)" },
     });
     clearTimeout(timeoutId);
     const html = await response.text();

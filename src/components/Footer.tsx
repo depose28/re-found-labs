@@ -10,7 +10,7 @@ const Footer = () => {
             <div className="flex items-center gap-2">
               <PulseDot size="md" />
               <span className="font-display text-xl text-foreground">
-                Agent Pulse
+                Re:found Labs
               </span>
             </div>
             <p className="text-sm text-muted-foreground max-w-xs">
@@ -22,15 +22,15 @@ const Footer = () => {
 
           {/* Contact */}
           <div className="text-sm text-muted-foreground">
-            <a href="mailto:hello@agentpulse.com" className="hover:text-foreground transition-colors">
-              hello@agentpulse.com
+            <a href="mailto:hello@refoundlabs.com" className="hover:text-foreground transition-colors">
+              hello@refoundlabs.com
             </a>
           </div>
         </div>
 
         <div className="mt-16 pt-8 border-t border-border">
           <p className="text-xs text-muted-foreground">
-            © 2025 Agent Pulse. Your data is analyzed in real-time and not stored beyond your session.
+            © 2025 Re:found Labs. Your data is analyzed in real-time and not stored beyond your session.
           </p>
         </div>
       </div>
