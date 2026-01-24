@@ -18,16 +18,16 @@ const Services = () => {
       <Header />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="pt-32 pb-16 md:pt-40 md:pb-24">
+        <section className="pt-24 pb-8 md:pt-32 md:pb-12">
           <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
             <div className="max-w-2xl">
-              <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-4 block">
+              <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3 block">
                 Services
               </span>
-              <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-foreground leading-tight mb-6">
+              <h1 className="font-display text-3xl md:text-4xl lg:text-5xl text-foreground leading-tight mb-4">
                 Make Your Store Agent-Ready
               </h1>
-              <p className="text-xl text-muted-foreground leading-relaxed">
+              <p className="text-lg text-muted-foreground leading-relaxed">
                 From diagnosis to implementation — we help e-commerce brands prepare for the agentic commerce era.
               </p>
             </div>
