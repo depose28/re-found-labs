@@ -68,8 +68,8 @@ const CTASection = () => {
           {/* Contact */}
           <p className="text-sm text-muted-foreground">
             Questions?{" "}
-            <a href="mailto:hello@agentpulse.com" className="text-foreground hover:underline">
-              hello@agentpulse.com
+            <a href="mailto:hello@refoundlabs.com" className="text-foreground hover:underline">
+              hello@refoundlabs.com
             </a>
           </p>
         </div>

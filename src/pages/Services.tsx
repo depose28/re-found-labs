@@ -10,7 +10,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-const CALENDLY_URL = import.meta.env.VITE_CALENDLY_URL || "https://calendly.com/agentpulse/strategy-call";
+const CALENDLY_URL = import.meta.env.VITE_CALENDLY_URL || "https://calendly.com/refoundlabs/strategy-call";
 
 const Services = () => {
   return (
