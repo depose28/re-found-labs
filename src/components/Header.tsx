@@ -26,6 +26,7 @@ const Header = () => {
   const navLinks = [
     { href: "#how-it-works", label: "How It Works", isAnchor: true },
     { href: "#what-we-check", label: "What We Check", isAnchor: true },
+    { to: "/products", label: "Products", isAnchor: false },
     { to: "/services", label: "Services", isAnchor: false },
     { to: "/blog", label: "Blog", isAnchor: false },
   ];
@@ -69,6 +70,12 @@ const Header = () => {
             >
               What We Check
             </a>
+            <Link
+              to="/products"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Products
+            </Link>
             <Link
               to="/services"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
