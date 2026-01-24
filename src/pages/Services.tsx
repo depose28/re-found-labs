@@ -18,7 +18,7 @@ const Services = () => {
       <Header />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="pt-32 pb-16 md:pt-40 md:pb-24">
+        <section className="pt-24 pb-12 md:pt-28 md:pb-16">
           <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
             <div className="max-w-3xl">
               <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-4 block">
