@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Menu, X } from "lucide-react";
-import PulseDot from "@/components/ui/PulseDot";
+import { ArrowLeft, Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import refoundLabsLogo from "@/assets/refound-labs-logo.png";
 
 const Header = () => {
   const location = useLocation();
@@ -38,11 +38,12 @@ const Header = () => {
                 <span className="hidden sm:inline">Back</span>
               </button>
             )}
-            <Link to="/" className="flex items-center gap-2">
-              <PulseDot size="md" />
-              <span className="font-display text-xl text-foreground">
-                Re:found Labs
-              </span>
+            <Link to="/" className="flex items-center">
+              <img 
+                src={refoundLabsLogo} 
+                alt="Re:found Labs" 
+                className="h-8 w-auto"
+              />
             </Link>
           </div>
 
@@ -92,10 +93,11 @@ const Header = () => {
               <div className="flex flex-col h-full">
                 {/* Mobile menu header */}
                 <div className="flex items-center justify-between p-6 border-b border-border">
-                  <div className="flex items-center gap-2">
-                    <PulseDot size="sm" />
-                    <span className="font-display text-lg text-foreground">Re:found Labs</span>
-                  </div>
+                  <img 
+                    src={refoundLabsLogo} 
+                    alt="Re:found Labs" 
+                    className="h-6 w-auto"
+                  />
                 </div>
 
                 {/* Mobile menu links */}
