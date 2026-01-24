@@ -23,9 +23,9 @@ const Logo = ({ size = "md", className = "" }: LogoProps) => {
 
   return (
     <div className={`flex items-baseline gap-1.5 ${className}`}>
-      <div className={`${s.main} text-foreground leading-none`}>
+      <div className={`${s.main} text-foreground leading-none font-light`}>
         <span className="font-serif italic">re:</span>
-        <span className="font-sans font-normal">found</span>
+        <span className="font-sans">found</span>
       </div>
       <span className={`${s.labs} font-sans font-light text-muted-foreground uppercase`}>
         Labs
