@@ -24,9 +24,12 @@ const Services = () => {
               <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-4 block">
                 Services
               </span>
-              <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-foreground leading-tight">
-                AI agents are already recommending your competitors. We show you why — and fix it.
+              <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-foreground leading-tight mb-6">
+                Make Your Store Agent-Ready
               </h1>
+              <p className="text-xl text-muted-foreground leading-relaxed">
+                From diagnosis to implementation — we help e-commerce brands prepare for the agentic commerce era.
+              </p>
             </div>
           </div>
         </section>
