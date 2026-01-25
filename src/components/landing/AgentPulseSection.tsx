@@ -219,6 +219,13 @@ const SampleReportPreview = () => {
   );
 };
 
+// Green (good): 70%+, Orange (medium): 40-69%, Red (bad): <40%
+const getBarColor = (percentage: number) => {
+  if (percentage >= 70) return "bg-success";
+  if (percentage >= 40) return "bg-warning";
+  return "bg-destructive";
+};
+
 const CategoryBar = ({ 
   label, 
   score, 
@@ -243,7 +250,7 @@ const CategoryBar = ({
       <div className="flex items-center gap-3">
         <div className="w-20 h-1.5 bg-secondary overflow-hidden rounded-full">
           <div 
-            className="h-full bg-accent transition-all duration-1000 ease-out"
+            className={`h-full ${getBarColor(percentage)} transition-all duration-1000 ease-out`}
             style={{ width: `${width}%` }} 
           />
         </div>
