@@ -23,7 +23,7 @@ const ProblemSection = () => {
         <div className="flex items-center gap-3 mb-8">
           <PulseDot size="md" />
           <span className="text-sm font-medium uppercase tracking-widest text-background/60">
-            The Agentic Shift
+            The Problem
           </span>
         </div>
 

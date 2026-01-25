@@ -30,7 +30,7 @@ const HowItWorksSection = () => {
         <div className="flex items-center gap-3 mb-8">
           <PulseDot size="md" />
           <span className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
-            How It Works
+            How Agent Pulse Works
           </span>
         </div>
 

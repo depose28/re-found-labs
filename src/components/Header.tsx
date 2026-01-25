@@ -16,7 +16,7 @@ const Header = () => {
   };
 
   const navLinks = [
-    { to: "/#how-it-works", label: "How It Works", isAnchor: true },
+    { to: "/#agent-pulse", label: "Agent Pulse", isAnchor: true },
     { to: "/services", label: "Services" },
     { to: "/products", label: "Products" },
     { to: "/about", label: "About Us" },
@@ -49,10 +49,10 @@ const Header = () => {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
             <a
-              href="/#how-it-works"
+              href="/#agent-pulse"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              How It Works
+              Agent Pulse
             </a>
             <Link
               to="/services"
