@@ -130,7 +130,7 @@ const AgentPulseSection = () => {
 
 const SampleReportPreview = () => {
   const [animatedScore, setAnimatedScore] = useState(0);
-  const targetScore = 72;
+  const targetScore = 56;
 
   useEffect(() => {
     const duration = 1500;
@@ -191,17 +191,17 @@ const SampleReportPreview = () => {
             <span className="font-display text-5xl text-foreground tabular-nums">{animatedScore}</span>
             <span className="text-xl text-muted-foreground">/ 100</span>
           </div>
-          <span className="inline-block mt-2 px-3 py-1 text-xs font-medium uppercase tracking-wide bg-accent/10 text-accent">
-            Optimized
+          <span className="inline-block mt-2 px-3 py-1 text-xs font-medium uppercase tracking-wide bg-warning/20 text-warning">
+            Needs Work
           </span>
         </div>
 
         {/* Category Breakdown */}
         <div className="p-5 space-y-3">
-          <CategoryBar label="Discovery" score={32} max={40} percentage={80} />
-          <CategoryBar label="Performance" score={12} max={15} percentage={80} />
-          <CategoryBar label="Transaction" score={10} max={20} percentage={50} />
-          <CategoryBar label="Trust" score={18} max={25} percentage={72} />
+              <CategoryBar label="Discovery" score={30} max={40} percentage={75} />
+              <CategoryBar label="Performance" score={8} max={15} percentage={55} />
+              <CategoryBar label="Transaction" score={9} max={20} percentage={45} />
+              <CategoryBar label="Trust" score={9} max={25} percentage={35} />
         </div>
 
         {/* Top Issue */}
