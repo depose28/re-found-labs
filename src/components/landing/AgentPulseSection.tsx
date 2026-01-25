@@ -68,7 +68,7 @@ const AgentPulseSection = () => {
 
             {/* Subheadline */}
             <p className="text-base md:text-lg text-muted-foreground leading-relaxed mb-8">
-              Get your Agent Score in 60 seconds. No signup required.
+              Run your free diagnostic in 60 seconds. No signup required.
             </p>
 
             {/* URL Input Form */}
