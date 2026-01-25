@@ -87,9 +87,9 @@ const AgentPulseSection = () => {
                   />
                   <Button
                     type="submit"
-                    className="h-12 px-6 bg-warning text-warning-foreground hover:bg-warning/90 font-medium w-full sm:w-auto"
+                    className="h-12 px-6 bg-foreground text-background hover:bg-foreground/90 font-medium w-full sm:w-auto"
                   >
-                    Run Free Audit
+                    Get Your Score
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
