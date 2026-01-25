@@ -88,30 +88,28 @@ const CategoryBreakdown = ({ discovery, performance, transaction, trust }: Categ
     return () => timers.forEach(clearInterval);
   }, [discovery.score, performance.score, transaction.score, trust.score]);
 
+  // Green (good): 70%+, Orange (medium): 40-69%, Red (bad): <40%
   const getBarColor = (percentage: number) => {
-    if (percentage >= 80) return "bg-success";
-    if (percentage >= 65) return "bg-accent";
-    if (percentage >= 50) return "bg-warning";
-    return "bg-destructive";
+    if (percentage >= 70) return "bg-success"; // Green
+    if (percentage >= 40) return "bg-warning"; // Orange
+    return "bg-destructive"; // Red
   };
 
   const getScoreColor = (percentage: number) => {
-    if (percentage >= 80) return "text-success";
-    if (percentage >= 65) return "text-accent";
-    if (percentage >= 50) return "text-warning";
-    return "text-destructive";
+    if (percentage >= 70) return "text-success"; // Green
+    if (percentage >= 40) return "text-warning"; // Orange
+    return "text-destructive"; // Red
   };
 
   const getStatusIcon = (percentage: number) => {
-    if (percentage >= 80) return TrendingUp;
-    if (percentage >= 50) return Minus;
+    if (percentage >= 70) return TrendingUp;
+    if (percentage >= 40) return Minus;
     return TrendingDown;
   };
 
   const getStatusLabel = (percentage: number) => {
-    if (percentage >= 80) return "Excellent";
-    if (percentage >= 65) return "Good";
-    if (percentage >= 50) return "Fair";
+    if (percentage >= 70) return "Good";
+    if (percentage >= 40) return "Fair";
     return "Needs Work";
   };
 
