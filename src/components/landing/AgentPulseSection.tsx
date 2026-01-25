@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, UserX, FileText, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,26 @@ import PulseDot from "@/components/ui/PulseDot";
 const AgentPulseSection = () => {
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !isVisible) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [isVisible]);
 
   const validateUrl = (input: string): boolean => {
     if (!input.trim()) {
@@ -43,7 +62,7 @@ const AgentPulseSection = () => {
   };
 
   return (
-    <section id="agent-pulse" className="py-20 md:py-28 scroll-mt-20">
+    <section ref={sectionRef} id="agent-pulse" className="py-20 md:py-28 scroll-mt-20">
       <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left Column - Content */}
@@ -120,7 +139,7 @@ const AgentPulseSection = () => {
 
           {/* Right Column - Sample Report Preview */}
           <div className="hidden lg:block">
-            <SampleReportPreview />
+            <SampleReportPreview isVisible={isVisible} />
           </div>
         </div>
       </div>
@@ -128,11 +147,15 @@ const AgentPulseSection = () => {
   );
 };
 
-const SampleReportPreview = () => {
+const SampleReportPreview = ({ isVisible }: { isVisible: boolean }) => {
   const [animatedScore, setAnimatedScore] = useState(0);
+  const [hasAnimated, setHasAnimated] = useState(false);
   const targetScore = 72;
 
   useEffect(() => {
+    if (!isVisible || hasAnimated) return;
+    
+    setHasAnimated(true);
     const duration = 1500;
     const steps = 30;
     const increment = targetScore / steps;
@@ -149,7 +172,7 @@ const SampleReportPreview = () => {
     }, duration / steps);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [isVisible, hasAnimated]);
 
   return (
     <div className="relative">
@@ -198,10 +221,10 @@ const SampleReportPreview = () => {
 
         {/* Category Breakdown */}
         <div className="p-5 space-y-3">
-          <CategoryBar label="Discovery" score={32} max={40} percentage={80} />
-          <CategoryBar label="Performance" score={12} max={15} percentage={80} />
-          <CategoryBar label="Transaction" score={10} max={20} percentage={50} />
-          <CategoryBar label="Trust" score={18} max={25} percentage={72} />
+          <CategoryBar label="Discovery" score={32} max={40} percentage={80} animate={isVisible} />
+          <CategoryBar label="Performance" score={12} max={15} percentage={80} animate={isVisible} />
+          <CategoryBar label="Transaction" score={10} max={20} percentage={50} animate={isVisible} />
+          <CategoryBar label="Trust" score={18} max={25} percentage={72} animate={isVisible} />
         </div>
 
         {/* Top Issue */}
@@ -223,19 +246,48 @@ const CategoryBar = ({
   label, 
   score, 
   max, 
-  percentage 
+  percentage,
+  animate
 }: { 
   label: string; 
   score: number; 
   max: number; 
   percentage: number;
+  animate: boolean;
 }) => {
   const [width, setWidth] = useState(0);
+  const [displayScore, setDisplayScore] = useState(0);
+  const [hasAnimated, setHasAnimated] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setWidth(percentage), 300);
-    return () => clearTimeout(timer);
-  }, [percentage]);
+    if (!animate || hasAnimated) return;
+    
+    setHasAnimated(true);
+    
+    // Animate the bar width
+    const widthTimer = setTimeout(() => setWidth(percentage), 300);
+    
+    // Animate the score number
+    const duration = 1200;
+    const steps = 20;
+    const increment = score / steps;
+    let current = 0;
+    
+    const scoreTimer = setInterval(() => {
+      current += increment;
+      if (current >= score) {
+        setDisplayScore(score);
+        clearInterval(scoreTimer);
+      } else {
+        setDisplayScore(Math.floor(current));
+      }
+    }, duration / steps);
+
+    return () => {
+      clearTimeout(widthTimer);
+      clearInterval(scoreTimer);
+    };
+  }, [animate, hasAnimated, percentage, score]);
 
   return (
     <div className="flex items-center justify-between text-sm group cursor-default transition-all duration-200 hover:bg-secondary/20 -mx-2 px-2 py-1 rounded">
@@ -247,7 +299,7 @@ const CategoryBar = ({
             style={{ width: `${width}%` }} 
           />
         </div>
-        <span className="text-foreground w-10 text-right tabular-nums">{score}/{max}</span>
+        <span className="text-foreground w-10 text-right tabular-nums">{displayScore}/{max}</span>
       </div>
     </div>
   );
