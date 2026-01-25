@@ -174,15 +174,11 @@
 
 @keyframes pulse-ring {
   0% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.8);
-    opacity: 0;
+    r: 40;
+    opacity: 0.6;
   }
   100% {
-    transform: scale(1);
+    r: 180;
     opacity: 0;
   }
 }
@@ -199,19 +195,28 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 0 0 hsla(24, 95%, 53%, 0.7);
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 hsl(var(--accent) / 0.4);
   }
   50% {
-    box-shadow: 0 0 0 8px hsla(24, 95%, 53%, 0);
+    box-shadow: 0 0 0 8px hsl(var(--accent) / 0);
   }
 }
 
 .animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
+  @apply animate-[pulse-glow_2s_ease-in-out_infinite];
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 4s ease-out infinite;
 }
