@@ -22,6 +22,8 @@ export default {
         sans: ["Inter", "system-ui", "sans-serif"],
         display: ["Instrument Serif", "Georgia", "serif"],
         mono: ["SF Mono", "Fira Code", "monospace"],
+        logo: ["Playfair Display", "Georgia", "serif"],
+        "logo-secondary": ["Lato", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",

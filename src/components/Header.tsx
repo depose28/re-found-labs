@@ -40,8 +40,9 @@ const Header = () => {
             )}
             <Link to="/" className="flex items-center gap-2">
               <PulseDot size="md" />
-              <span className="font-display text-xl text-foreground">
-                Re:found Labs
+              <span className="flex items-baseline gap-1.5">
+                <span className="font-logo text-xl text-foreground italic">re:found</span>
+                <span className="font-logo-secondary text-xs text-foreground/80 tracking-[0.25em] uppercase">Labs</span>
               </span>
             </Link>
           </div>
@@ -94,7 +95,10 @@ const Header = () => {
                 <div className="flex items-center justify-between p-6 border-b border-border">
                   <div className="flex items-center gap-2">
                     <PulseDot size="sm" />
-                    <span className="font-display text-lg text-foreground">Re:found Labs</span>
+                    <span className="flex items-baseline gap-1.5">
+                      <span className="font-logo text-lg text-foreground italic">re:found</span>
+                      <span className="font-logo-secondary text-[10px] text-foreground/80 tracking-[0.25em] uppercase">Labs</span>
+                    </span>
                   </div>
                 </div>
 
