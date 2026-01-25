@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, UserX, FileText } from "lucide-react";
+import { ArrowRight, UserX, FileText, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import PulseDot from "@/components/ui/PulseDot";
 
-const HeroSection = () => {
+const AgentPulseSection = () => {
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -43,30 +43,36 @@ const HeroSection = () => {
   };
 
   return (
-    <section className="relative pt-28 pb-16 md:pt-40 md:pb-32">
+    <section id="agent-pulse" className="py-20 md:py-28 scroll-mt-20">
       <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left Column - Content */}
           <div className="max-w-xl mx-auto lg:mx-0 text-center lg:text-left">
-            {/* Eyebrow with Stat */}
-            <div className="mb-6 md:mb-8 animate-fade-in">
-              <span className="text-xs md:text-sm font-medium uppercase tracking-widest text-muted-foreground">
-                73% of stores fail this test
+            {/* Section Label */}
+            <div className="flex items-center justify-center lg:justify-start gap-3 mb-6">
+              <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                Free Diagnostic
               </span>
             </div>
 
-            {/* Headline - Optimized for mobile */}
-            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] text-foreground leading-[1.15] mb-5 md:mb-8 animate-slide-up">
-              Can AI agents actually shop your store?
-            </h1>
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent/10 border border-accent/20 rounded-full mb-6">
+              <PulseDot size="sm" />
+              <span className="text-sm font-medium text-accent">Agent Pulse</span>
+            </div>
 
-            {/* Subheadline - Shorter on mobile */}
-            <p className="text-base md:text-lg text-muted-foreground leading-relaxed mb-8 md:mb-10 animate-slide-up max-w-md mx-auto lg:mx-0" style={{ animationDelay: "0.1s" }}>
-              AI agents recommend structured stores. If yours isn't one of them, you're invisible.
+            {/* Headline */}
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl text-foreground leading-tight mb-5">
+              Can AI agents actually shop your store?
+            </h2>
+
+            {/* Subheadline */}
+            <p className="text-base md:text-lg text-muted-foreground leading-relaxed mb-8">
+              Get your Agent Score in 60 seconds. No signup required.
             </p>
 
-            {/* URL Input Form - Stacked on mobile */}
-            <form onSubmit={handleSubmit} className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
+            {/* URL Input Form */}
+            <form onSubmit={handleSubmit} className="mb-6">
               <div className="border border-border bg-card p-1.5 md:p-1">
                 <div className="flex flex-col gap-2 sm:flex-row sm:gap-0">
                   <Input
@@ -93,8 +99,13 @@ const HeroSection = () => {
               )}
             </form>
 
-            {/* Trust indicators - Simplified on mobile */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-4 gap-y-2 mt-5 md:mt-6 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+            {/* Trust indicators */}
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-4 gap-y-2">
+              <span className="text-xs md:text-sm text-muted-foreground flex items-center gap-1.5">
+                <Zap className="h-3.5 w-3.5" />
+                73% fail this test
+              </span>
+              <span className="text-muted-foreground hidden sm:inline">·</span>
               <span className="text-xs md:text-sm text-muted-foreground flex items-center gap-1.5">
                 <UserX className="h-3.5 w-3.5" />
                 No signup
@@ -104,15 +115,11 @@ const HeroSection = () => {
                 <FileText className="h-3.5 w-3.5" />
                 Free report
               </span>
-              <span className="text-muted-foreground hidden sm:inline">·</span>
-              <span className="text-xs md:text-sm text-muted-foreground">
-                <span className="text-base md:text-lg font-semibold text-foreground">142</span> analyzed this week
-              </span>
             </div>
           </div>
 
-          {/* Right Column - Sample Report Preview (desktop only) */}
-          <div className="hidden lg:block animate-fade-in" style={{ animationDelay: "0.3s" }}>
+          {/* Right Column - Sample Report Preview */}
+          <div className="hidden lg:block">
             <SampleReportPreview />
           </div>
         </div>
@@ -145,7 +152,7 @@ const SampleReportPreview = () => {
   }, []);
 
   return (
-    <div className="relative mt-8">
+    <div className="relative">
       {/* Decorative dot grid background */}
       <div className="absolute inset-0 -z-10">
         <div className="grid grid-cols-12 gap-6">
@@ -173,7 +180,7 @@ const SampleReportPreview = () => {
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">date:</span>
-            <span className="text-foreground">January 24, 2025</span>
+            <span className="text-foreground">January 25, 2026</span>
           </div>
         </div>
 
@@ -189,16 +196,16 @@ const SampleReportPreview = () => {
           </span>
         </div>
 
-        {/* Category Breakdown with hover states */}
+        {/* Category Breakdown */}
         <div className="p-5 space-y-3">
-          <CategoryBar label="Discovery" score={32} max={40} percentage={80} color="accent" />
-          <CategoryBar label="Performance" score={12} max={15} percentage={80} color="success" />
-          <CategoryBar label="Transaction" score={10} max={20} percentage={50} color="warning" />
-          <CategoryBar label="Trust" score={18} max={25} percentage={72} color="primary" />
+          <CategoryBar label="Discovery" score={32} max={40} percentage={80} />
+          <CategoryBar label="Performance" score={12} max={15} percentage={80} />
+          <CategoryBar label="Transaction" score={10} max={20} percentage={50} />
+          <CategoryBar label="Trust" score={18} max={25} percentage={72} />
         </div>
 
         {/* Top Issue */}
-        <div className="px-5 py-4 bg-secondary/30 border-t border-border group cursor-default">
+        <div className="px-5 py-4 bg-secondary/30 border-t border-border">
           <div className="flex items-start gap-2">
             <span className="text-warning text-sm mt-0.5">▲</span>
             <div>
@@ -216,14 +223,12 @@ const CategoryBar = ({
   label, 
   score, 
   max, 
-  percentage, 
-  color 
+  percentage 
 }: { 
   label: string; 
   score: number; 
   max: number; 
-  percentage: number; 
-  color: string;
+  percentage: number;
 }) => {
   const [width, setWidth] = useState(0);
 
@@ -238,7 +243,7 @@ const CategoryBar = ({
       <div className="flex items-center gap-3">
         <div className="w-20 h-1.5 bg-secondary overflow-hidden rounded-full">
           <div 
-            className={`h-full bg-${color} transition-all duration-1000 ease-out`}
+            className="h-full bg-accent transition-all duration-1000 ease-out"
             style={{ width: `${width}%` }} 
           />
         </div>
@@ -248,4 +253,4 @@ const CategoryBar = ({
   );
 };
 
-export default HeroSection;
+export default AgentPulseSection;
