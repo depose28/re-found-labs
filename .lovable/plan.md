@@ -1,242 +1,132 @@
 
-# Fix Plan: Schema Detection Issues in Agent Pulse
+
+# Fix Plan: Generate-Report Data Structure Mismatch
 
 ## Problem Summary
 
-Agent Pulse is failing to detect product schema on sites like Allbirds, even when the schema is confirmed present in raw HTML. Testing with Googlebot User-Agent successfully finds the schema, but Agent Pulse does not.
+The `generate-report` edge function crashes with `TypeError: Cannot read properties of undefined (reading 'map')` when trying to send email reports. This happens because the function expects a different data structure than what's actually stored in the database.
 
-## Root Causes Identified
+## Root Cause
 
-After analyzing the codebase, I found these issues:
+The `Recommendation` interface in the edge function doesn't match the actual database schema:
 
-| Issue | Location | Impact |
-|-------|----------|--------|
-| Custom User-Agent may trigger bot blocking | `basicFetch()` line 219 | Sites return different/stripped content |
-| Firecrawl may return processed HTML | `scrapeWithFirecrawl()` line 186 | JSON-LD scripts may be stripped |
-| ProductGroup schema not handled | `findSchemaByType()` line 450 | Allbirds-style schemas missed |
-| Missing rawHtml format from Firecrawl | `scrapeWithFirecrawl()` line 187 | Processed HTML loses script tags |
-| Insufficient debug logging | Various | Hard to diagnose issues |
+| Expected by Function | Actual in Database |
+|---------------------|-------------------|
+| `id` | `checkId` |
+| `impact` | `description` |
+| `steps[]` (array) | `howToFix` (string) |
+| `codeSnippet` | (embedded in `howToFix`) |
+
+When the code tries to call `rec.steps.map()` on line 111, it fails because `steps` is undefined.
 
 ---
 
 ## Implementation Plan
 
-### Phase 1: Fix Firecrawl HTML Fetching
+### File: `supabase/functions/generate-report/index.ts`
 
-**File:** `supabase/functions/analyze/index.ts`
-
-**Change 1:** Request `rawHtml` format from Firecrawl instead of processed `html`
+**Change 1:** Update the `Recommendation` interface to match actual database structure
 
 ```typescript
-// Current (line 187)
-formats: ["html", "markdown"],
+// Current (lines 21-28)
+interface Recommendation {
+  id: string;
+  priority: "critical" | "high" | "medium" | "low";
+  title: string;
+  impact: string;
+  steps: string[];
+  codeSnippet?: string;
+}
 
 // Fixed
-formats: ["rawHtml", "html", "markdown"],
-```
-
-**Change 2:** Prefer rawHtml over processed html
-
-```typescript
-// Current (line 203)
-html: data.data?.html || "",
-
-// Fixed - prefer rawHtml for schema extraction
-html: data.data?.rawHtml || data.data?.html || "",
-```
-
----
-
-### Phase 2: Improve Basic Fetch User-Agent
-
-**File:** `supabase/functions/analyze/index.ts`
-
-**Change 3:** Use a more standard User-Agent that sites won't block
-
-```typescript
-// Current (line 219)
-"User-Agent": "AgentPulseBot/1.0 (+https://refoundlabs.com)"
-
-// Fixed - Use Googlebot-compatible UA for better compatibility
-"User-Agent": "Mozilla/5.0 (compatible; AgentPulseBot/1.0; +https://refoundlabs.com) AppleWebKit/537.36"
-```
-
-This follows the pattern of legitimate crawlers while still identifying as Agent Pulse.
-
----
-
-### Phase 3: Handle ProductGroup Schema
-
-**File:** `supabase/functions/analyze/index.ts`
-
-**Change 4:** Update `findSchemaByType()` to also find ProductGroup when looking for Product
-
-```typescript
-function findSchemaByType(schemas: any[], type: string): any | null {
-  // Also check related types
-  const typeVariants: Record<string, string[]> = {
-    "Product": ["Product", "ProductGroup", "IndividualProduct"],
-    "Offer": ["Offer", "AggregateOffer"]
-  };
-  
-  const typesToCheck = typeVariants[type] || [type];
-  
-  for (const schema of schemas) {
-    const schemaType = schema["@type"];
-    for (const checkType of typesToCheck) {
-      if (schemaType === checkType || 
-          (Array.isArray(schemaType) && schemaType.includes(checkType))) {
-        return schema;
-      }
-    }
-  }
-  return null;
+interface Recommendation {
+  checkId: string;
+  checkName: string;
+  priority: "critical" | "high" | "medium" | "low";
+  title: string;
+  description: string;
+  howToFix: string;
 }
 ```
 
----
-
-### Phase 4: Enhanced JSON-LD Extraction
-
-**File:** `supabase/functions/analyze/index.ts`
-
-**Change 5:** Improve `extractAllSchemas()` with better parsing and fallback patterns
+**Change 2:** Update the recommendations HTML generation to use correct fields
 
 ```typescript
-function extractAllSchemas(html: string): any[] {
-  const schemas: any[] = [];
-  
-  // Primary pattern - standard JSON-LD
-  const jsonLdRegex = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
-  let match;
+// Current (lines 101-121)
+const recommendationsHtml = analysis.recommendations.map(rec => `
+  ...
+  <p>...<strong>Impact:</strong> ${rec.impact}</p>
+  ...
+  <ol>
+    ${rec.steps.map(step => `<li>...</li>`).join("")}
+  </ol>
+  ${rec.codeSnippet ? `<pre>...</pre>` : ""}
+`).join("");
 
-  while ((match = jsonLdRegex.exec(html)) !== null) {
-    try {
-      // Clean up common issues before parsing
-      let jsonContent = match[1]
-        .trim()
-        .replace(/^\s*<!--/, '')  // Remove HTML comments
-        .replace(/-->\s*$/, '')
-        .replace(/\n/g, ' ')      // Normalize newlines
-        .replace(/\t/g, ' ');     // Normalize tabs
-      
-      const json = JSON.parse(jsonContent);
-      
-      if (json["@graph"]) {
-        schemas.push(...(Array.isArray(json["@graph"]) ? json["@graph"] : [json["@graph"]]));
-      } else if (Array.isArray(json)) {
-        schemas.push(...json);
-      } else {
-        schemas.push(json);
-      }
-    } catch (e) {
-      console.log("Failed to parse JSON-LD block:", e);
-      // Log the first 200 chars of failed content for debugging
-      console.log("Content preview:", match[1].substring(0, 200));
-    }
-  }
-
-  console.log(`Extracted ${schemas.length} schemas, types: ${schemas.map(s => s["@type"]).join(", ")}`);
-  return schemas;
-}
+// Fixed - use description and howToFix (as formatted text block)
+const recommendationsHtml = analysis.recommendations.map(rec => `
+  <div style="...">
+    <div>
+      <h3>${rec.title}</h3>
+      <span>${getPriorityLabel(rec.priority)}</span>
+    </div>
+    <p><strong>Why it matters:</strong> ${rec.description}</p>
+    <div>
+      <strong>How to fix:</strong>
+      <pre style="...">${rec.howToFix.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+    </div>
+  </div>
+`).join("");
 ```
 
----
+**Change 3:** Add null-safety checks for robustness
 
-### Phase 5: Add Debug Logging
-
-**File:** `supabase/functions/analyze/index.ts`
-
-**Change 6:** Add detailed logging for schema detection
+Add guards to handle cases where `checks` or `recommendations` might be empty or malformed:
 
 ```typescript
-// After line 2245, add:
-console.log(`HTML length: ${html.length} chars`);
-console.log(`Found ${schemas.length} schema objects`);
-if (schemas.length > 0) {
-  console.log(`Schema types found: ${schemas.map(s => s["@type"]).join(", ")}`);
-}
-
-// In validateProductSchema, add at start:
-console.log(`Looking for Product schema among ${schemas.length} schemas`);
-console.log(`Available types: ${schemas.map(s => s["@type"]).join(", ")}`);
+// Before generating HTML
+const checks = Array.isArray(analysis.checks) ? analysis.checks : [];
+const recommendations = Array.isArray(analysis.recommendations) ? analysis.recommendations : [];
 ```
-
----
-
-## File Changes Summary
-
-| File | Changes |
-|------|---------|
-| `supabase/functions/analyze/index.ts` | 6 targeted edits to fix schema detection |
 
 ---
 
 ## Technical Details
 
-### Why rawHtml Matters
+### Actual Database Structure (from query)
 
-Firecrawl's `html` format returns processed/cleaned HTML optimized for readability. The `rawHtml` format returns the original page source including all `<script>` tags.
-
-```text
-html format:     Processed, may strip scripts
-rawHtml format:  Original source, includes JSON-LD
-```
-
-### User-Agent Strategy
-
-Many sites use bot detection. The current custom UA may trigger:
-- Cloudflare protection
-- Rate limiting
-- Simplified/mobile content
-- Complete blocking
-
-The new UA format follows browser conventions while still identifying as a bot, which most sites accept.
-
-### ProductGroup vs Product
-
-Allbirds uses `ProductGroup` for products with variants:
-
+**Recommendations format:**
 ```json
 {
-  "@type": "ProductGroup",
-  "name": "Men's Wool Runners",
-  "hasVariant": [
-    { "@type": "Product", "sku": "variant1" },
-    { "@type": "Product", "sku": "variant2" }
-  ]
+  "checkId": "D2",
+  "checkName": "Product Schema",
+  "priority": "high",
+  "title": "Add complete Product schema markup",
+  "description": "AI agents need structured product data...",
+  "howToFix": "Add this JSON-LD to your product pages:\n\n<script>...</script>"
 }
 ```
 
-Our current code only looks for `"@type": "Product"` exactly, missing this pattern.
+The `howToFix` field contains both instructions and code snippets as a single formatted string with newlines, not as separate `steps[]` and `codeSnippet` fields.
+
+### Display Approach
+
+Since `howToFix` contains multi-line formatted text including code examples, it should be rendered in a `<pre>` block to preserve formatting rather than trying to parse it into separate list items.
 
 ---
 
-## Testing Plan
+## Files Changed
 
-After implementation:
-
-1. **Test with Allbirds URL:**
-   - `https://www.allbirds.com/products/mens-wool-runners-natural-black`
-   - Expected: Product schema detected with name, price, availability
-
-2. **Check edge function logs:**
-   - Verify HTML length is reasonable (>10KB suggests full page)
-   - Verify schema types are logged
-   - Verify no JSON-LD parse errors
-
-3. **Test with other known-good sites:**
-   - Nike.com product page
-   - Amazon product page
-   - Shopify store product page
+| File | Change |
+|------|--------|
+| `supabase/functions/generate-report/index.ts` | Update interface and HTML generation |
 
 ---
 
-## Expected Outcomes
+## Expected Outcome
 
-| Metric | Before | After |
-|--------|--------|-------|
-| Schema detection on Allbirds | Fails | Passes |
-| ProductGroup support | None | Full |
-| Debug visibility | Minimal | Detailed |
-| Bot-blocked sites | Common | Reduced |
+After this fix:
+- Report emails will generate successfully
+- The "How to fix" section will display properly with code examples
+- No more `TypeError` on `.map()` calls
+
