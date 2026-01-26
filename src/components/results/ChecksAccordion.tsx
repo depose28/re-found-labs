@@ -51,13 +51,36 @@ interface CheckData {
   source?: string;
   format?: string;
   url?: string;
-  compatibility?: {
-    google: { ready: boolean; reason: string };
-    klarna: { ready: boolean; reason: string };
-    facebook: { ready: boolean; reason: string };
-    amazon: { ready: boolean; reason: string };
-    readyCount: number;
+  
+  // New 3-layer protocol structure
+  protocolReadiness?: {
+    discovery: {
+      googleShopping: { status: string; reason: string };
+      klarnaApp: { status: string; reason: string };
+      answerEngines: { status: string; reason: string };
+    };
+    commerce: {
+      ucp: { status: string; reason: string };
+      acp: { status: string; reason: string };
+      mcp: { status: string; reason: string };
+    };
+    payments: {
+      rails: string[];
+    };
   };
+  
+  // Payment and checkout detection
+  paymentRails?: string[];
+  checkoutApis?: string[];
+  
+  // Protocol manifests
+  ucpReady?: boolean;
+  mcpReady?: boolean;
+  
+  // Structured data completeness (P2)
+  hasProduct?: boolean;
+  hasOffer?: boolean;
+  hasGtin?: boolean;
   
   // Generic
   isHttps?: boolean;
@@ -129,7 +152,7 @@ const CheckDataDisplay = ({ check }: { check: Check }) => {
     );
   }
 
-  // Platform detection check
+  // Platform detection check (P1)
   if (check.id === "P1" && data.platform) {
     return (
       <div className="mt-3 flex flex-wrap gap-2">
@@ -146,8 +169,25 @@ const CheckDataDisplay = ({ check }: { check: Check }) => {
     );
   }
 
-  // Feed exists check
-  if (check.id === "P2" && data.feeds && data.feeds.length > 0) {
+  // Structured Data Complete check (P2)
+  if (check.id === "P2" && (data.hasProduct !== undefined || data.hasOffer !== undefined || data.hasGtin !== undefined)) {
+    return (
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Badge variant="outline" className={`text-xs ${data.hasProduct ? "bg-success/10 text-success border-success/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}>
+          {data.hasProduct ? "✓" : "✗"} Product
+        </Badge>
+        <Badge variant="outline" className={`text-xs ${data.hasOffer ? "bg-success/10 text-success border-success/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}>
+          {data.hasOffer ? "✓" : "✗"} Offer
+        </Badge>
+        <Badge variant="outline" className={`text-xs ${data.hasGtin ? "bg-success/10 text-success border-success/20" : "bg-warning/10 text-warning border-warning/20"}`}>
+          {data.hasGtin ? "✓" : "⚠"} GTIN/SKU
+        </Badge>
+      </div>
+    );
+  }
+
+  // Feed exists check (P3)
+  if (check.id === "P3" && data.feeds && data.feeds.length > 0) {
     return (
       <div className="mt-3 space-y-2">
         {data.feeds.slice(0, 3).map((feed, i) => (
@@ -170,8 +210,8 @@ const CheckDataDisplay = ({ check }: { check: Check }) => {
     );
   }
 
-  // Feed discoverable check
-  if (check.id === "P3" && data.source) {
+  // Feed discoverable check (P4)
+  if (check.id === "P4" && data.source) {
     return (
       <div className="mt-3">
         <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/20">
@@ -182,8 +222,8 @@ const CheckDataDisplay = ({ check }: { check: Check }) => {
     );
   }
 
-  // Feed accessible check
-  if (check.id === "P4" && data.format) {
+  // Feed accessible check (P5)
+  if (check.id === "P5" && data.format) {
     return (
       <div className="mt-3 flex flex-wrap gap-2">
         <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/20">
@@ -208,34 +248,101 @@ const CheckDataDisplay = ({ check }: { check: Check }) => {
     );
   }
 
-  // Protocol compatibility check
-  if (check.id === "P5" && data.compatibility) {
-    const protocols = [
-      { key: "google", label: "Google", ...data.compatibility.google },
-      { key: "klarna", label: "Klarna", ...data.compatibility.klarna },
-      { key: "facebook", label: "Facebook", ...data.compatibility.facebook },
-      { key: "amazon", label: "Amazon", ...data.compatibility.amazon },
-    ];
-    
+  // Commerce API Indicators check (P6)
+  if (check.id === "P6" && (data.paymentRails || data.checkoutApis)) {
     return (
-      <div className="mt-3">
-        <p className="text-xs text-muted-foreground mb-2">Protocol Readiness:</p>
-        <div className="flex flex-wrap gap-2">
-          {protocols.map((protocol) => (
-            <Badge 
-              key={protocol.key} 
-              variant="outline" 
-              className={`text-xs ${
-                protocol.ready 
-                  ? "bg-success/10 text-success border-success/20" 
-                  : "bg-destructive/10 text-destructive border-destructive/20"
-              }`}
-              title={protocol.reason}
-            >
-              {protocol.ready ? "✓" : "✗"} {protocol.label}
-            </Badge>
-          ))}
+      <div className="mt-3 space-y-2">
+        {data.paymentRails && data.paymentRails.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            <span className="text-xs text-muted-foreground mr-1">Payment Rails:</span>
+            {data.paymentRails.map((rail) => (
+              <Badge key={rail} variant="outline" className="text-xs bg-success/10 text-success border-success/20">
+                {rail === 'stripe' ? '💳 Stripe' : 
+                 rail === 'shopifyCheckout' ? '🛒 Shopify' :
+                 rail === 'googlePay' ? '🔷 Google Pay' :
+                 rail === 'applePay' ? '🍎 Apple Pay' :
+                 rail === 'klarna' ? '🟣 Klarna' :
+                 rail === 'paypal' ? '💙 PayPal' : rail}
+              </Badge>
+            ))}
+          </div>
+        )}
+        {data.checkoutApis && data.checkoutApis.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            <span className="text-xs text-muted-foreground mr-1">API Patterns:</span>
+            {data.checkoutApis.map((api) => (
+              <Badge key={api} variant="outline" className="text-xs">
+                {api}
+              </Badge>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Protocol Manifest check (P7) - 3-layer display
+  if (check.id === "P7" && data.protocolReadiness) {
+    const getStatusBadge = (status: string, label: string, reason: string) => {
+      const statusClass = status === 'ready' 
+        ? "bg-success/10 text-success border-success/20"
+        : status === 'partial'
+        ? "bg-warning/10 text-warning border-warning/20"
+        : "bg-destructive/10 text-destructive border-destructive/20";
+      const icon = status === 'ready' ? '✓' : status === 'partial' ? '⚠️' : '✗';
+      
+      return (
+        <Badge 
+          key={label} 
+          variant="outline" 
+          className={`text-xs ${statusClass}`}
+          title={reason}
+        >
+          {icon} {label}
+        </Badge>
+      );
+    };
+
+    return (
+      <div className="mt-3 space-y-4">
+        {/* Discovery Layer */}
+        <div>
+          <p className="text-xs font-medium text-muted-foreground mb-2">Discovery Layer</p>
+          <div className="flex flex-wrap gap-2">
+            {getStatusBadge(data.protocolReadiness.discovery.googleShopping.status, 'Google Shopping', data.protocolReadiness.discovery.googleShopping.reason)}
+            {getStatusBadge(data.protocolReadiness.discovery.klarnaApp.status, 'Klarna APP', data.protocolReadiness.discovery.klarnaApp.reason)}
+            {getStatusBadge(data.protocolReadiness.discovery.answerEngines.status, 'Answer Engines', data.protocolReadiness.discovery.answerEngines.reason)}
+          </div>
         </div>
+
+        {/* Commerce Layer */}
+        <div>
+          <p className="text-xs font-medium text-muted-foreground mb-2">Commerce Layer</p>
+          <div className="flex flex-wrap gap-2">
+            {getStatusBadge(data.protocolReadiness.commerce.ucp.status, 'UCP', data.protocolReadiness.commerce.ucp.reason)}
+            {getStatusBadge(data.protocolReadiness.commerce.acp.status, 'ACP (ChatGPT)', data.protocolReadiness.commerce.acp.reason)}
+            {getStatusBadge(data.protocolReadiness.commerce.mcp.status, 'MCP', data.protocolReadiness.commerce.mcp.reason)}
+          </div>
+        </div>
+
+        {/* Payment Rails */}
+        {data.protocolReadiness.payments.rails.length > 0 && (
+          <div>
+            <p className="text-xs font-medium text-muted-foreground mb-2">Payment Rails</p>
+            <div className="flex flex-wrap gap-2">
+              {data.protocolReadiness.payments.rails.map((rail) => (
+                <Badge key={rail} variant="outline" className="text-xs">
+                  {rail === 'stripe' ? '💳 Stripe' : 
+                   rail === 'shopifyCheckout' ? '🛒 Shopify' :
+                   rail === 'googlePay' ? '🔷 Google Pay' :
+                   rail === 'applePay' ? '🍎 Apple Pay' :
+                   rail === 'klarna' ? '🟣 Klarna' :
+                   rail === 'paypal' ? '💙 PayPal' : rail}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
