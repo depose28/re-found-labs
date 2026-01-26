@@ -914,99 +914,271 @@ async function discoverFeeds(domain: string, html: string, robotsTxt: string | n
 }
 
 // ============================================
-// PROTOCOL COMPATIBILITY
+// PROTOCOL READINESS (3-Layer Architecture)
 // ============================================
 
-interface ProtocolCompatibility {
-  google: { ready: boolean; reason: string };
-  klarna: { ready: boolean; reason: string };
-  facebook: { ready: boolean; reason: string };
-  amazon: { ready: boolean; reason: string };
+interface ProtocolStatus {
+  status: 'ready' | 'partial' | 'not_ready';
+  reason: string;
+}
+
+interface ProtocolReadiness {
+  discovery: {
+    googleShopping: ProtocolStatus;
+    klarnaApp: ProtocolStatus;
+    answerEngines: ProtocolStatus;
+  };
+  commerce: {
+    ucp: ProtocolStatus;
+    acp: ProtocolStatus;
+    mcp: ProtocolStatus;
+  };
+  payments: {
+    rails: string[];
+  };
+  // Legacy compatibility fields for backwards compat
   readyCount: number;
   partialCount: number;
 }
 
-function calculateProtocolCompatibility(
+// Check for UCP (Universal Commerce Protocol) manifest
+async function checkUCPManifest(domain: string): Promise<{ found: boolean; version?: string; capabilities?: string[] }> {
+  const paths = [
+    '/.well-known/ucp.json',
+    '/.well-known/commerce.json',
+    '/api/commerce/manifest'
+  ];
+  
+  for (const path of paths) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      const response = await fetch(`${domain}${path}`, {
+        signal: controller.signal,
+        headers: { "User-Agent": "AgentPulseBot/1.0" }
+      });
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        const manifest = await response.json();
+        return {
+          found: true,
+          version: manifest.version,
+          capabilities: manifest.capabilities || []
+        };
+      }
+    } catch {
+      // Continue to next path
+    }
+  }
+  return { found: false };
+}
+
+// Check for MCP (Model Context Protocol) server
+async function checkMCPServer(domain: string, html: string): Promise<{ found: boolean; type?: string }> {
+  const paths = [
+    '/.well-known/mcp.json',
+    '/mcp/capabilities',
+    '/.well-known/ai-plugin.json'
+  ];
+  
+  // Check for SAP Commerce indicators in HTML
+  const sapIndicators = ['/occ/v2/', '/rest/v2/', 'sap-commerce', 'spartacus'];
+  const hasSAPCommerce = sapIndicators.some(indicator => html.toLowerCase().includes(indicator));
+  
+  if (hasSAPCommerce) {
+    return { found: true, type: 'sap-commerce' };
+  }
+  
+  for (const path of paths) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      const response = await fetch(`${domain}${path}`, {
+        signal: controller.signal,
+        headers: { "User-Agent": "AgentPulseBot/1.0" }
+      });
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        return { found: true, type: path.includes('ai-plugin') ? 'openai-plugin' : 'mcp' };
+      }
+    } catch {
+      // Continue to next path
+    }
+  }
+  return { found: false };
+}
+
+// Detect checkout/payment infrastructure
+function detectCheckoutInfrastructure(html: string): string[] {
+  const lowerHtml = html.toLowerCase();
+  const detectedRails: string[] = [];
+  
+  const indicators: Record<string, RegExp> = {
+    stripe: /stripe\.js|js\.stripe\.com|stripe-button|stripe\.com\/v3/i,
+    shopifyCheckout: /checkout\.shopify\.com|shopify.*checkout|shopify_pay/i,
+    paypal: /paypal\.com\/sdk|paypalobjects\.com|braintree/i,
+    klarna: /klarna.*payments|x\.klarnacdn\.net|klarna-checkout/i,
+    googlePay: /pay\.google\.com|gpay|google-pay/i,
+    applePay: /apple-pay-button|applepaysession|apple\.com\/apple-pay/i
+  };
+  
+  for (const [name, regex] of Object.entries(indicators)) {
+    if (regex.test(html)) {
+      detectedRails.push(name);
+    }
+  }
+  
+  return detectedRails;
+}
+
+// Detect API patterns indicating headless commerce
+function detectAPIPatterns(html: string): string[] {
+  const patterns: string[] = [];
+  const lowerHtml = html.toLowerCase();
+  
+  if (/graphql|\/graphql/i.test(html)) patterns.push('graphql');
+  if (/\/api\/v\d|\/rest\/v\d/i.test(html)) patterns.push('rest');
+  if (/headless|storefront-api|commerce-api/i.test(lowerHtml)) patterns.push('headless');
+  
+  return patterns;
+}
+
+async function calculateProtocolReadiness(
+  domain: string,
   feeds: FeedInfo[], 
   productValidation: SchemaValidation,
   html: string
-): ProtocolCompatibility {
+): Promise<ProtocolReadiness> {
   const hasFeed = feeds.length > 0 && feeds.some(f => f.accessible);
   const primaryFeed = feeds.find(f => f.accessible);
   const hasProduct = productValidation.found;
-  const hasGtin = productValidation.schema?.gtin || productValidation.schema?.sku || productValidation.schema?.mpn;
-  const hasFacebookPixel = html.toLowerCase().includes("facebook") && 
-    (html.includes("fbq(") || html.includes("facebook-pixel") || html.includes("facebook.net"));
+  const hasOffer = !!(productValidation.schema?.offers);
+  const hasGtin = !!(productValidation.schema?.gtin || productValidation.schema?.sku || productValidation.schema?.mpn);
   
-  const result: ProtocolCompatibility = {
-    google: { ready: false, reason: "" },
-    klarna: { ready: false, reason: "" },
-    facebook: { ready: false, reason: "" },
-    amazon: { ready: false, reason: "" },
+  // Calculate GTIN coverage in feed (estimate)
+  const gtinCoverage = hasGtin ? 0.9 : (primaryFeed?.hasRequiredFields ? 0.5 : 0);
+  
+  // Detect payment rails
+  const paymentRails = detectCheckoutInfrastructure(html);
+  const hasStripe = paymentRails.includes('stripe');
+  
+  // Detect API patterns for commerce readiness
+  const apiPatterns = detectAPIPatterns(html);
+  
+  // Check for protocol manifests (parallel)
+  const [ucpResult, mcpResult] = await Promise.all([
+    checkUCPManifest(domain),
+    checkMCPServer(domain, html)
+  ]);
+  
+  const result: ProtocolReadiness = {
+    discovery: {
+      googleShopping: { status: 'not_ready', reason: '' },
+      klarnaApp: { status: 'not_ready', reason: '' },
+      answerEngines: { status: 'not_ready', reason: '' }
+    },
+    commerce: {
+      ucp: { status: 'not_ready', reason: '' },
+      acp: { status: 'not_ready', reason: '' },
+      mcp: { status: 'not_ready', reason: '' }
+    },
+    payments: {
+      rails: paymentRails
+    },
     readyCount: 0,
     partialCount: 0
   };
 
-  // Google Merchant: Feed with title, price, availability
-  if (hasFeed && primaryFeed?.hasRequiredFields) {
-    result.google = { ready: true, reason: "Feed detected with required fields" };
+  // DISCOVERY LAYER
+  
+  // Google Shopping: Feed + title/price/availability + GTIN
+  if (hasFeed && primaryFeed?.hasRequiredFields && hasGtin) {
+    result.discovery.googleShopping = { status: 'ready', reason: 'Feed with required fields + GTIN' };
     result.readyCount++;
+  } else if (hasFeed && primaryFeed?.hasRequiredFields) {
+    result.discovery.googleShopping = { status: 'partial', reason: 'Feed valid but missing GTIN' };
+    result.partialCount++;
   } else if (hasFeed) {
-    result.google = { ready: false, reason: `Feed missing: ${primaryFeed?.missingFields?.join(", ") || "validation failed"}` };
+    result.discovery.googleShopping = { status: 'partial', reason: `Feed missing: ${primaryFeed?.missingFields?.join(', ') || 'required fields'}` };
+    result.partialCount++;
+  } else {
+    result.discovery.googleShopping = { status: 'not_ready', reason: 'No product feed detected' };
+  }
+
+  // Klarna APP: Feed + GTIN on >80% products
+  if (hasFeed && gtinCoverage >= 0.8) {
+    result.discovery.klarnaApp = { status: 'ready', reason: 'Feed + GTIN identifiers present' };
+    result.readyCount++;
+  } else if (hasFeed && gtinCoverage >= 0.5) {
+    result.discovery.klarnaApp = { status: 'partial', reason: 'Feed found, GTIN coverage <80%' };
+    result.partialCount++;
+  } else if (hasFeed) {
+    result.discovery.klarnaApp = { status: 'partial', reason: 'Feed exists but missing GTIN/SKU' };
+    result.partialCount++;
+  } else {
+    result.discovery.klarnaApp = { status: 'not_ready', reason: 'No feed or product identifiers' };
+  }
+
+  // Answer Engines: Complete Product + Offer schema
+  if (hasProduct && hasOffer && productValidation.valid) {
+    result.discovery.answerEngines = { status: 'ready', reason: 'Complete Product + Offer schema' };
+    result.readyCount++;
+  } else if (hasProduct && hasOffer) {
+    result.discovery.answerEngines = { status: 'partial', reason: 'Schema present but incomplete' };
     result.partialCount++;
   } else if (hasProduct) {
-    result.google = { ready: false, reason: "Has Product schema but no feed" };
+    result.discovery.answerEngines = { status: 'partial', reason: 'Product schema but no Offer' };
     result.partialCount++;
   } else {
-    result.google = { ready: false, reason: "No feed or product data detected" };
+    result.discovery.answerEngines = { status: 'not_ready', reason: 'No structured data detected' };
   }
 
-  // Klarna APP: Feed + GTIN/SKU
-  if (hasFeed && hasGtin) {
-    result.klarna = { ready: true, reason: "Feed + GTIN/SKU identifiers present" };
+  // COMMERCE LAYER
+
+  // UCP: /.well-known/ucp.json manifest
+  if (ucpResult.found) {
+    result.commerce.ucp = { status: 'ready', reason: `UCP manifest v${ucpResult.version || '?'} detected` };
     result.readyCount++;
-  } else if (hasFeed && !hasGtin) {
-    result.klarna = { ready: false, reason: "Feed found but missing GTIN/SKU identifiers" };
-    result.partialCount++;
-  } else if (hasGtin) {
-    result.klarna = { ready: false, reason: "Has identifiers but no feed" };
+  } else if (apiPatterns.length > 0) {
+    result.commerce.ucp = { status: 'partial', reason: `Commerce API patterns: ${apiPatterns.join(', ')}` };
     result.partialCount++;
   } else {
-    result.klarna = { ready: false, reason: "No feed or product identifiers" };
+    result.commerce.ucp = { status: 'not_ready', reason: 'No UCP manifest detected' };
   }
 
-  // Facebook Catalog: Pixel + Product schema
-  if (hasFacebookPixel && hasProduct) {
-    result.facebook = { ready: true, reason: "Facebook Pixel + Product schema detected" };
+  // ACP (ChatGPT): Stripe + /.well-known/ai-plugin.json
+  const hasOpenAIPlugin = mcpResult.type === 'openai-plugin';
+  if (hasStripe && hasOpenAIPlugin) {
+    result.commerce.acp = { status: 'ready', reason: 'Stripe + OpenAI plugin detected' };
     result.readyCount++;
-  } else if (hasFacebookPixel) {
-    result.facebook = { ready: false, reason: "Pixel detected but no Product schema" };
+  } else if (hasStripe) {
+    result.commerce.acp = { status: 'partial', reason: 'Stripe detected, no AI plugin' };
     result.partialCount++;
-  } else if (hasProduct) {
-    result.facebook = { ready: false, reason: "Product schema but no Facebook Pixel" };
+  } else if (paymentRails.length > 0) {
+    result.commerce.acp = { status: 'partial', reason: 'Payment rails detected, needs Stripe' };
     result.partialCount++;
   } else {
-    result.facebook = { ready: false, reason: "No Pixel or Product schema" };
+    result.commerce.acp = { status: 'not_ready', reason: 'No Stripe or payment integration' };
   }
 
-  // Amazon: Specific feed format or known integration
-  const hasAmazonFeed = feeds.some(f => f.url.toLowerCase().includes("amazon"));
-  const hasAmazonScript = html.toLowerCase().includes("amazon.com") && html.includes("amzn");
-  if (hasAmazonFeed) {
-    result.amazon = { ready: true, reason: "Amazon-specific feed detected" };
+  // MCP: /.well-known/mcp.json or SAP Commerce
+  if (mcpResult.found && mcpResult.type !== 'openai-plugin') {
+    result.commerce.mcp = { status: 'ready', reason: `MCP server detected (${mcpResult.type})` };
     result.readyCount++;
-  } else if (hasAmazonScript && hasProduct) {
-    result.amazon = { ready: false, reason: "Amazon integration detected but needs feed" };
+  } else if (apiPatterns.includes('headless') || apiPatterns.includes('graphql')) {
+    result.commerce.mcp = { status: 'partial', reason: 'Headless commerce patterns detected' };
     result.partialCount++;
   } else {
-    result.amazon = { ready: false, reason: "No Amazon feed integration" };
+    result.commerce.mcp = { status: 'not_ready', reason: 'No MCP server detected' };
   }
 
   return result;
 }
 
 // ============================================
-// DISTRIBUTION CHECKS
+// DISTRIBUTION CHECKS (Protocol-Centric)
 // ============================================
 
 interface DistributionResult {
@@ -1015,7 +1187,11 @@ interface DistributionResult {
   maxScore: number;
   platformDetection: PlatformDetection;
   feeds: FeedInfo[];
-  protocolCompatibility: ProtocolCompatibility;
+  protocolReadiness: ProtocolReadiness;
+  ucpManifest?: { found: boolean; version?: string };
+  mcpServer?: { found: boolean; type?: string };
+  paymentRails: string[];
+  checkoutApis: string[];
 }
 
 async function performDistributionChecks(
@@ -1030,33 +1206,37 @@ async function performDistributionChecks(
   // Feed discovery
   const { feeds, primaryFeed } = await discoverFeeds(domain, html, robotsTxt, platform);
   
-  // Protocol compatibility
-  const protocolCompatibility = calculateProtocolCompatibility(feeds, productValidation, html);
+  // Payment rails and checkout detection
+  const paymentRails = detectCheckoutInfrastructure(html);
+  const checkoutApis = detectAPIPatterns(html);
+  
+  // Protocol readiness (includes UCP/MCP checks)
+  const protocolReadiness = await calculateProtocolReadiness(domain, feeds, productValidation, html);
 
   const checks: Check[] = [];
   let totalScore = 0;
   const maxScore = 15;
 
-  // P1: Platform Detection (2 points)
+  // P1: Platform Detection (1 point - reduced from 2)
   const p1: Check = {
     id: "P1",
     name: "Platform Detected",
     category: "distribution",
     status: "fail",
     score: 0,
-    maxScore: 2,
+    maxScore: 1,
     details: "",
     data: { platform: platform.platform, confidence: platform.confidence, indicators: platform.indicators }
   };
 
   if (platform.detected && platform.platform !== "Custom") {
     p1.status = "pass";
-    p1.score = 2;
-    p1.details = `${platform.platform} platform detected (${platform.confidence} confidence)`;
+    p1.score = 1;
+    p1.details = `${platform.platform} platform detected`;
   } else if (platform.platform === "Custom") {
     p1.status = "partial";
-    p1.score = 1;
-    p1.details = "E-commerce patterns found but no known platform identified";
+    p1.score = 0;
+    p1.details = "E-commerce patterns found but no known platform";
   } else {
     p1.status = "fail";
     p1.score = 0;
@@ -1065,46 +1245,85 @@ async function performDistributionChecks(
   checks.push(p1);
   totalScore += p1.score;
 
-  // P2: Product Feed Exists (5 points)
+  // P2: Structured Data Complete (3 points) - Product + Offer + GTIN/SKU
+  const hasGtin = !!(productValidation.schema?.gtin || productValidation.schema?.sku || productValidation.schema?.mpn);
+  const hasOffer = !!(productValidation.schema?.offers);
   const p2: Check = {
     id: "P2",
+    name: "Structured Data Complete",
+    category: "distribution",
+    status: "fail",
+    score: 0,
+    maxScore: 3,
+    details: "",
+    data: { 
+      hasProduct: productValidation.found,
+      hasOffer,
+      hasGtin,
+      missingFields: productValidation.missingFields
+    }
+  };
+
+  if (productValidation.found && hasOffer && hasGtin) {
+    p2.status = "pass";
+    p2.score = 3;
+    p2.details = "Complete: Product + Offer + GTIN/SKU";
+  } else if (productValidation.found && hasOffer) {
+    p2.status = "partial";
+    p2.score = 2;
+    p2.details = "Product + Offer present, missing GTIN/SKU";
+  } else if (productValidation.found) {
+    p2.status = "partial";
+    p2.score = 1;
+    p2.details = "Product schema only, missing Offer and identifiers";
+  } else {
+    p2.status = "fail";
+    p2.score = 0;
+    p2.details = "No structured product data found";
+  }
+  checks.push(p2);
+  totalScore += p2.score;
+
+  // P3: Product Feed Exists (3 points)
+  const p3: Check = {
+    id: "P3",
     name: "Product Feed Exists",
     category: "distribution",
     status: "fail",
     score: 0,
-    maxScore: 5,
+    maxScore: 3,
     details: "",
     data: { feeds: feeds.map(f => ({ url: f.url, type: f.type, source: f.source, productCount: f.productCount })) }
   };
 
   if (primaryFeed && primaryFeed.productCount && primaryFeed.productCount > 0) {
-    p2.status = "pass";
-    p2.score = 5;
-    p2.details = `Product feed found (${primaryFeed.productCount} products at ${primaryFeed.url})`;
+    p3.status = "pass";
+    p3.score = 3;
+    p3.details = `Feed found (${primaryFeed.productCount} products at ${primaryFeed.url})`;
   } else if (feeds.length > 0) {
-    p2.status = "partial";
-    p2.score = 3;
-    p2.details = `Feed detected at ${feeds[0].url} but could not verify product count`;
+    p3.status = "partial";
+    p3.score = 2;
+    p3.details = `Feed detected at ${feeds[0].url} but could not verify`;
   } else if (platform.platform === "Shopify") {
-    p2.status = "partial";
-    p2.score = 2;
-    p2.details = "Shopify detected — native feed should be available at /products.json";
+    p3.status = "partial";
+    p3.score = 1;
+    p3.details = "Shopify detected — native feed should be at /products.json";
   } else {
-    p2.status = "fail";
-    p2.score = 0;
-    p2.details = "No product feed detected";
+    p3.status = "fail";
+    p3.score = 0;
+    p3.details = "No product feed detected";
   }
-  checks.push(p2);
-  totalScore += p2.score;
+  checks.push(p3);
+  totalScore += p3.score;
 
-  // P3: Feed Discoverable (3 points)
-  const p3: Check = {
-    id: "P3",
+  // P4: Feed Discoverable (2 points - reduced from 3)
+  const p4: Check = {
+    id: "P4",
     name: "Feed Discoverable",
     category: "distribution",
     status: "fail",
     score: 0,
-    maxScore: 3,
+    maxScore: 2,
     details: "",
     data: {}
   };
@@ -1113,84 +1332,128 @@ async function performDistributionChecks(
   const discoverableFeeds = feeds.filter(f => discoverableSources.includes(f.source));
 
   if (discoverableFeeds.length > 0) {
-    p3.status = "pass";
-    p3.score = 3;
-    p3.details = `Feed linked via ${discoverableFeeds[0].source} (easily discoverable by agents)`;
-    p3.data = { source: discoverableFeeds[0].source };
+    p4.status = "pass";
+    p4.score = 2;
+    p4.details = `Feed linked via ${discoverableFeeds[0].source}`;
+    p4.data = { source: discoverableFeeds[0].source };
   } else if (feeds.length > 0) {
-    p3.status = "partial";
-    p3.score = 1;
-    p3.details = "Feed exists but not linked in sitemap, robots.txt, or HTML";
+    p4.status = "partial";
+    p4.score = 1;
+    p4.details = "Feed exists but not in sitemap/robots.txt/HTML";
   } else {
-    p3.status = "fail";
-    p3.score = 0;
-    p3.details = "No discoverable feed reference found";
+    p4.status = "fail";
+    p4.score = 0;
+    p4.details = "No discoverable feed reference";
   }
-  checks.push(p3);
-  totalScore += p3.score;
+  checks.push(p4);
+  totalScore += p4.score;
 
-  // P4: Feed Accessible (3 points)
-  const p4: Check = {
-    id: "P4",
+  // P5: Feed Accessible + Valid (2 points - reduced from 3)
+  const p5: Check = {
+    id: "P5",
     name: "Feed Accessible",
     category: "distribution",
     status: "fail",
     score: 0,
-    maxScore: 3,
+    maxScore: 2,
     details: "",
     data: {}
   };
 
   const accessibleFeeds = feeds.filter(f => f.accessible);
   if (accessibleFeeds.length > 0 && primaryFeed?.hasRequiredFields) {
-    p4.status = "pass";
-    p4.score = 3;
-    p4.details = `Feed accessible with valid content (${primaryFeed.type.toUpperCase()} format)`;
-    p4.data = { format: primaryFeed.type, url: primaryFeed.url };
+    p5.status = "pass";
+    p5.score = 2;
+    p5.details = `Feed accessible (${primaryFeed.type.toUpperCase()} format)`;
+    p5.data = { format: primaryFeed.type, url: primaryFeed.url };
   } else if (accessibleFeeds.length > 0) {
-    p4.status = "partial";
-    p4.score = 2;
-    p4.details = `Feed accessible but ${primaryFeed?.missingFields?.join(", ") || "missing required fields"}`;
-    p4.data = { missingFields: primaryFeed?.missingFields };
+    p5.status = "partial";
+    p5.score = 1;
+    p5.details = `Feed accessible but ${primaryFeed?.missingFields?.join(", ") || "incomplete"}`;
+    p5.data = { missingFields: primaryFeed?.missingFields };
   } else if (feeds.length > 0) {
-    p4.status = "fail";
-    p4.score = 0;
-    p4.details = "Feed URLs found but not accessible (returned errors)";
+    p5.status = "fail";
+    p5.score = 0;
+    p5.details = "Feed URLs found but not accessible";
   } else {
-    p4.status = "fail";
-    p4.score = 0;
-    p4.details = "No feed to test accessibility";
+    p5.status = "fail";
+    p5.score = 0;
+    p5.details = "No feed to test";
   }
-  checks.push(p4);
-  totalScore += p4.score;
+  checks.push(p5);
+  totalScore += p5.score;
 
-  // P5: Protocol Indicators (2 points)
-  const p5: Check = {
-    id: "P5",
-    name: "Protocol Indicators",
+  // P6: Commerce API Indicators (2 points) - NEW
+  const p6: Check = {
+    id: "P6",
+    name: "Commerce API Indicators",
     category: "distribution",
     status: "fail",
     score: 0,
     maxScore: 2,
     details: "",
-    data: { compatibility: protocolCompatibility }
+    data: { checkoutApis, paymentRails }
   };
 
-  if (protocolCompatibility.readyCount >= 2) {
-    p5.status = "pass";
-    p5.score = 2;
-    p5.details = `Ready for ${protocolCompatibility.readyCount} protocols (Google, Klarna, Facebook, Amazon)`;
-  } else if (protocolCompatibility.readyCount === 1 || protocolCompatibility.partialCount >= 2) {
-    p5.status = "partial";
-    p5.score = 1;
-    p5.details = `${protocolCompatibility.readyCount} protocol ready, ${protocolCompatibility.partialCount} partial`;
+  const hasStripe = paymentRails.includes('stripe');
+  const hasShopifyCheckout = paymentRails.includes('shopifyCheckout');
+  
+  if (hasStripe || hasShopifyCheckout) {
+    p6.status = "pass";
+    p6.score = 2;
+    p6.details = `Checkout infrastructure: ${paymentRails.join(', ')}`;
+  } else if (paymentRails.length > 0) {
+    p6.status = "partial";
+    p6.score = 1;
+    p6.details = `Payment rails: ${paymentRails.join(', ')}`;
+  } else if (checkoutApis.length > 0) {
+    p6.status = "partial";
+    p6.score = 1;
+    p6.details = `API patterns: ${checkoutApis.join(', ')}`;
   } else {
-    p5.status = "fail";
-    p5.score = 0;
-    p5.details = "Not ready for any major shopping protocols";
+    p6.status = "fail";
+    p6.score = 0;
+    p6.details = "No checkout infrastructure detected";
   }
-  checks.push(p5);
-  totalScore += p5.score;
+  checks.push(p6);
+  totalScore += p6.score;
+
+  // P7: Protocol Manifest (2 points) - NEW
+  const ucpReady = protocolReadiness.commerce.ucp.status === 'ready';
+  const mcpReady = protocolReadiness.commerce.mcp.status === 'ready';
+  const p7: Check = {
+    id: "P7",
+    name: "Protocol Manifest",
+    category: "distribution",
+    status: "fail",
+    score: 0,
+    maxScore: 2,
+    details: "",
+    data: { 
+      protocolReadiness,
+      ucpReady,
+      mcpReady
+    }
+  };
+
+  if (ucpReady || mcpReady) {
+    p7.status = "pass";
+    p7.score = 2;
+    const protocols = [];
+    if (ucpReady) protocols.push('UCP');
+    if (mcpReady) protocols.push('MCP');
+    p7.details = `Protocol manifest: ${protocols.join(', ')}`;
+  } else if (protocolReadiness.commerce.ucp.status === 'partial' || protocolReadiness.commerce.mcp.status === 'partial') {
+    p7.status = "partial";
+    p7.score = 1;
+    p7.details = "Commerce patterns detected, no manifest";
+  } else {
+    p7.status = "fail";
+    p7.score = 0;
+    p7.details = "No UCP or MCP manifest detected";
+  }
+  checks.push(p7);
+  totalScore += p7.score;
 
   return {
     checks,
@@ -1198,7 +1461,9 @@ async function performDistributionChecks(
     maxScore,
     platformDetection: platform,
     feeds,
-    protocolCompatibility
+    protocolReadiness,
+    paymentRails,
+    checkoutApis
   };
 }
 
@@ -1670,7 +1935,7 @@ After installing, redirect all HTTP to HTTPS.`
 Link from Product schema:
 "hasMerchantReturnPolicy": { "@id": "#return-policy" }`
     },
-    // Distribution recommendations
+    // Distribution recommendations (updated for new check IDs)
     P1: {
       priority: "medium",
       title: "Consider a mainstream e-commerce platform",
@@ -1685,6 +1950,30 @@ Link from Product schema:
 If you're on a custom platform, implement a product feed API.`
     },
     P2: {
+      priority: "high",
+      title: "Complete your structured data with GTIN/SKU",
+      description: "Product identifiers are required for AI shopping protocols like Klarna APP and Google Shopping.",
+      howToFix: `Add product identifiers to your schema:
+
+<script type="application/ld+json">
+{
+  "@type": "Product",
+  "name": "Your Product",
+  "gtin13": "0012345678905",
+  "sku": "ABC-123",
+  "mpn": "MPN-456",
+  "offers": {
+    "@type": "Offer",
+    "price": "29.99",
+    "priceCurrency": "USD",
+    "availability": "https://schema.org/InStock"
+  }
+}
+</script>
+
+GTINs can be purchased from GS1.org`
+    },
+    P3: {
       priority: "critical",
       title: "Create a product feed for AI shopping protocols",
       description: "Your products are invisible to AI shopping protocols like Klarna APP and Google Shopping without a feed.",
@@ -1705,7 +1994,7 @@ For Custom Sites:
 Reference in robots.txt:
 Sitemap: https://yoursite.com/products.xml`
     },
-    P3: {
+    P4: {
       priority: "medium",
       title: "Make your product feed discoverable",
       description: "Feed exists but AI agents may not find it automatically.",
@@ -1724,7 +2013,7 @@ Sitemap: https://yoursite.com/products.xml`
    <link rel="alternate" type="application/json" 
          href="/products.json" title="Product Feed">`
     },
-    P4: {
+    P5: {
       priority: "high",
       title: "Fix product feed accessibility issues",
       description: "Your product feed exists but is returning errors or missing required fields.",
@@ -1741,31 +2030,56 @@ Sitemap: https://yoursite.com/products.xml`
 
 Test with: Google Merchant Center feed validator`
     },
-    P5: {
+    P6: {
       priority: "high",
-      title: "Add product identifiers for shopping protocols",
-      description: "Your feed is missing GTIN/EAN/SKU identifiers required for Klarna APP and Google Merchant.",
-      howToFix: `Add product identifiers:
+      title: "Add checkout infrastructure for AI commerce",
+      description: "AI agents need programmatic checkout access to complete purchases on your behalf.",
+      howToFix: `Integrate a checkout API:
 
-In your Product schema:
+Recommended options:
+1. Stripe - Powers ChatGPT Shopping (ACP protocol)
+   - npm install @stripe/stripe-js
+   - Add Stripe.js to your site
+
+2. Shopify Checkout - Native for Shopify stores
+   - Already available if on Shopify
+
+3. PayPal Checkout
+   - Add PayPal SDK
+
+For headless commerce:
+- Expose checkout APIs via REST or GraphQL
+- Document endpoints for agent discovery
+
+See: stripe.com/docs/payments/checkout`
+    },
+    P7: {
+      priority: "high",
+      title: "Add protocol manifest for agent commerce",
+      description: "UCP and MCP manifests allow AI agents to discover your commerce capabilities.",
+      howToFix: `Add a commerce protocol manifest:
+
+UCP (Universal Commerce Protocol):
+Create /.well-known/ucp.json:
 {
-  "@type": "Product",
-  "gtin13": "0012345678905",
-  "sku": "ABC-123",
-  "mpn": "MPN-456",
-  ...
+  "version": "1.0",
+  "name": "Your Store",
+  "capabilities": ["product-catalog", "checkout", "inventory"],
+  "endpoints": {
+    "products": "/api/products",
+    "checkout": "/api/checkout"
+  }
 }
 
-In your product feed:
-{
-  "products": [{
-    "gtin": "0012345678905",
-    "sku": "ABC-123",
-    ...
-  }]
-}
+For ChatGPT Shopping (ACP):
+Create /.well-known/ai-plugin.json following OpenAI plugin spec
 
-GTINs can be purchased from GS1.org`
+For SAP/Enterprise:
+Implement MCP server at /.well-known/mcp.json
+
+See: 
+- developers.google.com/commerce
+- platform.openai.com/docs/plugins`
     }
   };
 
@@ -2002,7 +2316,7 @@ serve(async (req) => {
       platform_detected: distributionResult.platformDetection.platform,
       platform_name: distributionResult.platformDetection.platform,
       feeds_found: distributionResult.feeds,
-      protocol_compatibility: distributionResult.protocolCompatibility,
+      protocol_compatibility: distributionResult.protocolReadiness,
       checks,
       recommendations,
       analysis_duration_ms: analysisDuration

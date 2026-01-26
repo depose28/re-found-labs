@@ -257,7 +257,7 @@ const RecommendationsSection = ({ recommendations }: RecommendationsSectionProps
                         </a>
                       </div>
                     )}
-                    {(rec.checkId === "P2" || rec.checkId === "P4" || rec.checkId === "P5") && (
+                    {(rec.checkId === "P2" || rec.checkId === "P3" || rec.checkId === "P5") && (
                       <div className="mt-3 flex flex-wrap gap-2">
                         <a
                           href="https://support.google.com/merchants/answer/7052112"
@@ -279,7 +279,7 @@ const RecommendationsSection = ({ recommendations }: RecommendationsSectionProps
                         </a>
                       </div>
                     )}
-                    {rec.checkId === "P3" && (
+                    {rec.checkId === "P4" && (
                       <div className="mt-3 flex flex-wrap gap-2">
                         <a
                           href="https://schema.org/DataFeed"
@@ -289,6 +289,59 @@ const RecommendationsSection = ({ recommendations }: RecommendationsSectionProps
                         >
                           <ExternalLink className="h-3 w-3" />
                           Schema.org DataFeed
+                        </a>
+                      </div>
+                    )}
+                    {rec.checkId === "P6" && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <a
+                          href="https://stripe.com/docs/payments/checkout"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          Stripe Checkout Docs
+                        </a>
+                        <a
+                          href="https://shopify.dev/docs/api/checkout-extensions"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          Shopify Checkout API
+                        </a>
+                      </div>
+                    )}
+                    {rec.checkId === "P7" && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <a
+                          href="https://developers.google.com/commerce"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          Google Commerce Platform
+                        </a>
+                        <a
+                          href="https://platform.openai.com/docs/plugins"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          OpenAI Plugin Docs (ACP)
+                        </a>
+                        <a
+                          href="https://modelcontextprotocol.io/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          Model Context Protocol (MCP)
                         </a>
                       </div>
                     )}
