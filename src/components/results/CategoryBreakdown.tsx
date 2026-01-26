@@ -1,4 +1,4 @@
-import { Search, Zap, CreditCard, Shield, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Search, Zap, CreditCard, Shield, Radio, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface CategoryProps {
@@ -10,6 +10,7 @@ interface CategoryBreakdownProps {
   discovery: CategoryProps;
   performance: CategoryProps;
   transaction: CategoryProps;
+  distribution: CategoryProps;
   trust: CategoryProps;
 }
 
@@ -36,6 +37,13 @@ const categories = [
     tips: ["Offer schema with pricing", "Valid currency (ISO 4217)", "HTTPS enabled"]
   },
   { 
+    key: "distribution", 
+    label: "Distribution", 
+    icon: Radio, 
+    description: "Can protocols find your products?",
+    tips: ["Product feed available", "Feed in sitemap/robots.txt", "GTIN/SKU identifiers"]
+  },
+  { 
     key: "trust", 
     label: "Trust", 
     icon: Shield, 
@@ -44,11 +52,12 @@ const categories = [
   },
 ];
 
-const CategoryBreakdown = ({ discovery, performance, transaction, trust }: CategoryBreakdownProps) => {
+const CategoryBreakdown = ({ discovery, performance, transaction, distribution, trust }: CategoryBreakdownProps) => {
   const [animatedScores, setAnimatedScores] = useState<Record<string, number>>({
     discovery: 0,
     performance: 0,
     transaction: 0,
+    distribution: 0,
     trust: 0
   });
 
@@ -56,6 +65,7 @@ const CategoryBreakdown = ({ discovery, performance, transaction, trust }: Categ
     discovery,
     performance,
     transaction,
+    distribution,
     trust,
   };
 
@@ -86,7 +96,7 @@ const CategoryBreakdown = ({ discovery, performance, transaction, trust }: Categ
     });
 
     return () => timers.forEach(clearInterval);
-  }, [discovery.score, performance.score, transaction.score, trust.score]);
+  }, [discovery.score, performance.score, transaction.score, distribution.score, trust.score]);
 
   // Green (good): 70%+, Orange (medium): 40-69%, Red (bad): <40%
   const getBarColor = (percentage: number) => {
@@ -113,8 +123,8 @@ const CategoryBreakdown = ({ discovery, performance, transaction, trust }: Categ
     return "Needs Work";
   };
 
-  const totalScore = discovery.score + performance.score + transaction.score + trust.score;
-  const totalMax = discovery.max + performance.max + transaction.max + trust.max;
+  const totalScore = discovery.score + performance.score + transaction.score + distribution.score + trust.score;
+  const totalMax = discovery.max + performance.max + transaction.max + distribution.max + trust.max;
   const overallPercentage = totalMax > 0 ? (totalScore / totalMax) * 100 : 0;
 
   return (
@@ -129,7 +139,7 @@ const CategoryBreakdown = ({ discovery, performance, transaction, trust }: Categ
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {categories.map((category) => {
           const { score, max } = scores[category.key];
           const animatedScore = animatedScores[category.key];
