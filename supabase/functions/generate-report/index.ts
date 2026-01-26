@@ -19,12 +19,12 @@ interface Check {
 }
 
 interface Recommendation {
-  id: string;
+  checkId: string;
+  checkName: string;
   priority: "critical" | "high" | "medium" | "low";
   title: string;
-  impact: string;
-  steps: string[];
-  codeSnippet?: string;
+  description: string;
+  howToFix: string;
 }
 
 interface AnalysisData {
@@ -76,11 +76,15 @@ function getCategoryLabel(category: string): string {
 }
 
 function generateHtmlReport(analysis: AnalysisData): string {
-  const passChecks = analysis.checks.filter(c => c.status === "pass");
-  const partialChecks = analysis.checks.filter(c => c.status === "partial");
-  const failChecks = analysis.checks.filter(c => c.status === "fail");
+  // Null-safety: ensure arrays exist
+  const checks = Array.isArray(analysis.checks) ? analysis.checks : [];
+  const recommendations = Array.isArray(analysis.recommendations) ? analysis.recommendations : [];
+  
+  const passChecks = checks.filter(c => c.status === "pass");
+  const partialChecks = checks.filter(c => c.status === "partial");
+  const failChecks = checks.filter(c => c.status === "fail");
 
-  const checksHtml = analysis.checks.map(check => `
+  const checksHtml = checks.map(check => `
     <tr>
       <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">
         <span style="font-size: 16px;">${getStatusEmoji(check.status)}</span>
@@ -98,25 +102,17 @@ function generateHtmlReport(analysis: AnalysisData): string {
     </tr>
   `).join("");
 
-  const recommendationsHtml = analysis.recommendations.map(rec => `
+  const recommendationsHtml = recommendations.map(rec => `
     <div style="margin-bottom: 24px; padding: 20px; background: #fafafa; border-left: 4px solid ${rec.priority === 'critical' ? '#ef4444' : rec.priority === 'high' ? '#f97316' : rec.priority === 'medium' ? '#eab308' : '#22c55e'};">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
         <h3 style="margin: 0; font-size: 16px;">${rec.title}</h3>
         <span style="font-size: 12px; font-weight: 600;">${getPriorityLabel(rec.priority)}</span>
       </div>
-      <p style="color: #666; margin: 0 0 12px 0; font-size: 14px;"><strong>Impact:</strong> ${rec.impact}</p>
+      <p style="color: #666; margin: 0 0 12px 0; font-size: 14px;"><strong>Why it matters:</strong> ${rec.description || ''}</p>
       <div style="margin-bottom: 12px;">
         <strong style="font-size: 14px;">How to fix:</strong>
-        <ol style="margin: 8px 0 0 0; padding-left: 20px;">
-          ${rec.steps.map(step => `<li style="margin-bottom: 6px; font-size: 13px;">${step}</li>`).join("")}
-        </ol>
+        <pre style="background: #1a1a1a; color: #e5e5e5; padding: 16px; border-radius: 4px; overflow-x: auto; font-size: 12px; margin-top: 8px; white-space: pre-wrap; word-wrap: break-word;"><code>${(rec.howToFix || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
       </div>
-      ${rec.codeSnippet ? `
-        <div style="margin-top: 12px;">
-          <strong style="font-size: 14px;">Code example:</strong>
-          <pre style="background: #1a1a1a; color: #e5e5e5; padding: 16px; border-radius: 4px; overflow-x: auto; font-size: 12px; margin-top: 8px;"><code>${rec.codeSnippet.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
-        </div>
-      ` : ""}
     </div>
   `).join("");
 
