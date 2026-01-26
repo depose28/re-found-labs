@@ -42,11 +42,15 @@ const Analyzing = () => {
           body: { url },
         });
 
+        console.log("Analysis response:", { data, error });
+
         if (error) throw error;
+        if (data?.error) throw new Error(data.error);
 
         if (data?.analysisId) {
           navigate(`/results?id=${data.analysisId}`);
         } else {
+          console.error("Missing analysisId in response:", data);
           throw new Error("No analysis ID returned");
         }
       } catch (err: any) {
