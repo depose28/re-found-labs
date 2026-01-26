@@ -39,11 +39,17 @@ interface AnalysisData {
   performance_max: number;
   transaction_score: number;
   transaction_max: number;
+  distribution_score: number;
+  distribution_max: number;
   trust_score: number;
   trust_max: number;
   checks: Check[];
   recommendations: Recommendation[];
   created_at: string;
+  protocol_compatibility?: any;
+  platform_detected?: string;
+  platform_name?: string;
+  feeds_found?: any[];
 }
 
 function getStatusEmoji(status: string): string {
@@ -70,9 +76,72 @@ function getCategoryLabel(category: string): string {
     case "discovery": return "Discovery";
     case "performance": return "Performance";
     case "transaction": return "Transaction";
+    case "distribution": return "Distribution";
     case "trust": return "Trust";
     default: return category;
   }
+}
+
+function generateProtocolReadinessHtml(protocolData: any): string {
+  if (!protocolData) return '';
+  
+  const getStatusIcon = (status: string) => 
+    status === 'ready' ? '✅' : status === 'partial' ? '⚠️' : '❌';
+  
+  const discovery = protocolData.discovery || {};
+  const commerce = protocolData.commerce || {};
+  const payments = protocolData.payments || { rails: [] };
+  
+  const paymentRails = payments.rails || [];
+  
+  return `
+    <div style="margin-bottom: 40px;">
+      <h2 style="font-size: 20px; margin-bottom: 20px;">Protocol Readiness</h2>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr><th colspan="2" style="text-align: left; padding: 12px; background: #f5f5f5; font-weight: 600;">Discovery Layer</th></tr>
+        <tr>
+          <td style="padding: 10px; border-bottom: 1px solid #e5e5e5;">Google Shopping</td>
+          <td style="padding: 10px; border-bottom: 1px solid #e5e5e5;">${getStatusIcon(discovery.googleShopping?.status || 'unknown')} ${discovery.googleShopping?.reason || 'Not assessed'}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border-bottom: 1px solid #e5e5e5;">Klarna APP</td>
+          <td style="padding: 10px; border-bottom: 1px solid #e5e5e5;">${getStatusIcon(discovery.klarnaApp?.status || 'unknown')} ${discovery.klarnaApp?.reason || 'Not assessed'}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border-bottom: 1px solid #e5e5e5;">Answer Engines</td>
+          <td style="padding: 10px; border-bottom: 1px solid #e5e5e5;">${getStatusIcon(discovery.answerEngines?.status || 'unknown')} ${discovery.answerEngines?.reason || 'Not assessed'}</td>
+        </tr>
+        <tr><th colspan="2" style="text-align: left; padding: 12px; background: #f5f5f5; font-weight: 600;">Commerce Layer</th></tr>
+        <tr>
+          <td style="padding: 10px; border-bottom: 1px solid #e5e5e5;">UCP (Universal Commerce)</td>
+          <td style="padding: 10px; border-bottom: 1px solid #e5e5e5;">${getStatusIcon(commerce.ucp?.status || 'unknown')} ${commerce.ucp?.reason || 'Not assessed'}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border-bottom: 1px solid #e5e5e5;">ACP (ChatGPT Shopping)</td>
+          <td style="padding: 10px; border-bottom: 1px solid #e5e5e5;">${getStatusIcon(commerce.acp?.status || 'unknown')} ${commerce.acp?.reason || 'Not assessed'}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border-bottom: 1px solid #e5e5e5;">MCP (Model Context)</td>
+          <td style="padding: 10px; border-bottom: 1px solid #e5e5e5;">${getStatusIcon(commerce.mcp?.status || 'unknown')} ${commerce.mcp?.reason || 'Not assessed'}</td>
+        </tr>
+        ${paymentRails.length > 0 ? `
+          <tr><th colspan="2" style="text-align: left; padding: 12px; background: #f5f5f5; font-weight: 600;">Payment Rails Detected</th></tr>
+          <tr>
+            <td colspan="2" style="padding: 12px;">
+              ${paymentRails.map((rail: string) => 
+                rail === 'stripe' ? '💳 Stripe' : 
+                rail === 'shopifyCheckout' ? '🛒 Shopify Checkout' :
+                rail === 'googlePay' ? '🔷 Google Pay' :
+                rail === 'applePay' ? '🍎 Apple Pay' :
+                rail === 'klarna' ? '🟣 Klarna' :
+                rail === 'paypal' ? '💙 PayPal' : rail
+              ).join(' &nbsp;•&nbsp; ')}
+            </td>
+          </tr>
+        ` : ''}
+      </table>
+    </div>
+  `;
 }
 
 function generateHtmlReport(analysis: AnalysisData): string {
@@ -83,6 +152,15 @@ function generateHtmlReport(analysis: AnalysisData): string {
   const passChecks = checks.filter(c => c.status === "pass");
   const partialChecks = checks.filter(c => c.status === "partial");
   const failChecks = checks.filter(c => c.status === "fail");
+
+  // Safe score calculations with fallbacks
+  const discoveryMax = analysis.discovery_max || 35;
+  const performanceMax = analysis.performance_max || 15;
+  const transactionMax = analysis.transaction_max || 20;
+  const distributionMax = analysis.distribution_max || 15;
+  const trustMax = analysis.trust_max || 15;
+  
+  const distributionScore = analysis.distribution_score || 0;
 
   const checksHtml = checks.map(check => `
     <tr>
@@ -116,6 +194,13 @@ function generateHtmlReport(analysis: AnalysisData): string {
     </div>
   `).join("");
 
+  // Generate protocol readiness section
+  const protocolHtml = generateProtocolReadinessHtml(analysis.protocol_compatibility);
+
+  // Platform info
+  const platformInfo = analysis.platform_name ? 
+    `<p style="color: #666; font-size: 14px; margin: 4px 0;">Platform: <strong>${analysis.platform_name}</strong></p>` : '';
+
   return `
 <!DOCTYPE html>
 <html>
@@ -136,6 +221,7 @@ function generateHtmlReport(analysis: AnalysisData): string {
     <div style="text-align: center; margin-bottom: 40px; padding-bottom: 40px; border-bottom: 2px solid #e5e5e5;">
       <h1 style="font-size: 28px; margin-bottom: 8px;">AI Commerce Readiness Report</h1>
       <p style="color: #666; font-size: 16px; margin: 0;">${analysis.url}</p>
+      ${platformInfo}
       <p style="color: #999; font-size: 14px; margin: 8px 0 0 0;">Generated on ${new Date(analysis.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
     </div>
 
@@ -150,7 +236,7 @@ function generateHtmlReport(analysis: AnalysisData): string {
       </div>
     </div>
 
-    <!-- Category Breakdown -->
+    <!-- Category Breakdown - 5 Pillars -->
     <div style="margin-bottom: 40px;">
       <h2 style="font-size: 20px; margin-bottom: 20px;">Score Breakdown</h2>
       <table>
@@ -161,31 +247,40 @@ function generateHtmlReport(analysis: AnalysisData): string {
           <th style="text-align: center;">%</th>
         </tr>
         <tr>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">🔍 Discovery (40 points)</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">🔍 Discovery (35 points)</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${analysis.discovery_score}</td>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${analysis.discovery_max}</td>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${Math.round((analysis.discovery_score / analysis.discovery_max) * 100)}%</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${discoveryMax}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${Math.round((analysis.discovery_score / discoveryMax) * 100)}%</td>
         </tr>
         <tr>
           <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">⚡ Performance (15 points)</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${analysis.performance_score}</td>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${analysis.performance_max}</td>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${Math.round((analysis.performance_score / analysis.performance_max) * 100)}%</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${performanceMax}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${Math.round((analysis.performance_score / performanceMax) * 100)}%</td>
         </tr>
         <tr>
           <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">💳 Transaction (20 points)</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${analysis.transaction_score}</td>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${analysis.transaction_max}</td>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${Math.round((analysis.transaction_score / analysis.transaction_max) * 100)}%</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${transactionMax}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${Math.round((analysis.transaction_score / transactionMax) * 100)}%</td>
         </tr>
         <tr>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">🛡️ Trust (25 points)</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">📡 Distribution (15 points)</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${distributionScore}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${distributionMax}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${Math.round((distributionScore / distributionMax) * 100)}%</td>
+        </tr>
+        <tr>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">🛡️ Trust (15 points)</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${analysis.trust_score}</td>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${analysis.trust_max}</td>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${Math.round((analysis.trust_score / analysis.trust_max) * 100)}%</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${trustMax}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${Math.round((analysis.trust_score / trustMax) * 100)}%</td>
         </tr>
       </table>
     </div>
+
+    <!-- Protocol Readiness -->
+    ${protocolHtml}
 
     <!-- Detailed Checks -->
     <div style="margin-bottom: 40px;">
