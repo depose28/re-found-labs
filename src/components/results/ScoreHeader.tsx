@@ -17,35 +17,39 @@ interface ScoreHeaderProps {
 
 const gradeConfig = {
   "Agent-Native": {
-    label: "AGENT-NATIVE",
-    message: "Excellent! Your store is fully optimized for AI shopping agents. All critical checks passed.",
+    label: "MARKET LEADER",
+    message: "Your store is fully optimized for AI commerce. You're positioned to capture the next wave of shopping traffic.",
+    businessImpact: "AI agents can discover, understand, and recommend your products. You're ahead of 95% of e-commerce sites.",
     color: "bg-success",
     textColor: "text-success",
   },
   Optimized: {
-    label: "OPTIMIZED",
-    message: "Good foundation with room for improvement. Address the priority fixes below to maximize AI visibility.",
+    label: "COMPETITIVE",
+    message: "Solid foundation with room for improvement. A few fixes could push you into market leader territory.",
+    businessImpact: "You're visible to most AI agents, but missing some opportunities. Top competitors are pulling ahead.",
     color: "bg-accent",
     textColor: "text-accent",
   },
   "Needs Work": {
-    label: "NEEDS WORK",
-    message: "Your store has significant gaps that prevent AI agents from fully understanding your products.",
+    label: "LOSING GROUND",
+    message: "Significant gaps are costing you AI-referred traffic. Your competitors are more visible to shopping agents.",
+    businessImpact: "AI agents struggle to understand your products. You're losing potential customers to optimized competitors.",
     color: "bg-warning",
     textColor: "text-warning",
   },
   Invisible: {
-    label: "INVISIBLE",
-    message: "AI agents cannot effectively discover or recommend your products. Critical fixes required.",
+    label: "INVISIBLE TO AI AGENTS",
+    message: "AI shopping agents cannot find or recommend your products. This is a critical business risk.",
+    businessImpact: "When customers ask AI assistants where to buy, you won't be in the conversation.",
     color: "bg-destructive",
     textColor: "text-destructive",
   },
 };
 
 const scoreLegend = [
-  { range: "85+", label: "Agent-Native", color: "bg-success" },
-  { range: "70-84", label: "Optimized", color: "bg-accent" },
-  { range: "50-69", label: "Needs Work", color: "bg-warning" },
+  { range: "85+", label: "Market Leader", color: "bg-success" },
+  { range: "70-84", label: "Competitive", color: "bg-accent" },
+  { range: "50-69", label: "Losing Ground", color: "bg-warning" },
   { range: "<50", label: "Invisible", color: "bg-destructive" },
 ];
 
@@ -221,8 +225,13 @@ const ScoreHeader = ({
               </div>
 
               {/* Grade Message */}
-              <p className="text-muted-foreground text-sm leading-relaxed max-w-md">
+              <p className="text-muted-foreground text-sm leading-relaxed max-w-md mb-4">
                 {config.message}
+              </p>
+
+              {/* Business Impact Statement */}
+              <p className="text-foreground text-sm font-medium leading-relaxed max-w-md">
+                {config.businessImpact}
               </p>
 
               {/* Quick Stats */}

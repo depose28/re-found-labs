@@ -17,37 +17,42 @@ interface CategoryBreakdownProps {
 const categories = [
   { 
     key: "discovery", 
-    label: "Discovery", 
+    label: "Can AI Agents Find You?", 
+    shortLabel: "Discovery",
     icon: Search, 
-    description: "Can agents find and understand your products?",
+    description: "Robots.txt, schema markup, and crawlability",
     tips: ["robots.txt allows AI bots", "Product schema markup", "XML sitemap available"]
   },
   { 
     key: "performance", 
-    label: "Performance", 
+    label: "Is Your Site Fast Enough?", 
+    shortLabel: "Performance",
     icon: Zap, 
-    description: "Is your site fast enough for agents?",
+    description: "Core Web Vitals and page speed",
     tips: ["LCP under 2.5s", "CLS under 0.1", "Time to Interactive under 3.8s"]
   },
   { 
     key: "transaction", 
-    label: "Transaction", 
+    label: "Can Agents Complete Purchases?", 
+    shortLabel: "Transaction",
     icon: CreditCard, 
-    description: "Can agents help users purchase?",
+    description: "Pricing, availability, and checkout signals",
     tips: ["Offer schema with pricing", "Valid currency (ISO 4217)", "HTTPS enabled"]
   },
   { 
     key: "distribution", 
-    label: "Distribution", 
+    label: "Are You Protocol-Ready?", 
+    shortLabel: "Distribution",
     icon: Radio, 
-    description: "Can protocols find your products?",
+    description: "UCP, ACP, MCP, and feed compatibility",
     tips: ["Product feed available", "Feed in sitemap/robots.txt", "GTIN/SKU identifiers"]
   },
   { 
     key: "trust", 
-    label: "Trust", 
+    label: "Will Agents Recommend You?", 
+    shortLabel: "Trust",
     icon: Shield, 
-    description: "Will agents recommend you?",
+    description: "Organization info, policies, and credibility",
     tips: ["Organization schema", "Return policy defined", "Contact information available"]
   },
 ];
@@ -153,13 +158,13 @@ const CategoryBreakdown = ({ discovery, performance, transaction, distribution, 
               key={category.key} 
               className="border border-border p-5 bg-card hover:bg-secondary/30 transition-colors"
             >
-              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 flex items-center justify-center bg-secondary/50 border border-border">
                     <Icon className="h-5 w-5 text-foreground" strokeWidth={1.5} />
                   </div>
                   <div>
-                    <p className="font-medium text-foreground">
+                    <p className="font-medium text-foreground text-sm">
                       {category.label}
                     </p>
                     <p className="text-xs text-muted-foreground">

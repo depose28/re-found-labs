@@ -73,13 +73,215 @@ function getPriorityLabel(priority: string): string {
 
 function getCategoryLabel(category: string): string {
   switch (category) {
-    case "discovery": return "Discovery";
-    case "performance": return "Performance";
-    case "transaction": return "Transaction";
-    case "distribution": return "Distribution";
-    case "trust": return "Trust";
+    case "discovery": return "Can AI Find You?";
+    case "performance": return "Is Your Site Fast?";
+    case "transaction": return "Can Agents Buy?";
+    case "distribution": return "Protocol Ready?";
+    case "trust": return "Will Agents Recommend?";
     default: return category;
   }
+}
+
+// Dynamic email subject based on score
+function getEmailSubject(score: number, domain: string): string {
+  if (score < 50) {
+    return `⚠️ Your store is invisible to AI agents (Score: ${score}/100)`;
+  } else if (score < 70) {
+    return `Your store scored ${score}/100 for AI visibility — here's what to fix`;
+  } else if (score < 85) {
+    return `Good news: ${score}/100 AI readiness — here's how to reach 85+`;
+  } else {
+    return `🏆 Excellent! ${score}/100 — you're a market leader`;
+  }
+}
+
+// Business impact statement based on score
+function getBusinessImpactStatement(score: number): string {
+  if (score < 50) {
+    return "When customers ask AI assistants where to buy, you won't be in the conversation. This is a critical business risk as AI-referred traffic grows 4,700% YoY.";
+  } else if (score < 70) {
+    return "AI agents struggle to understand your products. You're losing potential customers to optimized competitors who are easier for AI to discover and recommend.";
+  } else if (score < 85) {
+    return "You're visible to most AI agents, but missing some opportunities. Top competitors are pulling ahead with better protocol compliance.";
+  } else {
+    return "AI agents can discover, understand, and recommend your products. You're positioned to capture the next wave of AI-referred shopping traffic.";
+  }
+}
+
+// Revenue at risk messaging
+function generateRevenueAtRiskHtml(score: number): string {
+  const getRiskPercentage = () => {
+    if (score < 50) return "25-40%";
+    if (score < 70) return "15-25%";
+    if (score < 85) return "5-15%";
+    return "<5%";
+  };
+
+  const riskColor = score < 50 ? "#ef4444" : score < 70 ? "#f97316" : score < 85 ? "#eab308" : "#22c55e";
+
+  return `
+    <div style="margin-bottom: 30px; padding: 20px; background: #fef2f2; border-left: 4px solid ${riskColor};">
+      <p style="margin: 0 0 8px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #666;">Revenue at Risk</p>
+      <p style="margin: 0 0 8px 0; font-size: 32px; font-weight: bold; color: ${riskColor};">${getRiskPercentage()}</p>
+      <p style="margin: 0; font-size: 14px; color: #666;">of AI-referred customers may be missing your store. AI traffic is growing <strong>4,700% YoY</strong>.</p>
+    </div>
+  `;
+}
+
+// Industry comparison visualization
+function generateIndustryComparisonHtml(score: number): string {
+  const userBarWidth = Math.min(score, 100);
+  const avgBarWidth = 62;
+  const topBarWidth = 85;
+  const userColor = score >= 85 ? "#22c55e" : score >= 70 ? "#3b82f6" : score >= 50 ? "#f97316" : "#ef4444";
+
+  return `
+    <div style="margin-bottom: 30px; padding: 20px; background: #f9fafb; border: 1px solid #e5e5e5;">
+      <p style="margin: 0 0 16px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #666;">How You Compare</p>
+      
+      <div style="margin-bottom: 12px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span style="font-size: 14px; font-weight: 600;">Your Score</span>
+          <span style="font-size: 14px; font-weight: 600;">${score}</span>
+        </div>
+        <div style="height: 8px; background: #e5e5e5; border-radius: 4px;">
+          <div style="height: 100%; width: ${userBarWidth}%; background: ${userColor}; border-radius: 4px;"></div>
+        </div>
+      </div>
+      
+      <div style="margin-bottom: 12px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span style="font-size: 14px; color: #666;">Industry Average</span>
+          <span style="font-size: 14px; color: #666;">62</span>
+        </div>
+        <div style="height: 8px; background: #e5e5e5; border-radius: 4px;">
+          <div style="height: 100%; width: ${avgBarWidth}%; background: #9ca3af; border-radius: 4px;"></div>
+        </div>
+      </div>
+      
+      <div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span style="font-size: 14px; color: #666;">Top Performers</span>
+          <span style="font-size: 14px; color: #666;">85+</span>
+        </div>
+        <div style="height: 8px; background: #e5e5e5; border-radius: 4px;">
+          <div style="height: 100%; width: ${topBarWidth}%; background: #9ca3af; border-radius: 4px;"></div>
+        </div>
+      </div>
+      
+      ${score < 85 ? `<p style="margin: 12px 0 0 0; font-size: 13px; color: #666;">${score < 62 ? `You're ${62 - score} points below the industry average.` : `You need ${85 - score} more points to reach top performer status.`}</p>` : ''}
+    </div>
+  `;
+}
+
+// #1 Priority fix section
+function generatePriorityFixHtml(recommendations: Recommendation[]): string {
+  if (!recommendations || recommendations.length === 0) return '';
+  
+  const sorted = [...recommendations].sort((a, b) => {
+    const order = { critical: 1, high: 2, medium: 3, low: 4 };
+    return (order[a.priority] || 99) - (order[b.priority] || 99);
+  });
+  
+  const topFix = sorted[0];
+  const pointGain = topFix.priority === 'critical' ? 15 : topFix.priority === 'high' ? 10 : 5;
+  
+  return `
+    <div style="margin-bottom: 40px; padding: 24px; background: #eff6ff; border: 2px solid #3b82f6;">
+      <p style="margin: 0 0 8px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #3b82f6; font-weight: 600;">#1 Priority Fix</p>
+      <h2 style="margin: 0 0 12px 0; font-size: 20px;">${topFix.title}</h2>
+      <p style="margin: 0 0 16px 0; font-size: 14px; color: #666;">${topFix.description}</p>
+      
+      <div style="display: flex; gap: 24px; margin-bottom: 16px;">
+        <div>
+          <p style="margin: 0 0 4px 0; font-size: 12px; color: #666;">Expected Gain</p>
+          <p style="margin: 0; font-size: 24px; font-weight: bold; color: #22c55e;">+${pointGain} pts</p>
+        </div>
+        <div>
+          <p style="margin: 0 0 4px 0; font-size: 12px; color: #666;">Priority Level</p>
+          <p style="margin: 0; font-size: 24px; font-weight: bold; text-transform: capitalize;">${topFix.priority}</p>
+        </div>
+      </div>
+      
+      <div style="background: #1a1a1a; color: #e5e5e5; padding: 16px; border-radius: 4px; overflow-x: auto;">
+        <p style="margin: 0 0 8px 0; font-size: 12px; color: #9ca3af;">How to fix:</p>
+        <pre style="margin: 0; font-size: 12px; white-space: pre-wrap; word-wrap: break-word;"><code>${(topFix.howToFix || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
+      </div>
+    </div>
+  `;
+}
+
+// What 85+ unlocks
+function generateWhatUnlocksHtml(): string {
+  return `
+    <div style="margin-bottom: 40px; padding: 24px; background: #f0fdf4; border: 1px solid #22c55e;">
+      <p style="margin: 0 0 8px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #22c55e; font-weight: 600;">The Destination</p>
+      <h2 style="margin: 0 0 16px 0; font-size: 20px;">What an 85+ Score Unlocks</h2>
+      
+      <div style="display: grid; gap: 12px;">
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+          <span style="color: #22c55e;">✓</span>
+          <div>
+            <strong>ChatGPT Shopping</strong>
+            <p style="margin: 0; font-size: 14px; color: #666;">Appear in ChatGPT's product recommendations</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+          <span style="color: #22c55e;">✓</span>
+          <div>
+            <strong>Klarna APP Integration</strong>
+            <p style="margin: 0; font-size: 14px; color: #666;">Get discovered by Klarna's 150M+ users</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+          <span style="color: #22c55e;">✓</span>
+          <div>
+            <strong>Google AI Agents</strong>
+            <p style="margin: 0; font-size: 14px; color: #666;">Surface in Google's AI Overviews and Shopping Graph</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+          <span style="color: #22c55e;">✓</span>
+          <div>
+            <strong>Perplexity Shopping</strong>
+            <p style="margin: 0; font-size: 14px; color: #666;">Be cited as a purchase option in AI search</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Market context stats
+function generateMarketContextHtml(): string {
+  return `
+    <div style="margin-bottom: 40px; padding: 20px; background: #f9fafb; border: 1px solid #e5e5e5;">
+      <p style="margin: 0 0 16px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #666;">Market Context</p>
+      
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 12px 0; border-bottom: 1px solid #e5e5e5; width: 50%;">
+            <p style="margin: 0; font-size: 24px; font-weight: bold;">4,700%</p>
+            <p style="margin: 0; font-size: 12px; color: #666;">YoY growth in AI traffic</p>
+          </td>
+          <td style="padding: 12px 0; border-bottom: 1px solid #e5e5e5;">
+            <p style="margin: 0; font-size: 24px; font-weight: bold;">73%</p>
+            <p style="margin: 0; font-size: 12px; color: #666;">of stores fail readiness</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 12px 0;">
+            <p style="margin: 0; font-size: 24px; font-weight: bold;">$17.5T</p>
+            <p style="margin: 0; font-size: 12px; color: #666;">influenced by AI by 2030</p>
+          </td>
+          <td style="padding: 12px 0;">
+            <p style="margin: 0; font-size: 24px; font-weight: bold;">2025</p>
+            <p style="margin: 0; font-size: 12px; color: #666;">protocols launched</p>
+          </td>
+        </tr>
+      </table>
+    </div>
+  `;
 }
 
 function generateProtocolReadinessHtml(protocolData: any): string {
@@ -144,6 +346,17 @@ function generateProtocolReadinessHtml(protocolData: any): string {
   `;
 }
 
+// Get grade label (updated)
+function getGradeLabel(grade: string): string {
+  switch (grade) {
+    case "Agent-Native": return "MARKET LEADER";
+    case "Optimized": return "COMPETITIVE";
+    case "Needs Work": return "LOSING GROUND";
+    case "Invisible": return "INVISIBLE TO AI AGENTS";
+    default: return grade.toUpperCase();
+  }
+}
+
 function generateHtmlReport(analysis: AnalysisData): string {
   // Null-safety: ensure arrays exist
   const checks = Array.isArray(analysis.checks) ? analysis.checks : [];
@@ -194,7 +407,13 @@ function generateHtmlReport(analysis: AnalysisData): string {
     </div>
   `).join("");
 
-  // Generate protocol readiness section
+  // Generate behavioral science sections
+  const businessImpact = getBusinessImpactStatement(analysis.total_score);
+  const revenueAtRiskHtml = generateRevenueAtRiskHtml(analysis.total_score);
+  const industryComparisonHtml = generateIndustryComparisonHtml(analysis.total_score);
+  const priorityFixHtml = generatePriorityFixHtml(recommendations);
+  const whatUnlocksHtml = generateWhatUnlocksHtml();
+  const marketContextHtml = generateMarketContextHtml();
   const protocolHtml = generateProtocolReadinessHtml(analysis.protocol_compatibility);
 
   // Platform info
@@ -225,16 +444,23 @@ function generateHtmlReport(analysis: AnalysisData): string {
       <p style="color: #999; font-size: 14px; margin: 8px 0 0 0;">Generated on ${new Date(analysis.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
     </div>
 
+    <!-- PAGE 1: EXECUTIVE SUMMARY -->
+    
     <!-- Score Overview -->
-    <div style="background: linear-gradient(135deg, #1a1a1a 0%, #333 100%); color: white; padding: 40px; margin-bottom: 40px; text-align: center;">
+    <div style="background: linear-gradient(135deg, #1a1a1a 0%, #333 100%); color: white; padding: 40px; margin-bottom: 30px; text-align: center;">
       <div style="font-size: 72px; font-weight: bold; margin-bottom: 8px;">${analysis.total_score}</div>
-      <div style="font-size: 24px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px;">${analysis.grade}</div>
-      <div style="display: flex; justify-content: center; gap: 24px; font-size: 14px;">
+      <div style="font-size: 24px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px;">${getGradeLabel(analysis.grade)}</div>
+      <div style="display: flex; justify-content: center; gap: 24px; font-size: 14px; margin-bottom: 20px;">
         <span>${passChecks.length} passed</span>
         <span>${partialChecks.length} partial</span>
         <span>${failChecks.length} failed</span>
       </div>
+      <p style="margin: 0; font-size: 14px; opacity: 0.9; max-width: 500px; margin: 0 auto;">${businessImpact}</p>
     </div>
+
+    <!-- Revenue at Risk + Industry Comparison -->
+    ${revenueAtRiskHtml}
+    ${industryComparisonHtml}
 
     <!-- Category Breakdown - 5 Pillars -->
     <div style="margin-bottom: 40px;">
@@ -247,31 +473,31 @@ function generateHtmlReport(analysis: AnalysisData): string {
           <th style="text-align: center;">%</th>
         </tr>
         <tr>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">🔍 Discovery (35 points)</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">🔍 Can AI Find You? (35 pts)</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${analysis.discovery_score}</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${discoveryMax}</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${Math.round((analysis.discovery_score / discoveryMax) * 100)}%</td>
         </tr>
         <tr>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">⚡ Performance (15 points)</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">⚡ Is Your Site Fast? (15 pts)</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${analysis.performance_score}</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${performanceMax}</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${Math.round((analysis.performance_score / performanceMax) * 100)}%</td>
         </tr>
         <tr>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">💳 Transaction (20 points)</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">💳 Can Agents Buy? (20 pts)</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${analysis.transaction_score}</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${transactionMax}</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${Math.round((analysis.transaction_score / transactionMax) * 100)}%</td>
         </tr>
         <tr>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">📡 Distribution (15 points)</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">📡 Protocol Ready? (15 pts)</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${distributionScore}</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${distributionMax}</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${Math.round((distributionScore / distributionMax) * 100)}%</td>
         </tr>
         <tr>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">🛡️ Trust (15 points)</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">🛡️ Will Agents Recommend? (15 pts)</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${analysis.trust_score}</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${trustMax}</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${Math.round((analysis.trust_score / trustMax) * 100)}%</td>
@@ -282,7 +508,10 @@ function generateHtmlReport(analysis: AnalysisData): string {
     <!-- Protocol Readiness -->
     ${protocolHtml}
 
-    <!-- Detailed Checks -->
+    <!-- PAGE 2: #1 PRIORITY FIX -->
+    ${priorityFixHtml}
+
+    <!-- PAGE 3: DETAILED CHECKS -->
     <div style="margin-bottom: 40px;">
       <h2 style="font-size: 20px; margin-bottom: 20px;">Detailed Check Results</h2>
       <table>
@@ -296,10 +525,19 @@ function generateHtmlReport(analysis: AnalysisData): string {
       </table>
     </div>
 
-    <!-- Recommendations -->
+    <!-- PAGE 4: ALL RECOMMENDATIONS -->
     <div style="margin-bottom: 40px;">
-      <h2 style="font-size: 20px; margin-bottom: 20px;">Recommendations</h2>
+      <h2 style="font-size: 20px; margin-bottom: 20px;">All Recommendations</h2>
       ${recommendationsHtml}
+    </div>
+
+    <!-- PAGE 5: NEXT STEPS -->
+    ${whatUnlocksHtml}
+    ${marketContextHtml}
+
+    <!-- Closing Statement -->
+    <div style="margin-bottom: 40px; padding: 24px; background: #1a1a1a; color: white; text-align: center;">
+      <p style="margin: 0 0 20px 0; font-size: 18px; font-style: italic;">"This is where commerce is heading. Will you be discovered, or will you be skipped?"</p>
     </div>
 
     <!-- AI Bots Checked -->
@@ -393,11 +631,14 @@ serve(async (req) => {
 
     const resend = new Resend(resendApiKey);
 
+    // Get dynamic subject line based on score
+    const emailSubject = getEmailSubject(analysis.total_score, analysis.domain);
+
     // Send email with HTML report
     const { data: emailData, error: emailError } = await resend.emails.send({
       from: "re:found Labs <onboarding@resend.dev>",
       to: [email],
-      subject: `Agent Pulse Report: ${analysis.domain} - Score ${analysis.total_score}/100`,
+      subject: emailSubject,
       html: htmlReport,
     });
 
