@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Shield, Clock, Zap, CheckCircle2, Search, CreditCard } from "lucide-react";
+import { ArrowRight, Shield, Clock, Zap, CheckCircle2, Search, CreditCard, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -136,8 +136,8 @@ const ConversionHeroSection = () => {
                 {[{
                 icon: Search,
                 label: "Discovery",
-                score: 32,
-                max: 40,
+                score: 28,
+                max: 35,
                 color: "bg-success"
               }, {
                 icon: Zap,
@@ -152,11 +152,17 @@ const ConversionHeroSection = () => {
                 max: 20,
                 color: "bg-warning"
               }, {
+                icon: Radio,
+                label: "Distribution",
+                score: 8,
+                max: 15,
+                color: "bg-warning"
+              }, {
                 icon: Shield,
                 label: "Trust",
-                score: 16,
-                max: 25,
-                color: "bg-warning"
+                score: 12,
+                max: 15,
+                color: "bg-success"
               }].map((cat, i) => <div key={i} className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
@@ -198,15 +204,18 @@ const ConversionHeroSection = () => {
         <div className="mt-16 pt-8 border-t border-border animate-fade-in" style={{
         animationDelay: "0.4s"
       }}>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
             {[{
             value: "10",
             label: "AI bots checked"
           }, {
-            value: "4",
-            label: "Categories analyzed"
+            value: "5",
+            label: "Pillars analyzed"
           }, {
-            value: "15+",
+            value: "4",
+            label: "Protocols tested"
+          }, {
+            value: "20+",
             label: "Checks per scan"
           }, {
             value: "73%",

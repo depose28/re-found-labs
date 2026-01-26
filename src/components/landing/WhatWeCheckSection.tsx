@@ -1,4 +1,4 @@
-import { Search, Zap, CreditCard, Shield } from "lucide-react";
+import { Search, Zap, CreditCard, Radio, Shield } from "lucide-react";
 import PulseDot from "@/components/ui/PulseDot";
 
 const categories = [
@@ -6,7 +6,7 @@ const categories = [
     icon: Search,
     number: "01",
     title: "Discovery",
-    points: "40 points",
+    points: "35 points",
     question: "Can agents find and understand your products?",
     description:
       "AI agents need permission to access your site and structured data to interpret what you sell. We check whether your store speaks the language agents understand—and whether you've accidentally locked them out.",
@@ -36,10 +36,21 @@ const categories = [
     whatAgentsDo: "Hedge recommendations. Suggest \"check the website directly.\"",
   },
   {
-    icon: Shield,
+    icon: Radio,
     number: "04",
+    title: "Distribution",
+    points: "15 points",
+    question: "Can protocols find your products?",
+    description:
+      "AI agents increasingly discover products through centralized feeds and protocols like Klarna APP, Google Merchant, and Facebook Catalog—not just by crawling. We check if your store is plugged into these networks.",
+    whatBreaks: "No product feed. Missing GTIN/SKU. Feeds not discoverable.",
+    whatAgentsDo: "Never see your products. Recommend stores with proper feed integration.",
+  },
+  {
+    icon: Shield,
+    number: "05",
     title: "Trust",
-    points: "25 points",
+    points: "15 points",
     question: "Will agents stake their reputation on you?",
     description:
       "AI agents are cautious—they won't recommend a store they can't verify. We check whether your brand has the signals that make agents confident enough to recommend you by name.",
@@ -62,7 +73,7 @@ const WhatWeCheckSection = () => {
 
         {/* Section Title */}
         <h2 className="font-display text-4xl md:text-5xl text-foreground mb-4 max-w-3xl">
-          Four pillars that determine whether AI agents recommend you—or your competitors.
+          Five pillars that determine whether AI agents recommend you—or your competitors.
         </h2>
         <p className="text-lg text-muted-foreground mb-16 max-w-2xl">
           AI agents don't browse like humans. They scan structured data, check access permissions, verify trust signals, and make split-second decisions. Miss one signal, and you're filtered out before the conversation even starts.
