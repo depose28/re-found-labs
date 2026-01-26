@@ -21,12 +21,19 @@ export type Database = {
           created_at: string
           discovery_max: number | null
           discovery_score: number
+          distribution_max: number | null
+          distribution_score: number | null
           domain: string
           error: string | null
+          feed_validation: Json | null
+          feeds_found: Json | null
           grade: string
           id: string
           performance_max: number | null
           performance_score: number
+          platform_detected: string | null
+          platform_name: string | null
+          protocol_compatibility: Json | null
           recommendations: Json
           total_score: number
           transaction_max: number | null
@@ -41,12 +48,19 @@ export type Database = {
           created_at?: string
           discovery_max?: number | null
           discovery_score: number
+          distribution_max?: number | null
+          distribution_score?: number | null
           domain: string
           error?: string | null
+          feed_validation?: Json | null
+          feeds_found?: Json | null
           grade: string
           id?: string
           performance_max?: number | null
           performance_score: number
+          platform_detected?: string | null
+          platform_name?: string | null
+          protocol_compatibility?: Json | null
           recommendations: Json
           total_score: number
           transaction_max?: number | null
@@ -61,12 +75,19 @@ export type Database = {
           created_at?: string
           discovery_max?: number | null
           discovery_score?: number
+          distribution_max?: number | null
+          distribution_score?: number | null
           domain?: string
           error?: string | null
+          feed_validation?: Json | null
+          feeds_found?: Json | null
           grade?: string
           id?: string
           performance_max?: number | null
           performance_score?: number
+          platform_detected?: string | null
+          platform_name?: string | null
+          protocol_compatibility?: Json | null
           recommendations?: Json
           total_score?: number
           transaction_max?: number | null

@@ -23,8 +23,14 @@ interface AnalysisResult {
   performance_max: number | null;
   transaction_score: number;
   transaction_max: number | null;
+  distribution_score: number;
+  distribution_max: number | null;
   trust_score: number;
   trust_max: number | null;
+  platform_detected: string | null;
+  platform_name: string | null;
+  feeds_found: any;
+  protocol_compatibility: any;
   checks: any;
   recommendations: any;
   created_at: string;
@@ -124,10 +130,11 @@ const Results = () => {
 
         <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20 py-16 space-y-16">
           <CategoryBreakdown
-            discovery={{ score: analysis.discovery_score, max: analysis.discovery_max ?? 40 }}
+            discovery={{ score: analysis.discovery_score, max: analysis.discovery_max ?? 35 }}
             performance={{ score: analysis.performance_score, max: analysis.performance_max ?? 15 }}
             transaction={{ score: analysis.transaction_score, max: analysis.transaction_max ?? 20 }}
-            trust={{ score: analysis.trust_score, max: analysis.trust_max ?? 25 }}
+            distribution={{ score: analysis.distribution_score, max: analysis.distribution_max ?? 15 }}
+            trust={{ score: analysis.trust_score, max: analysis.trust_max ?? 15 }}
           />
 
           <ChecksAccordion checks={analysis.checks} />

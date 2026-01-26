@@ -4,7 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { CheckCircle2, AlertTriangle, XCircle, Search, Zap, CreditCard, Shield, Bot, Globe, Tag, Clock } from "lucide-react";
+import { CheckCircle2, AlertTriangle, XCircle, Search, Zap, CreditCard, Shield, Radio, Bot, Globe, Tag, Clock, Store, Rss, Link } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface CheckData {
@@ -43,6 +43,22 @@ interface CheckData {
   returnDays?: number;
   returnMethod?: string;
   
+  // Distribution data
+  platform?: string;
+  confidence?: string;
+  indicators?: string[];
+  feeds?: { url: string; type: string; source: string; productCount?: number }[];
+  source?: string;
+  format?: string;
+  url?: string;
+  compatibility?: {
+    google: { ready: boolean; reason: string };
+    klarna: { ready: boolean; reason: string };
+    facebook: { ready: boolean; reason: string };
+    amazon: { ready: boolean; reason: string };
+    readyCount: number;
+  };
+  
   // Generic
   isHttps?: boolean;
 }
@@ -66,6 +82,7 @@ const categoryConfig = {
   discovery: { icon: Search, label: "Discovery", description: "AI agent visibility" },
   performance: { icon: Zap, label: "Performance", description: "Speed & Core Web Vitals" },
   transaction: { icon: CreditCard, label: "Transaction", description: "Purchase capability" },
+  distribution: { icon: Radio, label: "Distribution", description: "Protocol & feed readiness" },
   trust: { icon: Shield, label: "Trust", description: "Business credibility" },
 };
 
@@ -108,6 +125,117 @@ const CheckDataDisplay = ({ check }: { check: Check }) => {
             ))}
           </div>
         )}
+      </div>
+    );
+  }
+
+  // Platform detection check
+  if (check.id === "P1" && data.platform) {
+    return (
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Badge variant="outline" className={`text-xs ${check.status === "pass" ? "bg-success/10 text-success border-success/20" : ""}`}>
+          <Store className="h-3 w-3 mr-1" />
+          {data.platform}
+        </Badge>
+        {data.confidence && (
+          <Badge variant="outline" className="text-xs">
+            {data.confidence} confidence
+          </Badge>
+        )}
+      </div>
+    );
+  }
+
+  // Feed exists check
+  if (check.id === "P2" && data.feeds && data.feeds.length > 0) {
+    return (
+      <div className="mt-3 space-y-2">
+        {data.feeds.slice(0, 3).map((feed, i) => (
+          <div key={i} className="flex flex-wrap gap-1.5">
+            <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/20">
+              <Rss className="h-3 w-3 mr-1" />
+              {feed.url}
+            </Badge>
+            <Badge variant="outline" className="text-xs">
+              {feed.type.toUpperCase()}
+            </Badge>
+            {feed.productCount && (
+              <Badge variant="outline" className="text-xs">
+                {feed.productCount} products
+              </Badge>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // Feed discoverable check
+  if (check.id === "P3" && data.source) {
+    return (
+      <div className="mt-3">
+        <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/20">
+          <Link className="h-3 w-3 mr-1" />
+          via {data.source}
+        </Badge>
+      </div>
+    );
+  }
+
+  // Feed accessible check
+  if (check.id === "P4" && data.format) {
+    return (
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/20">
+          {data.format.toUpperCase()} format
+        </Badge>
+        {data.url && (
+          <Badge variant="outline" className="text-xs">
+            {data.url}
+          </Badge>
+        )}
+        {data.missingFields && data.missingFields.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 w-full mt-1">
+            <span className="text-xs text-warning mr-1">Missing:</span>
+            {data.missingFields.map((field) => (
+              <Badge key={field} variant="outline" className="text-xs bg-warning/10 text-warning border-warning/20">
+                {field}
+              </Badge>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Protocol compatibility check
+  if (check.id === "P5" && data.compatibility) {
+    const protocols = [
+      { key: "google", label: "Google", ...data.compatibility.google },
+      { key: "klarna", label: "Klarna", ...data.compatibility.klarna },
+      { key: "facebook", label: "Facebook", ...data.compatibility.facebook },
+      { key: "amazon", label: "Amazon", ...data.compatibility.amazon },
+    ];
+    
+    return (
+      <div className="mt-3">
+        <p className="text-xs text-muted-foreground mb-2">Protocol Readiness:</p>
+        <div className="flex flex-wrap gap-2">
+          {protocols.map((protocol) => (
+            <Badge 
+              key={protocol.key} 
+              variant="outline" 
+              className={`text-xs ${
+                protocol.ready 
+                  ? "bg-success/10 text-success border-success/20" 
+                  : "bg-destructive/10 text-destructive border-destructive/20"
+              }`}
+              title={protocol.reason}
+            >
+              {protocol.ready ? "✓" : "✗"} {protocol.label}
+            </Badge>
+          ))}
+        </div>
       </div>
     );
   }
@@ -267,8 +395,8 @@ const ChecksAccordion = ({ checks }: ChecksAccordionProps) => {
     return { category, score, max, checks: categoryChecks, passCount, partialCount, failCount };
   });
 
-  // Sort categories in order: discovery, performance, transaction, trust
-  const categoryOrder = ["discovery", "performance", "transaction", "trust"];
+  // Sort categories in order: discovery, performance, transaction, distribution, trust
+  const categoryOrder = ["discovery", "performance", "transaction", "distribution", "trust"];
   categoryScores.sort((a, b) => categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category));
 
   return (

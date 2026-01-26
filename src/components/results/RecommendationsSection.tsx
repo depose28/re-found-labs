@@ -257,6 +257,41 @@ const RecommendationsSection = ({ recommendations }: RecommendationsSectionProps
                         </a>
                       </div>
                     )}
+                    {(rec.checkId === "P2" || rec.checkId === "P4" || rec.checkId === "P5") && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <a
+                          href="https://support.google.com/merchants/answer/7052112"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          Google Merchant Feed Specs
+                        </a>
+                        <a
+                          href="https://docs.klarna.com/agentic-commerce/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          Klarna Agentic Commerce
+                        </a>
+                      </div>
+                    )}
+                    {rec.checkId === "P3" && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <a
+                          href="https://schema.org/DataFeed"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          Schema.org DataFeed
+                        </a>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

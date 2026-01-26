@@ -41,6 +41,18 @@ const SCHEMA_AVAILABILITY_VALUES = [
   "InStock", "OutOfStock", "PreOrder", "BackOrder"
 ];
 
+// Common product feed paths to check
+const COMMON_FEED_PATHS = [
+  "/products.json",
+  "/collections/all/products.json",
+  "/feed.xml",
+  "/products.xml",
+  "/catalog.xml",
+  "/product-feed/",
+  "/product-feed.xml",
+  "/feeds/products.xml"
+];
+
 // ============================================
 // UTILITIES
 // ============================================
@@ -337,7 +349,7 @@ async function checkAiBotAccess(domain: string): Promise<BotAccessResult> {
     category: "discovery", 
     status: "fail", 
     score: 0, 
-    maxScore: 15, 
+    maxScore: 12, // Updated from 15 to 12
     details: "", 
     data: {}
   };
@@ -352,7 +364,7 @@ async function checkAiBotAccess(domain: string): Promise<BotAccessResult> {
     
     if (response.status === 404) {
       check.status = "pass"; 
-      check.score = 15;
+      check.score = 12;
       check.details = "No robots.txt found — all bots allowed by default";
       CRITICAL_AI_BOTS.forEach(bot => botStatuses[bot] = true);
       return { check, rawRobotsTxt: null, botStatuses };
@@ -374,15 +386,15 @@ async function checkAiBotAccess(domain: string): Promise<BotAccessResult> {
 
     if (allowedCount === totalBots) {
       check.status = "pass"; 
-      check.score = 15; 
+      check.score = 12; 
       check.details = `All ${totalBots} critical AI shopping bots allowed`;
     } else if (allowedCount >= totalBots * 0.7) {
       check.status = "partial"; 
-      check.score = 10; 
+      check.score = 8; 
       check.details = `${allowedCount}/${totalBots} bots allowed. Blocked: ${botsBlocked.slice(0, 3).join(", ")}${botsBlocked.length > 3 ? '...' : ''}`;
     } else if (allowedCount >= 1) {
       check.status = "partial"; 
-      check.score = 5; 
+      check.score = 4; 
       check.details = `Only ${allowedCount}/${totalBots} bots allowed. Major bots blocked.`;
     } else {
       check.status = "fail"; 
@@ -391,7 +403,7 @@ async function checkAiBotAccess(domain: string): Promise<BotAccessResult> {
     }
   } catch (error) {
     check.status = "pass"; 
-    check.score = 15; 
+    check.score = 12; 
     check.details = "Could not fetch robots.txt — assuming all bots allowed";
     CRITICAL_AI_BOTS.forEach(bot => botStatuses[bot] = true);
   }
@@ -629,6 +641,568 @@ function validateReturnPolicySchema(schemas: any[]): SchemaValidation {
 }
 
 // ============================================
+// PLATFORM DETECTION
+// ============================================
+
+interface PlatformDetection {
+  detected: boolean;
+  platform: string | null;
+  confidence: "high" | "medium" | "low";
+  indicators: string[];
+}
+
+function detectPlatform(html: string, domain: string): PlatformDetection {
+  const result: PlatformDetection = {
+    detected: false,
+    platform: null,
+    confidence: "low",
+    indicators: []
+  };
+
+  const lowerHtml = html.toLowerCase();
+
+  // Shopify detection
+  if (lowerHtml.includes("shopify.") || 
+      lowerHtml.includes("cdn.shopify.com") ||
+      lowerHtml.includes("myshopify.com") ||
+      lowerHtml.includes("shopify_analytics") ||
+      lowerHtml.includes('"shopify"')) {
+    result.detected = true;
+    result.platform = "Shopify";
+    result.confidence = "high";
+    result.indicators.push("Shopify CDN/scripts detected");
+    return result;
+  }
+
+  // WooCommerce detection
+  if (lowerHtml.includes("woocommerce") || 
+      lowerHtml.includes("wc-add-to-cart") ||
+      lowerHtml.includes("wp-content") && lowerHtml.includes("cart")) {
+    result.detected = true;
+    result.platform = "WooCommerce";
+    result.confidence = "high";
+    result.indicators.push("WooCommerce classes/scripts detected");
+    return result;
+  }
+
+  // Magento detection
+  if (lowerHtml.includes("mage.") || 
+      lowerHtml.includes("magento") ||
+      lowerHtml.includes("mage-translation-storage") ||
+      lowerHtml.includes("catalog/product/view")) {
+    result.detected = true;
+    result.platform = "Magento";
+    result.confidence = "high";
+    result.indicators.push("Magento scripts/paths detected");
+    return result;
+  }
+
+  // BigCommerce detection
+  if (lowerHtml.includes("bigcommerce") || 
+      lowerHtml.includes("bc-sf-") ||
+      lowerHtml.includes("bigcommerce-stencil")) {
+    result.detected = true;
+    result.platform = "BigCommerce";
+    result.confidence = "high";
+    result.indicators.push("BigCommerce scripts detected");
+    return result;
+  }
+
+  // Squarespace detection
+  if (lowerHtml.includes("squarespace") ||
+      lowerHtml.includes("static1.squarespace.com")) {
+    result.detected = true;
+    result.platform = "Squarespace";
+    result.confidence = "high";
+    result.indicators.push("Squarespace detected");
+    return result;
+  }
+
+  // Wix detection
+  if (lowerHtml.includes("wix.com") ||
+      lowerHtml.includes("wixstatic.com")) {
+    result.detected = true;
+    result.platform = "Wix";
+    result.confidence = "high";
+    result.indicators.push("Wix detected");
+    return result;
+  }
+
+  // PrestaShop detection
+  if (lowerHtml.includes("prestashop") ||
+      lowerHtml.includes("presta-")) {
+    result.detected = true;
+    result.platform = "PrestaShop";
+    result.confidence = "medium";
+    result.indicators.push("PrestaShop indicators detected");
+    return result;
+  }
+
+  // Check for generic e-commerce indicators
+  if (lowerHtml.includes("add-to-cart") || 
+      lowerHtml.includes("add_to_cart") ||
+      lowerHtml.includes("checkout") ||
+      lowerHtml.includes("shopping-cart")) {
+    result.detected = false;
+    result.platform = "Custom";
+    result.confidence = "low";
+    result.indicators.push("E-commerce patterns detected but no known platform");
+  }
+
+  return result;
+}
+
+// ============================================
+// FEED DISCOVERY
+// ============================================
+
+interface FeedInfo {
+  url: string;
+  type: "json" | "xml" | "rss" | "unknown";
+  source: "native" | "sitemap" | "robots" | "html" | "common-path" | "guessed";
+  accessible: boolean;
+  productCount?: number;
+  hasRequiredFields?: boolean;
+  missingFields?: string[];
+}
+
+interface FeedDiscoveryResult {
+  feeds: FeedInfo[];
+  primaryFeed: FeedInfo | null;
+}
+
+async function discoverFeeds(domain: string, html: string, robotsTxt: string | null, platform: PlatformDetection): Promise<FeedDiscoveryResult> {
+  const feeds: FeedInfo[] = [];
+  const checkedUrls = new Set<string>();
+
+  // Helper to check if a feed URL is accessible
+  async function checkFeedUrl(url: string, type: "json" | "xml" | "rss" | "unknown", source: FeedInfo["source"]): Promise<FeedInfo | null> {
+    const fullUrl = url.startsWith("http") ? url : `${domain}${url.startsWith("/") ? "" : "/"}${url}`;
+    
+    if (checkedUrls.has(fullUrl)) return null;
+    checkedUrls.add(fullUrl);
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
+      const response = await fetch(fullUrl, {
+        signal: controller.signal,
+        headers: { "User-Agent": "AgentPulseBot/1.0" }
+      });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) return null;
+
+      const content = await response.text();
+      const feedInfo: FeedInfo = {
+        url: url.startsWith("http") ? url : url,
+        type,
+        source,
+        accessible: true
+      };
+
+      // Validate JSON feed (Shopify style)
+      if (type === "json" || content.trim().startsWith("{") || content.trim().startsWith("[")) {
+        try {
+          const json = JSON.parse(content);
+          const products = json.products || json.items || (Array.isArray(json) ? json : null);
+          if (products && Array.isArray(products)) {
+            feedInfo.type = "json";
+            feedInfo.productCount = products.length;
+            
+            // Check for required fields
+            const missingFields: string[] = [];
+            if (products.length > 0) {
+              const sample = products[0];
+              if (!sample.title && !sample.name) missingFields.push("title");
+              if (!sample.price && !sample.variants?.[0]?.price) missingFields.push("price");
+              if (!sample.sku && !sample.gtin && !sample.variants?.[0]?.sku) missingFields.push("GTIN/SKU");
+            }
+            feedInfo.hasRequiredFields = missingFields.length === 0;
+            feedInfo.missingFields = missingFields.length > 0 ? missingFields : undefined;
+          }
+          return feedInfo;
+        } catch {
+          // Not valid JSON
+        }
+      }
+
+      // Validate XML feed
+      if (type === "xml" || content.includes("<?xml") || content.includes("<rss") || content.includes("<feed")) {
+        feedInfo.type = content.includes("<rss") ? "rss" : "xml";
+        // Count product/item nodes
+        const itemMatches = content.match(/<item|<product|<entry/gi);
+        feedInfo.productCount = itemMatches ? itemMatches.length : 0;
+        feedInfo.hasRequiredFields = feedInfo.productCount > 0;
+        return feedInfo;
+      }
+
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // 1. Check Shopify native feeds if platform is Shopify
+  if (platform.platform === "Shopify") {
+    const shopifyFeed = await checkFeedUrl("/products.json", "json", "native");
+    if (shopifyFeed) feeds.push(shopifyFeed);
+    
+    const collectionsFeed = await checkFeedUrl("/collections/all/products.json", "json", "native");
+    if (collectionsFeed && !shopifyFeed) feeds.push(collectionsFeed);
+  }
+
+  // 2. Parse robots.txt for feed references
+  if (robotsTxt) {
+    const sitemapMatches = robotsTxt.match(/sitemap:\s*(\S+)/gi) || [];
+    for (const match of sitemapMatches) {
+      const sitemapUrl = match.replace(/sitemap:\s*/i, "").trim();
+      if (sitemapUrl.includes("product") || sitemapUrl.includes("feed")) {
+        const feed = await checkFeedUrl(sitemapUrl, "xml", "robots");
+        if (feed) feeds.push(feed);
+      }
+    }
+  }
+
+  // 3. Check HTML for feed links
+  const feedLinkRegex = /<link[^>]+rel=["']alternate["'][^>]+type=["']application\/(rss\+xml|atom\+xml|json)["'][^>]*href=["']([^"']+)["']/gi;
+  let linkMatch;
+  while ((linkMatch = feedLinkRegex.exec(html)) !== null) {
+    const feedUrl = linkMatch[2];
+    const feedType = linkMatch[1].includes("json") ? "json" : "rss";
+    const feed = await checkFeedUrl(feedUrl, feedType, "html");
+    if (feed) feeds.push(feed);
+  }
+
+  // 4. Check common feed paths (limit checks to avoid timeout)
+  const pathsToCheck = platform.platform === "Shopify" 
+    ? [] // Already checked Shopify feeds
+    : COMMON_FEED_PATHS.slice(0, 4); // Limit to 4 common paths
+
+  for (const path of pathsToCheck) {
+    if (feeds.length >= 3) break; // Found enough feeds
+    const feed = await checkFeedUrl(path, path.includes(".json") ? "json" : "xml", "common-path");
+    if (feed) feeds.push(feed);
+  }
+
+  // 5. Check for JSON-LD DataFeed or ItemList in HTML
+  const dataFeedSchema = findSchemaByType(extractAllSchemas(html), "DataFeed");
+  const itemListSchema = findSchemaByType(extractAllSchemas(html), "ItemList");
+  if (dataFeedSchema || itemListSchema) {
+    feeds.push({
+      url: "embedded",
+      type: "json",
+      source: "html",
+      accessible: true,
+      productCount: (dataFeedSchema?.dataFeedElement?.length || itemListSchema?.itemListElement?.length) || 0,
+      hasRequiredFields: true
+    });
+  }
+
+  // Determine primary feed
+  const primaryFeed = feeds.sort((a, b) => {
+    // Prefer accessible feeds with more products
+    if (a.accessible !== b.accessible) return a.accessible ? -1 : 1;
+    if (a.productCount && b.productCount) return b.productCount - a.productCount;
+    // Prefer native over common-path
+    const sourceOrder = ["native", "html", "robots", "sitemap", "common-path", "guessed"];
+    return sourceOrder.indexOf(a.source) - sourceOrder.indexOf(b.source);
+  })[0] || null;
+
+  return { feeds, primaryFeed };
+}
+
+// ============================================
+// PROTOCOL COMPATIBILITY
+// ============================================
+
+interface ProtocolCompatibility {
+  google: { ready: boolean; reason: string };
+  klarna: { ready: boolean; reason: string };
+  facebook: { ready: boolean; reason: string };
+  amazon: { ready: boolean; reason: string };
+  readyCount: number;
+  partialCount: number;
+}
+
+function calculateProtocolCompatibility(
+  feeds: FeedInfo[], 
+  productValidation: SchemaValidation,
+  html: string
+): ProtocolCompatibility {
+  const hasFeed = feeds.length > 0 && feeds.some(f => f.accessible);
+  const primaryFeed = feeds.find(f => f.accessible);
+  const hasProduct = productValidation.found;
+  const hasGtin = productValidation.schema?.gtin || productValidation.schema?.sku || productValidation.schema?.mpn;
+  const hasFacebookPixel = html.toLowerCase().includes("facebook") && 
+    (html.includes("fbq(") || html.includes("facebook-pixel") || html.includes("facebook.net"));
+  
+  const result: ProtocolCompatibility = {
+    google: { ready: false, reason: "" },
+    klarna: { ready: false, reason: "" },
+    facebook: { ready: false, reason: "" },
+    amazon: { ready: false, reason: "" },
+    readyCount: 0,
+    partialCount: 0
+  };
+
+  // Google Merchant: Feed with title, price, availability
+  if (hasFeed && primaryFeed?.hasRequiredFields) {
+    result.google = { ready: true, reason: "Feed detected with required fields" };
+    result.readyCount++;
+  } else if (hasFeed) {
+    result.google = { ready: false, reason: `Feed missing: ${primaryFeed?.missingFields?.join(", ") || "validation failed"}` };
+    result.partialCount++;
+  } else if (hasProduct) {
+    result.google = { ready: false, reason: "Has Product schema but no feed" };
+    result.partialCount++;
+  } else {
+    result.google = { ready: false, reason: "No feed or product data detected" };
+  }
+
+  // Klarna APP: Feed + GTIN/SKU
+  if (hasFeed && hasGtin) {
+    result.klarna = { ready: true, reason: "Feed + GTIN/SKU identifiers present" };
+    result.readyCount++;
+  } else if (hasFeed && !hasGtin) {
+    result.klarna = { ready: false, reason: "Feed found but missing GTIN/SKU identifiers" };
+    result.partialCount++;
+  } else if (hasGtin) {
+    result.klarna = { ready: false, reason: "Has identifiers but no feed" };
+    result.partialCount++;
+  } else {
+    result.klarna = { ready: false, reason: "No feed or product identifiers" };
+  }
+
+  // Facebook Catalog: Pixel + Product schema
+  if (hasFacebookPixel && hasProduct) {
+    result.facebook = { ready: true, reason: "Facebook Pixel + Product schema detected" };
+    result.readyCount++;
+  } else if (hasFacebookPixel) {
+    result.facebook = { ready: false, reason: "Pixel detected but no Product schema" };
+    result.partialCount++;
+  } else if (hasProduct) {
+    result.facebook = { ready: false, reason: "Product schema but no Facebook Pixel" };
+    result.partialCount++;
+  } else {
+    result.facebook = { ready: false, reason: "No Pixel or Product schema" };
+  }
+
+  // Amazon: Specific feed format or known integration
+  const hasAmazonFeed = feeds.some(f => f.url.toLowerCase().includes("amazon"));
+  const hasAmazonScript = html.toLowerCase().includes("amazon.com") && html.includes("amzn");
+  if (hasAmazonFeed) {
+    result.amazon = { ready: true, reason: "Amazon-specific feed detected" };
+    result.readyCount++;
+  } else if (hasAmazonScript && hasProduct) {
+    result.amazon = { ready: false, reason: "Amazon integration detected but needs feed" };
+    result.partialCount++;
+  } else {
+    result.amazon = { ready: false, reason: "No Amazon feed integration" };
+  }
+
+  return result;
+}
+
+// ============================================
+// DISTRIBUTION CHECKS
+// ============================================
+
+interface DistributionResult {
+  checks: Check[];
+  totalScore: number;
+  maxScore: number;
+  platformDetection: PlatformDetection;
+  feeds: FeedInfo[];
+  protocolCompatibility: ProtocolCompatibility;
+}
+
+async function performDistributionChecks(
+  domain: string,
+  html: string,
+  robotsTxt: string | null,
+  productValidation: SchemaValidation
+): Promise<DistributionResult> {
+  // Platform detection
+  const platform = detectPlatform(html, domain);
+  
+  // Feed discovery
+  const { feeds, primaryFeed } = await discoverFeeds(domain, html, robotsTxt, platform);
+  
+  // Protocol compatibility
+  const protocolCompatibility = calculateProtocolCompatibility(feeds, productValidation, html);
+
+  const checks: Check[] = [];
+  let totalScore = 0;
+  const maxScore = 15;
+
+  // P1: Platform Detection (2 points)
+  const p1: Check = {
+    id: "P1",
+    name: "Platform Detected",
+    category: "distribution",
+    status: "fail",
+    score: 0,
+    maxScore: 2,
+    details: "",
+    data: { platform: platform.platform, confidence: platform.confidence, indicators: platform.indicators }
+  };
+
+  if (platform.detected && platform.platform !== "Custom") {
+    p1.status = "pass";
+    p1.score = 2;
+    p1.details = `${platform.platform} platform detected (${platform.confidence} confidence)`;
+  } else if (platform.platform === "Custom") {
+    p1.status = "partial";
+    p1.score = 1;
+    p1.details = "E-commerce patterns found but no known platform identified";
+  } else {
+    p1.status = "fail";
+    p1.score = 0;
+    p1.details = "Could not detect e-commerce platform";
+  }
+  checks.push(p1);
+  totalScore += p1.score;
+
+  // P2: Product Feed Exists (5 points)
+  const p2: Check = {
+    id: "P2",
+    name: "Product Feed Exists",
+    category: "distribution",
+    status: "fail",
+    score: 0,
+    maxScore: 5,
+    details: "",
+    data: { feeds: feeds.map(f => ({ url: f.url, type: f.type, source: f.source, productCount: f.productCount })) }
+  };
+
+  if (primaryFeed && primaryFeed.productCount && primaryFeed.productCount > 0) {
+    p2.status = "pass";
+    p2.score = 5;
+    p2.details = `Product feed found (${primaryFeed.productCount} products at ${primaryFeed.url})`;
+  } else if (feeds.length > 0) {
+    p2.status = "partial";
+    p2.score = 3;
+    p2.details = `Feed detected at ${feeds[0].url} but could not verify product count`;
+  } else if (platform.platform === "Shopify") {
+    p2.status = "partial";
+    p2.score = 2;
+    p2.details = "Shopify detected — native feed should be available at /products.json";
+  } else {
+    p2.status = "fail";
+    p2.score = 0;
+    p2.details = "No product feed detected";
+  }
+  checks.push(p2);
+  totalScore += p2.score;
+
+  // P3: Feed Discoverable (3 points)
+  const p3: Check = {
+    id: "P3",
+    name: "Feed Discoverable",
+    category: "distribution",
+    status: "fail",
+    score: 0,
+    maxScore: 3,
+    details: "",
+    data: {}
+  };
+
+  const discoverableSources = ["robots", "sitemap", "html", "native"];
+  const discoverableFeeds = feeds.filter(f => discoverableSources.includes(f.source));
+
+  if (discoverableFeeds.length > 0) {
+    p3.status = "pass";
+    p3.score = 3;
+    p3.details = `Feed linked via ${discoverableFeeds[0].source} (easily discoverable by agents)`;
+    p3.data = { source: discoverableFeeds[0].source };
+  } else if (feeds.length > 0) {
+    p3.status = "partial";
+    p3.score = 1;
+    p3.details = "Feed exists but not linked in sitemap, robots.txt, or HTML";
+  } else {
+    p3.status = "fail";
+    p3.score = 0;
+    p3.details = "No discoverable feed reference found";
+  }
+  checks.push(p3);
+  totalScore += p3.score;
+
+  // P4: Feed Accessible (3 points)
+  const p4: Check = {
+    id: "P4",
+    name: "Feed Accessible",
+    category: "distribution",
+    status: "fail",
+    score: 0,
+    maxScore: 3,
+    details: "",
+    data: {}
+  };
+
+  const accessibleFeeds = feeds.filter(f => f.accessible);
+  if (accessibleFeeds.length > 0 && primaryFeed?.hasRequiredFields) {
+    p4.status = "pass";
+    p4.score = 3;
+    p4.details = `Feed accessible with valid content (${primaryFeed.type.toUpperCase()} format)`;
+    p4.data = { format: primaryFeed.type, url: primaryFeed.url };
+  } else if (accessibleFeeds.length > 0) {
+    p4.status = "partial";
+    p4.score = 2;
+    p4.details = `Feed accessible but ${primaryFeed?.missingFields?.join(", ") || "missing required fields"}`;
+    p4.data = { missingFields: primaryFeed?.missingFields };
+  } else if (feeds.length > 0) {
+    p4.status = "fail";
+    p4.score = 0;
+    p4.details = "Feed URLs found but not accessible (returned errors)";
+  } else {
+    p4.status = "fail";
+    p4.score = 0;
+    p4.details = "No feed to test accessibility";
+  }
+  checks.push(p4);
+  totalScore += p4.score;
+
+  // P5: Protocol Indicators (2 points)
+  const p5: Check = {
+    id: "P5",
+    name: "Protocol Indicators",
+    category: "distribution",
+    status: "fail",
+    score: 0,
+    maxScore: 2,
+    details: "",
+    data: { compatibility: protocolCompatibility }
+  };
+
+  if (protocolCompatibility.readyCount >= 2) {
+    p5.status = "pass";
+    p5.score = 2;
+    p5.details = `Ready for ${protocolCompatibility.readyCount} protocols (Google, Klarna, Facebook, Amazon)`;
+  } else if (protocolCompatibility.readyCount === 1 || protocolCompatibility.partialCount >= 2) {
+    p5.status = "partial";
+    p5.score = 1;
+    p5.details = `${protocolCompatibility.readyCount} protocol ready, ${protocolCompatibility.partialCount} partial`;
+  } else {
+    p5.status = "fail";
+    p5.score = 0;
+    p5.details = "Not ready for any major shopping protocols";
+  }
+  checks.push(p5);
+  totalScore += p5.score;
+
+  return {
+    checks,
+    totalScore,
+    maxScore,
+    platformDetection: platform,
+    feeds,
+    protocolCompatibility
+  };
+}
+
+// ============================================
 // CHECK FUNCTIONS
 // ============================================
 
@@ -640,7 +1214,7 @@ function checkProductSchemaDeep(schemas: any[]): { check: Check; validation: Sch
     category: "discovery", 
     status: "fail", 
     score: 0, 
-    maxScore: 15, 
+    maxScore: 13, // Updated from 15 to 13
     details: "", 
     data: {} 
   };
@@ -658,15 +1232,15 @@ function checkProductSchemaDeep(schemas: any[]): { check: Check; validation: Sch
 
   if (validation.valid && validation.warnings.length === 0) {
     check.status = "pass";
-    check.score = 15;
+    check.score = 13;
     check.details = "Complete, valid Product schema with all recommended fields";
   } else if (validation.valid) {
     check.status = "pass";
-    check.score = 13;
+    check.score = 11;
     check.details = `Valid Product schema. Minor improvements: ${validation.warnings.slice(0, 2).join(", ")}`;
   } else if (validation.missingFields.length <= 2) {
     check.status = "partial";
-    check.score = 8;
+    check.score = 7;
     check.details = `Product schema found but missing: ${validation.missingFields.join(", ")}`;
   } else {
     check.status = "partial";
@@ -839,7 +1413,7 @@ function checkOrganizationSchemaDeep(schemas: any[]): { check: Check; validation
     category: "trust", 
     status: "fail", 
     score: 0, 
-    maxScore: 15, 
+    maxScore: 10, // Updated from 15 to 10
     details: "", 
     data: {} 
   };
@@ -858,15 +1432,15 @@ function checkOrganizationSchemaDeep(schemas: any[]): { check: Check; validation
 
   if (validation.valid && validation.warnings.length <= 1) {
     check.status = "pass";
-    check.score = 15;
+    check.score = 10;
     check.details = `Complete Organization schema for "${validation.schema?.name}"`;
   } else if (validation.valid) {
     check.status = "pass";
-    check.score = 12;
+    check.score = 8;
     check.details = `Organization schema found. Missing: ${validation.warnings.slice(0, 2).join(", ")}`;
   } else {
     check.status = "partial";
-    check.score = 7;
+    check.score = 5;
     check.details = `Incomplete Organization schema. Missing: ${validation.missingFields.join(", ")}`;
   }
 
@@ -881,7 +1455,7 @@ function checkReturnPolicySchemaDeep(schemas: any[]): { check: Check; validation
     category: "trust", 
     status: "fail", 
     score: 0, 
-    maxScore: 10, 
+    maxScore: 5, // Updated from 10 to 5
     details: "", 
     data: {} 
   };
@@ -899,16 +1473,16 @@ function checkReturnPolicySchemaDeep(schemas: any[]): { check: Check; validation
 
   if (validation.warnings.length === 0) {
     check.status = "pass";
-    check.score = 10;
+    check.score = 5;
     const days = validation.schema?.merchantReturnDays;
     check.details = days ? `Complete return policy (${days} days)` : "Complete return policy schema";
   } else if (validation.warnings.length <= 2) {
     check.status = "partial";
-    check.score = 6;
+    check.score = 3;
     check.details = `Return policy found but incomplete: ${validation.warnings[0]}`;
   } else {
     check.status = "partial";
-    check.score = 3;
+    check.score = 2;
     check.details = "Return policy schema has multiple missing fields";
   }
 
@@ -1096,6 +1670,103 @@ After installing, redirect all HTTP to HTTPS.`
 Link from Product schema:
 "hasMerchantReturnPolicy": { "@id": "#return-policy" }`
     },
+    // Distribution recommendations
+    P1: {
+      priority: "medium",
+      title: "Consider a mainstream e-commerce platform",
+      description: "Using a known platform makes feed integration easier for shopping protocols.",
+      howToFix: `Popular e-commerce platforms with built-in feed support:
+
+- Shopify: Native /products.json feed
+- WooCommerce: Google Product Feed plugins
+- BigCommerce: Native product feeds
+- Magento: Product feed extensions
+
+If you're on a custom platform, implement a product feed API.`
+    },
+    P2: {
+      priority: "critical",
+      title: "Create a product feed for AI shopping protocols",
+      description: "Your products are invisible to AI shopping protocols like Klarna APP and Google Shopping without a feed.",
+      howToFix: `Create a product feed:
+
+For Shopify:
+- Native feed at /products.json (already available)
+- Ensure it's not blocked in robots.txt
+
+For WooCommerce:
+- Install "Product Feed PRO for WooCommerce" plugin
+- Configure Google Merchant Center feed
+
+For Custom Sites:
+- Create a JSON or XML feed at /products.json or /feed.xml
+- Include: title, price, currency, availability, SKU/GTIN, images
+
+Reference in robots.txt:
+Sitemap: https://yoursite.com/products.xml`
+    },
+    P3: {
+      priority: "medium",
+      title: "Make your product feed discoverable",
+      description: "Feed exists but AI agents may not find it automatically.",
+      howToFix: `Make your feed discoverable:
+
+1. Add to robots.txt:
+   Sitemap: https://yoursite.com/products.xml
+
+2. Add to sitemap.xml:
+   <url>
+     <loc>https://yoursite.com/products.xml</loc>
+     <changefreq>daily</changefreq>
+   </url>
+
+3. Add HTML link tag:
+   <link rel="alternate" type="application/json" 
+         href="/products.json" title="Product Feed">`
+    },
+    P4: {
+      priority: "high",
+      title: "Fix product feed accessibility issues",
+      description: "Your product feed exists but is returning errors or missing required fields.",
+      howToFix: `Ensure your feed:
+
+1. Returns HTTP 200 status
+2. Has valid JSON or XML format
+3. Includes required fields per product:
+   - title/name
+   - price
+   - priceCurrency (ISO 4217: USD, EUR, GBP)
+   - availability
+   - GTIN, EAN, UPC, or SKU
+
+Test with: Google Merchant Center feed validator`
+    },
+    P5: {
+      priority: "high",
+      title: "Add product identifiers for shopping protocols",
+      description: "Your feed is missing GTIN/EAN/SKU identifiers required for Klarna APP and Google Merchant.",
+      howToFix: `Add product identifiers:
+
+In your Product schema:
+{
+  "@type": "Product",
+  "gtin13": "0012345678905",
+  "sku": "ABC-123",
+  "mpn": "MPN-456",
+  ...
+}
+
+In your product feed:
+{
+  "products": [{
+    "gtin": "0012345678905",
+    "sku": "ABC-123",
+    ...
+  }]
+}
+
+GTINs can be purchased from GS1.org`
+    }
   };
 
   for (const check of checks) {
@@ -1270,6 +1941,14 @@ serve(async (req) => {
     const n1 = checkPageSpeedWithMetrics(pageSpeedMetrics);
     const t2 = checkHttps(normalizedUrl);
 
+    // Distribution checks (new pillar)
+    const distributionResult = await performDistributionChecks(
+      domain, 
+      html, 
+      botAccessResult.rawRobotsTxt, 
+      productValidation
+    );
+
     const checks = [
       botAccessResult.check, // D1
       d2,                     // D2
@@ -1277,16 +1956,18 @@ serve(async (req) => {
       n1,                     // N1
       t1,                     // T1
       t2,                     // T2
+      ...distributionResult.checks, // P1-P5
       r1,                     // R1
       r2                      // R2
     ];
 
-    // Calculate scores
-    const discoveryScore = botAccessResult.check.score + d2.score + sitemapCheck.score;
-    const performanceScore = n1.score;
-    const transactionScore = t1.score + t2.score;
-    const trustScore = r1.score + r2.score;
-    const totalScore = discoveryScore + performanceScore + transactionScore + trustScore;
+    // Calculate scores (updated weights)
+    const discoveryScore = botAccessResult.check.score + d2.score + sitemapCheck.score; // max 35
+    const performanceScore = n1.score; // max 15
+    const transactionScore = t1.score + t2.score; // max 20
+    const distributionScore = distributionResult.totalScore; // max 15
+    const trustScore = r1.score + r2.score; // max 15
+    const totalScore = discoveryScore + performanceScore + transactionScore + distributionScore + trustScore;
     const grade = getGrade(totalScore);
 
     // Store validations for recommendations
@@ -1309,13 +1990,19 @@ serve(async (req) => {
       total_score: totalScore,
       grade,
       discovery_score: discoveryScore,
-      discovery_max: 40,
+      discovery_max: 35,
       performance_score: performanceScore,
       performance_max: 15,
       transaction_score: transactionScore,
       transaction_max: 20,
       trust_score: trustScore,
-      trust_max: 25,
+      trust_max: 15,
+      distribution_score: distributionScore,
+      distribution_max: 15,
+      platform_detected: distributionResult.platformDetection.platform,
+      platform_name: distributionResult.platformDetection.platform,
+      feeds_found: distributionResult.feeds,
+      protocol_compatibility: distributionResult.protocolCompatibility,
       checks,
       recommendations,
       analysis_duration_ms: analysisDuration

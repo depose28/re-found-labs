@@ -14,7 +14,7 @@ AI shopping agents are fundamentally changing how consumers discover and purchas
 
 **The Reality**: 73% of e-commerce stores fail basic AI agent readiness checks. Most sites were built for human browsers, not machine readers.
 
-Agent Pulse analyzes your store across **four critical dimensions** and provides:
+Agent Pulse analyzes your store across **five critical dimensions** and provides:
 - A **0-100 score** with letter grade (A+ to F)
 - **Category-by-category breakdown** with specific issues identified
 - **Prioritized recommendations** with code snippets to fix problems
@@ -24,7 +24,7 @@ Agent Pulse analyzes your store across **four critical dimensions** and provides
 
 ## What We Test
 
-### 1. 🔍 Discovery (Bot Access & Product Data)
+### 1. 🔍 Discovery (Bot Access & Product Data) — 35 pts
 
 **AI Bot Access via robots.txt**
 
@@ -59,7 +59,7 @@ We validate your structured data includes:
 
 ---
 
-### 2. ⚡ Performance (Speed & Core Web Vitals)
+### 2. ⚡ Performance (Speed & Core Web Vitals) — 15 pts
 
 We pull real performance data from **Google PageSpeed Insights API**, which reflects actual Chrome User Experience Report (CrUX) data from real users.
 
@@ -79,7 +79,7 @@ We pull real performance data from **Google PageSpeed Insights API**, which refl
 
 ---
 
-### 3. 💳 Transaction (Purchasability Signals)
+### 3. 💳 Transaction (Purchasability Signals) — 20 pts
 
 **Offer Schema (schema.org/Offer)**
 
@@ -108,7 +108,54 @@ We validate your pricing and availability data:
 
 ---
 
-### 4. 🛡️ Trust (Brand Verification)
+### 4. 📡 Distribution (Protocol & Feed Readiness) — 15 pts **NEW**
+
+AI agents increasingly discover products through centralized feeds and protocols, not just by crawling websites. We check readiness for agentic commerce protocols like **Klarna APP**, **Google Merchant**, **Facebook Catalog**, and **Amazon**.
+
+**Platform Detection**
+
+We identify your e-commerce platform:
+
+| Platform | Detection Method |
+|----------|------------------|
+| Shopify | `Shopify.` in source, `cdn.shopify.com` assets, `/products.json` endpoint |
+| WooCommerce | `woocommerce` classes, `/wp-json/wc/` API |
+| Magento | `Mage.` or `magento` in source, `/rest/V1/` patterns |
+| BigCommerce | `bigcommerce` scripts, stencil indicators |
+| Custom | Fallback when none detected |
+
+**Feed Discovery**
+
+We search for product feeds from multiple sources:
+- **Shopify Native**: `/products.json`, `/collections/all/products.json`
+- **Robots.txt**: Feed URLs or Sitemap references
+- **Sitemap.xml**: "product" or "feed" entries
+- **Common Paths**: `/feed.xml`, `/products.xml`, `/catalog.xml`
+- **HTML**: `<link rel="alternate">` with product/feed keywords
+- **JSON-LD**: `DataFeed` or `ItemList` schema types
+
+**Protocol Compatibility Matrix**
+
+| Protocol | Ready Condition |
+|----------|-----------------|
+| Google Merchant | Product feed exists with title, price, availability |
+| Klarna APP | Feed exists + GTIN/SKU present |
+| Facebook Catalog | Facebook pixel detected + product schema |
+| Amazon | Specific Amazon feed format detected |
+
+**Distribution Checks (15 points)**:
+
+| Check | Points | Pass Condition |
+|-------|--------|----------------|
+| Platform Detected | 2 | Known e-commerce platform identified |
+| Product Feed Exists | 5 | At least one feed URL found or native feed available |
+| Feed Discoverable | 3 | Feed linked in sitemap, robots.txt, or HTML |
+| Feed Accessible | 3 | Feed URL returns 200 and valid content |
+| Protocol Indicators | 2 | Has GTIN/SKU or structured data mapping to protocols |
+
+---
+
+### 5. 🛡️ Trust (Brand Verification) — 15 pts
 
 **Organization Schema (schema.org/Organization)**
 
@@ -149,7 +196,6 @@ To be transparent about our scope, here's what Agent Pulse **does not** currentl
 | **JavaScript-heavy SPAs** | Sites requiring complex authentication or dynamic loading | Limited by scraping capabilities |
 | **Mobile-specific Issues** | Separate mobile site versions | We analyze the primary URL only |
 | **Checkout Flow** | Whether purchases can actually complete | Requires end-to-end transaction testing |
-| **API Access** | Direct product API or feed availability | We test browser-accessible content only |
 | **Review Schema** | AggregateRating and Review structured data | Focus is on core commerce signals |
 | **FAQ Schema** | FAQPage and Question/Answer markup | Not critical for AI shopping agents |
 | **Local Business** | LocalBusiness schema and location-specific data | Focused on e-commerce, not local SEO |
@@ -170,20 +216,17 @@ To be transparent about our scope, here's what Agent Pulse **does not** currentl
 
 | Grade | Score Range | Meaning |
 |-------|-------------|---------|
-| A+ | 95-100 | Excellent — Fully agent-optimized |
-| A | 90-94 | Great — Minor improvements possible |
-| B+ | 85-89 | Good — Some gaps to address |
-| B | 80-84 | Above Average — Notable issues |
-| C+ | 75-79 | Average — Significant optimization needed |
-| C | 70-74 | Below Average — Major gaps |
-| D | 60-69 | Poor — Critical issues present |
-| F | 0-59 | Failing — Largely invisible to AI agents |
+| Agent-Native | 85-100 | Excellent — Fully agent-optimized |
+| Optimized | 70-84 | Great — Minor improvements possible |
+| Needs Work | 50-69 | Some gaps to address |
+| Invisible | 0-49 | Failing — Largely invisible to AI agents |
 
 **Scoring Weight Distribution**:
-- Discovery: ~25% of total score
-- Performance: ~25% of total score
-- Transaction: ~25% of total score
-- Trust: ~25% of total score
+- Discovery: 35 points (35%)
+- Performance: 15 points (15%)
+- Transaction: 20 points (20%)
+- Distribution: 15 points (15%) **NEW**
+- Trust: 15 points (15%)
 
 Each check contributes points to category scores, which roll up to the total score.
 
@@ -206,10 +249,12 @@ Each check contributes points to category scores, which roll up to the total sco
    ├─> robots.txt parsing (AI bot rules)
    ├─> Schema.org extraction (JSON-LD, Microdata, RDFa)
    ├─> PageSpeed Insights API call
-   └─> sitemap.xml presence check
+   ├─> sitemap.xml presence check
+   └─> Feed discovery & platform detection **NEW**
 
 4. Scoring Engine
-   └─> Calculate category scores
+   └─> Calculate category scores (5 pillars)
+   └─> Calculate protocol compatibility
    └─> Generate prioritized recommendations
    └─> Assign letter grade
 
@@ -280,7 +325,7 @@ npm run dev
 |----------|---------|
 | `GOOGLE_PAGESPEED_API_KEY` | PageSpeed Insights API access |
 | `RESEND_API_KEY` | Email delivery for PDF reports |
-| `FIRECRAWL_API_KEY` | JavaScript-rendered page scraping |
+| `FIRECRAWL_API_KEY` | JavaScript-rendered page scraping + feed discovery |
 | `VITE_CALENDLY_URL` | Booking link for strategy calls |
 
 ---
