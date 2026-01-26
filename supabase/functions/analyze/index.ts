@@ -54,8 +54,41 @@ const COMMON_FEED_PATHS = [
 ];
 
 // ============================================
-// UTILITIES
+// UTILITIES & TIMEOUT HELPERS
 // ============================================
+
+// Individual check timeout (20 seconds)
+const CHECK_TIMEOUT_MS = 20000;
+// Overall analysis timeout (85 seconds - leaving 5s buffer for response)
+const ANALYSIS_TIMEOUT_MS = 85000;
+
+/**
+ * Wraps a promise with a timeout. Returns default value on timeout.
+ */
+function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  defaultValue: T,
+  label: string
+): Promise<T> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => {
+      console.log(`[Timeout] ${label} timed out after ${timeoutMs}ms`);
+      resolve(defaultValue);
+    }, timeoutMs);
+    
+    promise
+      .then((result) => {
+        clearTimeout(timer);
+        resolve(result);
+      })
+      .catch((error) => {
+        clearTimeout(timer);
+        console.log(`[Timeout] ${label} failed:`, error.message);
+        resolve(defaultValue);
+      });
+  });
+}
 
 function normalizeUrl(url: string): string {
   let normalized = url.trim();
@@ -2272,37 +2305,87 @@ serve(async (req) => {
     
     console.log(`Starting analysis for: ${normalizedUrl} (IP: ${clientIp}, remaining: ${remaining})`);
 
-    // Parallel fetch: Firecrawl + PageSpeed + Robots + Sitemap
-    const [scrapeResult, pageSpeedMetrics, botAccessResult, sitemapCheck] = await Promise.all([
-      scrapeWithFirecrawl(normalizedUrl),
-      getPageSpeedMetrics(normalizedUrl),
-      checkAiBotAccess(domain),
-      checkSitemap(domain)
+    // Overall analysis timeout
+    const analysisTimeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error("Analysis timed out. The site may be blocking requests or experiencing issues.")), ANALYSIS_TIMEOUT_MS);
+    });
+
+    // Run the analysis with timeout protection
+    const analysisResult = await Promise.race([
+      (async () => {
+        // Default values for timeouts
+        const defaultScrapeResult = { html: "", metadata: {} };
+        const defaultPageSpeedMetrics: PageSpeedMetrics = { lcp: null, fid: null, cls: null, tti: null, speedIndex: null, performanceScore: null };
+        const defaultBotAccessResult: BotAccessResult = { 
+          check: { id: "D1", name: "AI Bot Access", category: "discovery", status: "fail" as CheckStatus, score: 0, maxScore: 12, details: "Check timed out", data: {} },
+          rawRobotsTxt: null, 
+          botStatuses: {} 
+        };
+        const defaultSitemapCheck: Check = { id: "D3", name: "Sitemap Exists", category: "discovery", status: "fail" as CheckStatus, score: 0, maxScore: 5, details: "Check timed out", data: {} };
+
+        // Parallel fetch with individual timeouts: Firecrawl + PageSpeed + Robots + Sitemap
+        console.log("[Analysis] Starting parallel checks with individual timeouts");
+        const [scrapeResult, pageSpeedMetrics, botAccessResult, sitemapCheck] = await Promise.all([
+          withTimeout(scrapeWithFirecrawl(normalizedUrl), CHECK_TIMEOUT_MS, defaultScrapeResult, "Firecrawl scrape"),
+          withTimeout(getPageSpeedMetrics(normalizedUrl), CHECK_TIMEOUT_MS * 2, defaultPageSpeedMetrics, "PageSpeed Insights"), // PageSpeed can be slow
+          withTimeout(checkAiBotAccess(domain), CHECK_TIMEOUT_MS, defaultBotAccessResult, "Bot access check"),
+          withTimeout(checkSitemap(domain), CHECK_TIMEOUT_MS, defaultSitemapCheck, "Sitemap check")
+        ]);
+
+        const { html } = scrapeResult;
+        
+        // Check if we got valid HTML
+        if (!html || html.length === 0) {
+          console.log("[Analysis] Warning: Empty HTML received, site may be blocking requests");
+        }
+        
+        // Extract all schemas from the page
+        const schemas = extractAllSchemas(html);
+        console.log(`Found ${schemas.length} schema objects`);
+
+        // Deep validation checks (sync, no timeout needed)
+        const { check: d2, validation: productValidation } = checkProductSchemaDeep(schemas);
+        const { check: t1, validation: offerValidation } = checkOfferSchemaDeep(schemas, productValidation);
+        const { check: r1, validation: orgValidation } = checkOrganizationSchemaDeep(schemas);
+        const { check: r2, validation: returnValidation } = checkReturnPolicySchemaDeep(schemas);
+        
+        // Other checks (sync)
+        const n1 = checkPageSpeedWithMetrics(pageSpeedMetrics);
+        const t2 = checkHttps(normalizedUrl);
+
+        // Default distribution result for timeout
+        const defaultDistributionResult: DistributionResult = {
+          checks: [],
+          totalScore: 0,
+          maxScore: 15,
+          platformDetection: { detected: false, platform: "Unknown", confidence: "low" as const, indicators: [] },
+          feeds: [],
+          protocolReadiness: {
+            discovery: { googleShopping: { status: 'not_ready', reason: 'Check timed out' }, klarnaApp: { status: 'not_ready', reason: 'Check timed out' }, answerEngines: { status: 'not_ready', reason: 'Check timed out' } },
+            commerce: { ucp: { status: 'not_ready', reason: 'Check timed out' }, acp: { status: 'not_ready', reason: 'Check timed out' }, mcp: { status: 'not_ready', reason: 'Check timed out' } },
+            payments: { rails: [] },
+            readyCount: 0,
+            partialCount: 0
+          },
+          paymentRails: [],
+          checkoutApis: []
+        };
+
+        // Distribution checks with timeout
+        const distributionResult = await withTimeout(
+          performDistributionChecks(domain, html, botAccessResult.rawRobotsTxt, productValidation),
+          CHECK_TIMEOUT_MS * 1.5, // 30 seconds for distribution
+          defaultDistributionResult,
+          "Distribution checks"
+        );
+
+        return { scrapeResult, pageSpeedMetrics, botAccessResult, sitemapCheck, d2, t1, r1, r2, n1, t2, productValidation, offerValidation, orgValidation, returnValidation, distributionResult };
+      })(),
+      analysisTimeoutPromise
     ]);
 
-    const { html } = scrapeResult;
-    
-    // Extract all schemas from the page
-    const schemas = extractAllSchemas(html);
-    console.log(`Found ${schemas.length} schema objects`);
-
-    // Deep validation checks
-    const { check: d2, validation: productValidation } = checkProductSchemaDeep(schemas);
-    const { check: t1, validation: offerValidation } = checkOfferSchemaDeep(schemas, productValidation);
-    const { check: r1, validation: orgValidation } = checkOrganizationSchemaDeep(schemas);
-    const { check: r2, validation: returnValidation } = checkReturnPolicySchemaDeep(schemas);
-    
-    // Other checks
-    const n1 = checkPageSpeedWithMetrics(pageSpeedMetrics);
-    const t2 = checkHttps(normalizedUrl);
-
-    // Distribution checks (new pillar)
-    const distributionResult = await performDistributionChecks(
-      domain, 
-      html, 
-      botAccessResult.rawRobotsTxt, 
-      productValidation
-    );
+    // Destructure the analysis results
+    const { botAccessResult, sitemapCheck, d2, t1, r1, r2, n1, t2, productValidation, offerValidation, orgValidation, returnValidation, distributionResult } = analysisResult;
 
     const checks = [
       botAccessResult.check, // D1
