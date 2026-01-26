@@ -3,11 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRight, Shield, Clock, Zap, CheckCircle2, Search, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import PulseDot from "@/components/ui/PulseDot";
 import { supabase } from "@/integrations/supabase/client";
 const ConversionHeroSection = () => {
   const [url, setUrl] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [auditCount, setAuditCount] = useState(0);
   const navigate = useNavigate();
@@ -25,31 +23,19 @@ const ConversionHeroSection = () => {
     };
     fetchCount();
   }, []);
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!url.trim()) {
       setError("Please enter your website URL");
       return;
     }
-    setIsLoading(true);
-    setError("");
-    try {
-      const {
-        data,
-        error: analysisError
-      } = await supabase.functions.invoke("analyze", {
-        body: {
-          url: url.trim()
-        }
-      });
-      if (analysisError) throw analysisError;
-      if (data?.error) throw new Error(data.error);
-      navigate(`/results?id=${data.id}`);
-    } catch (err: any) {
-      console.error("Analysis error:", err);
-      setError(err.message || "Analysis failed. Please try again.");
-      setIsLoading(false);
+
+    let normalizedUrl = url.trim();
+    if (!normalizedUrl.startsWith("http://") && !normalizedUrl.startsWith("https://")) {
+      normalizedUrl = "https://" + normalizedUrl;
     }
+
+    navigate(`/analyzing?url=${encodeURIComponent(normalizedUrl)}`);
   };
   return <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden">
       {/* Subtle background gradient */}
@@ -92,16 +78,11 @@ const ConversionHeroSection = () => {
                   <Input type="text" placeholder="Enter your store URL..." value={url} onChange={e => {
                   setUrl(e.target.value);
                   setError("");
-                }} className="h-14 pl-4 pr-4 text-base bg-background border-border focus:border-foreground transition-colors" disabled={isLoading} />
+                }} className="h-14 pl-4 pr-4 text-base bg-background border-border focus:border-foreground transition-colors" />
                 </div>
-                <Button type="submit" size="lg" disabled={isLoading} className="h-14 px-8 bg-foreground text-background hover:bg-foreground/90 font-medium text-base whitespace-nowrap">
-                  {isLoading ? <>
-                      <PulseDot size="sm" className="mr-2" />
-                      Analyzing...
-                    </> : <>
+                <Button type="submit" size="lg" className="h-14 px-8 bg-foreground text-background hover:bg-foreground/90 font-medium text-base whitespace-nowrap">
                       Get Your Score
                       <ArrowRight className="ml-2 h-4 w-4" />
-                    </>}
                 </Button>
               </div>
 
