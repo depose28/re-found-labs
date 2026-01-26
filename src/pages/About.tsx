@@ -17,7 +17,7 @@ const About = () => {
             </h1>
             
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
-              Re:found Labs builds the infrastructure for AI-native commerce. We help e-commerce brands get discovered, understood, and recommended by AI shopping agents—the new front door to online purchases.
+              re:found Labs builds the infrastructure for AI-native commerce. We help e-commerce brands get discovered, understood, and recommended by AI shopping agents—the new front door to online purchases.
             </p>
           </div>
         </section>
@@ -62,7 +62,7 @@ const About = () => {
                   We're fixing that—one store at a time.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
-                  Re:found Labs helps brands close the gap between how they present themselves to humans and how AI agents perceive them. Through diagnostics, simulation, and implementation, we make stores visible to the agents that increasingly shape purchase decisions.
+                  re:found Labs helps brands close the gap between how they present themselves to humans and how AI agents perceive them. Through diagnostics, simulation, and implementation, we make stores visible to the agents that increasingly shape purchase decisions.
                 </p>
               </div>
             </div>
@@ -161,7 +161,7 @@ const About = () => {
           <div className="max-w-2xl">
             <p className="text-sm text-muted-foreground uppercase tracking-wider mb-4">Based in Berlin. Working globally.</p>
             <p className="text-lg text-muted-foreground leading-relaxed mb-8">
-              We started Re:found Labs because we saw the gap between where commerce is going and where most brands are today. AI agents are already recommending products—the question is whether they're recommending yours.
+              We started re:found Labs because we saw the gap between where commerce is going and where most brands are today. AI agents are already recommending products—the question is whether they're recommending yours.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link

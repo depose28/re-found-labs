@@ -10,7 +10,7 @@ const Footer = () => {
             <div className="flex items-center gap-2">
               <PulseDot size="md" />
               <span className="font-display text-xl text-foreground">
-                Re:found Labs
+                re:found Labs
               </span>
             </div>
             <p className="text-sm text-muted-foreground max-w-xs">
@@ -30,7 +30,7 @@ const Footer = () => {
 
         <div className="mt-16 pt-8 border-t border-border">
           <p className="text-xs text-muted-foreground">
-            © 2025 Re:found Labs. Your data is analyzed in real-time and not stored beyond your session.
+            © 2025 re:found Labs. Your data is analyzed in real-time and not stored beyond your session.
           </p>
         </div>
       </div>
