@@ -40,11 +40,11 @@ const categories = [
     number: "04",
     title: "Distribution",
     points: "15 points",
-    question: "Can protocols find your products?",
+    question: "Can agents discover, transact, and pay?",
     description:
-      "AI agents increasingly discover products through centralized feeds and protocols like Klarna APP, Google Merchant, and Facebook Catalog—not just by crawling. We check if your store is plugged into these networks.",
-    whatBreaks: "No product feed. Missing GTIN/SKU. Feeds not discoverable.",
-    whatAgentsDo: "Never see your products. Recommend stores with proper feed integration.",
+      "AI agents use emerging protocols to discover products, complete transactions, and process payments. We check your readiness across three layers: Discovery (Google Shopping, Klarna APP), Commerce (UCP, ACP, MCP), and Payment rails (Stripe, Google Pay, Apple Pay).",
+    whatBreaks: "No product feed. Missing GTIN/SKU. No checkout APIs. No protocol manifests.",
+    whatAgentsDo: "Can't complete purchases. Route users to competitors with proper protocol integration.",
   },
   {
     icon: Shield,

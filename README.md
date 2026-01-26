@@ -108,9 +108,26 @@ We validate your pricing and availability data:
 
 ---
 
-### 4. 📡 Distribution (Protocol & Feed Readiness) — 15 pts **NEW**
+### 4. 📡 Distribution (Protocol Readiness) — 15 pts
 
-AI agents increasingly discover products through centralized feeds and protocols, not just by crawling websites. We check readiness for agentic commerce protocols like **Klarna APP**, **Google Merchant**, **Facebook Catalog**, and **Amazon**.
+AI agents use a layered protocol stack to discover products, complete transactions, and process payments. We evaluate readiness across **three protocol layers** using a protocol-centric approach.
+
+**Protocol Layer Architecture**
+
+```
+DISCOVERY LAYER (Can agents find products?)
+├── Google Shopping    ✓/⚠️/✗
+├── Klarna APP         ✓/⚠️/✗
+└── Answer Engines     ✓/⚠️/✗
+
+COMMERCE LAYER (Can agents transact?)
+├── UCP (Universal Commerce Protocol)  ✓/⚠️/✗
+├── ACP (ChatGPT Shopping)             ✓/⚠️/✗
+└── MCP (Model Context Protocol)       ✓/⚠️/✗
+
+PAYMENT LAYER (What rails exist?)
+└── Stripe · Google Pay · Apple Pay · Klarna · PayPal
+```
 
 **Platform Detection**
 
@@ -134,24 +151,46 @@ We search for product feeds from multiple sources:
 - **HTML**: `<link rel="alternate">` with product/feed keywords
 - **JSON-LD**: `DataFeed` or `ItemList` schema types
 
-**Protocol Compatibility Matrix**
+**Protocol Readiness Matrix**
 
-| Protocol | Ready Condition |
-|----------|-----------------|
-| Google Merchant | Product feed exists with title, price, availability |
-| Klarna APP | Feed exists + GTIN/SKU present |
-| Facebook Catalog | Facebook pixel detected + product schema |
-| Amazon | Specific Amazon feed format detected |
+| Layer | Protocol | Ready | Partial | Not Ready |
+|-------|----------|-------|---------|-----------|
+| Discovery | Google Shopping | Feed + title/price/availability + GTIN | Feed exists, missing fields | No feed |
+| Discovery | Klarna APP | Feed + GTIN on >80% products | Feed + GTIN on <80% | No GTIN |
+| Discovery | Answer Engines | Complete Product + Offer schema | Partial schema | No schema |
+| Commerce | UCP | `/.well-known/ucp.json` manifest detected | Commerce patterns detected | Nothing found |
+| Commerce | ACP (ChatGPT) | Stripe + `/.well-known/ai-plugin.json` | Stripe detected, no plugin | No Stripe |
+| Commerce | MCP | `/.well-known/mcp.json` or SAP indicators | API patterns detected | Nothing found |
+
+**New Protocol Detection**
+
+| Protocol | What We Check |
+|----------|---------------|
+| **UCP (Universal Commerce Protocol)** | `/.well-known/ucp.json`, `/.well-known/commerce.json`, `/api/commerce/manifest` |
+| **ACP (ChatGPT Shopping)** | Stripe integration + `/.well-known/ai-plugin.json` plugin manifest |
+| **MCP (Model Context Protocol)** | `/.well-known/mcp.json`, `/mcp/capabilities`, SAP Commerce indicators (`/occ/v2/`, `/rest/v2/`) |
+
+**Payment Rails Detection**
+
+We detect checkout infrastructure:
+- **Stripe**: `stripe.js`, `js.stripe.com`
+- **Google Pay**: `pay.google.com`
+- **Apple Pay**: `ApplePaySession`, `apple-pay-button`
+- **Klarna**: `klarna.*payments`, `klarnacdn.net`
+- **PayPal**: `paypal.com/sdk`
+- **Shopify Checkout**: `checkout.shopify.com`
 
 **Distribution Checks (15 points)**:
 
 | Check | Points | Pass Condition |
 |-------|--------|----------------|
-| Platform Detected | 2 | Known e-commerce platform identified |
-| Product Feed Exists | 5 | At least one feed URL found or native feed available |
-| Feed Discoverable | 3 | Feed linked in sitemap, robots.txt, or HTML |
-| Feed Accessible | 3 | Feed URL returns 200 and valid content |
-| Protocol Indicators | 2 | Has GTIN/SKU or structured data mapping to protocols |
+| Platform Detected | 1 | Known e-commerce platform identified |
+| Structured Data Complete | 3 | Product + Offer + GTIN/SKU present |
+| Product Feed Exists | 3 | At least one feed URL found or native feed available |
+| Feed Discoverable | 2 | Feed linked in sitemap, robots.txt, or HTML |
+| Feed Accessible + Valid | 2 | Feed URL returns 200 and valid content |
+| Commerce API Indicators | 2 | Stripe/Shopify Checkout/payment rails detected |
+| Protocol Manifest | 2 | UCP or MCP well-known endpoint found |
 
 ---
 
