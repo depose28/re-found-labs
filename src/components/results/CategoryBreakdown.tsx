@@ -18,28 +18,28 @@ const categories = [
     key: "discovery", 
     label: "Discovery", 
     icon: Search, 
-    description: "Can AI agents find and interpret your products?",
+    description: "Can agents find and understand your products?",
     tips: ["robots.txt allows AI bots", "Product schema markup", "XML sitemap available"]
   },
   { 
     key: "performance", 
     label: "Performance", 
     icon: Zap, 
-    description: "Is your site fast enough for agent timeouts?",
+    description: "Is your site fast enough for agents?",
     tips: ["LCP under 2.5s", "CLS under 0.1", "Time to Interactive under 3.8s"]
   },
   { 
     key: "transaction", 
     label: "Transaction", 
     icon: CreditCard, 
-    description: "Can agents complete a purchase?",
+    description: "Can agents help users purchase?",
     tips: ["Offer schema with pricing", "Valid currency (ISO 4217)", "HTTPS enabled"]
   },
   { 
     key: "trust", 
     label: "Trust", 
     icon: Shield, 
-    description: "Will agents recommend you to their users?",
+    description: "Will agents recommend you?",
     tips: ["Organization schema", "Return policy defined", "Contact information available"]
   },
 ];

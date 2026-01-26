@@ -1,4 +1,4 @@
-# Re:found Labs - Agent Pulse
+# re:found Labs - Agent Pulse
 
 **AI Shopping Bot Readiness Analyzer for E-commerce**
 
@@ -26,15 +26,15 @@ Agent Pulse analyzes your store across **four critical dimensions** and provides
 **What it checks:**
 - **AI Bot Access via robots.txt** — Verifies your site allows critical AI crawlers:
   - GPTBot (OpenAI/ChatGPT)
+  - OAI-SearchBot (OpenAI Search)
+  - ChatGPT-User (ChatGPT Browser)
   - ClaudeBot (Anthropic)
+  - Anthropic-AI (Anthropic)
   - PerplexityBot
   - Google-Extended
-  - Applebot-Extended
-  - CCBot (Common Crawl)
   - Amazonbot
-  - Meta-ExternalFetcher
+  - Applebot-Extended
   - Bytespider (TikTok)
-  - Cohere-AI
   
 - **Product Schema (schema.org/Product)** — Validates structured data including:
   - Product name and description
@@ -192,7 +192,7 @@ npm run dev
 
 ## Service Tiers
 
-Agent Pulse is the free entry point for Re:found Labs' AI optimization services:
+Agent Pulse is the free entry point for re:found Labs' AI optimization services:
 
 | Tier | Description |
 |------|-------------|
@@ -213,7 +213,7 @@ This project is built with [Lovable](https://lovable.dev). Changes can be made v
 
 ## License
 
-Proprietary — Re:found Labs
+Proprietary — re:found Labs
 
 ---
 

@@ -32,7 +32,7 @@ const AgencyHeroSection = () => {
 
             {/* Subheadline */}
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-10 md:mb-12 animate-slide-up max-w-2xl mx-auto lg:mx-0" style={{ animationDelay: "0.1s" }}>
-              Re:found Labs helps e-commerce brands get discovered, understood, and recommended by AI shopping agents. Start with a free diagnostic.
+              re:found Labs helps e-commerce brands get discovered, understood, and recommended by AI shopping agents. Start with a free diagnostic.
             </p>
 
             {/* CTAs */}
