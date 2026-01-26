@@ -9,6 +9,12 @@ import ChecksAccordion from "@/components/results/ChecksAccordion";
 import RecommendationsSection from "@/components/results/RecommendationsSection";
 import EmailCapture from "@/components/results/EmailCapture";
 import CTASection from "@/components/results/CTASection";
+import RevenueAtRiskCard from "@/components/results/RevenueAtRiskCard";
+import IndustryComparisonBars from "@/components/results/IndustryComparisonBars";
+import TimelineGraphic from "@/components/results/TimelineGraphic";
+import PriorityFixSpotlight from "@/components/results/PriorityFixSpotlight";
+import WhatUnlocksSection from "@/components/results/WhatUnlocksSection";
+import MarketContextCard from "@/components/results/MarketContextCard";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface AnalysisResult {
@@ -118,6 +124,7 @@ const Results = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       <main className="flex-1">
+        {/* SECTION 1: THE STAKES (Above the Fold) */}
         <ScoreHeader
           score={analysis.total_score}
           grade={analysis.grade}
@@ -128,7 +135,21 @@ const Results = () => {
           issuesCount={analysis.checks?.filter((c: any) => c.status !== "pass").length || 0}
         />
 
-        <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20 py-16 space-y-16">
+        {/* Stakes Cards - Revenue at Risk, Industry Comparison, Timeline */}
+        <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20 py-12">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+            <RevenueAtRiskCard score={analysis.total_score} />
+            <div className="p-6 border border-border bg-card">
+              <IndustryComparisonBars score={analysis.total_score} />
+            </div>
+            <div className="md:col-span-2 lg:col-span-1">
+              <TimelineGraphic />
+            </div>
+          </div>
+
+          {/* SECTION 2: THE DIAGNOSIS */}
+          <PriorityFixSpotlight recommendations={analysis.recommendations} />
+
           <CategoryBreakdown
             discovery={{ score: analysis.discovery_score, max: analysis.discovery_max ?? 35 }}
             performance={{ score: analysis.performance_score, max: analysis.performance_max ?? 15 }}
@@ -137,14 +158,21 @@ const Results = () => {
             trust={{ score: analysis.trust_score, max: analysis.trust_max ?? 15 }}
           />
 
-          <ChecksAccordion checks={analysis.checks} />
+          {/* SECTION 3: DETAILED RESULTS */}
+          <div className="mt-16 space-y-16">
+            <ChecksAccordion checks={analysis.checks} />
+            <RecommendationsSection recommendations={analysis.recommendations} />
+          </div>
 
-          <RecommendationsSection recommendations={analysis.recommendations} />
-
-          <EmailCapture analysisId={analysis.id} />
-
-          <CTASection />
+          {/* SECTION 4: THE PATH FORWARD */}
+          <div className="mt-16">
+            <WhatUnlocksSection />
+            <MarketContextCard />
+            <EmailCapture analysisId={analysis.id} />
+          </div>
         </div>
+
+        <CTASection />
       </main>
       <Footer />
     </div>

@@ -5,6 +5,14 @@ import { Button } from "@/components/ui/button";
 const CTASection = () => {
   return (
     <section className="bg-foreground p-8 md:p-10">
+      {/* Closing statement */}
+      <div className="text-center mb-10 pb-10 border-b border-background/20">
+        <p className="font-display text-xl md:text-2xl text-background leading-relaxed max-w-2xl mx-auto">
+          This is where commerce is heading.{" "}
+          <span className="text-background/60">Will you be discovered, or will you be skipped?</span>
+        </p>
+      </div>
+
       <div className="grid md:grid-cols-2 gap-8 items-center">
         <div>
           <p className="text-xs font-medium uppercase tracking-widest text-background/50 mb-4">

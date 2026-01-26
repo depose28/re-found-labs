@@ -1,4 +1,4 @@
-import { AlertCircle, AlertTriangle, Info, ChevronDown, Wrench, Copy, Check, ExternalLink } from "lucide-react";
+import { AlertCircle, AlertTriangle, Info, ChevronDown, Wrench, Copy, Check, ExternalLink, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +23,8 @@ const priorityConfig = {
 };
 
 const RecommendationsSection = ({ recommendations }: RecommendationsSectionProps) => {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [showAll, setShowAll] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const handleCopy = async (text: string, checkId: string) => {
@@ -34,6 +35,18 @@ const RecommendationsSection = ({ recommendations }: RecommendationsSectionProps
     } catch (err) {
       console.error("Failed to copy:", err);
     }
+  };
+
+  const toggleExpanded = (id: string) => {
+    setExpandedIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
   };
 
   if (!recommendations || recommendations.length === 0) {
@@ -73,6 +86,10 @@ const RecommendationsSection = ({ recommendations }: RecommendationsSectionProps
   // Estimate score improvement
   const estimatedImprovement = criticalCount * 15 + highCount * 10 + mediumCount * 5;
 
+  // Show top 3 by default, rest collapsed
+  const visibleRecs = showAll ? sortedRecs : sortedRecs.slice(0, 3);
+  const hiddenCount = sortedRecs.length - 3;
+
   return (
     <section>
       <div className="mb-8">
@@ -103,9 +120,9 @@ const RecommendationsSection = ({ recommendations }: RecommendationsSectionProps
       </div>
 
       <div className="border border-border divide-y divide-border">
-        {sortedRecs.map((rec, index) => {
+        {visibleRecs.map((rec, index) => {
           const config = priorityConfig[rec.priority as keyof typeof priorityConfig] || priorityConfig.medium;
-          const isExpanded = expandedId === rec.checkId;
+          const isExpanded = expandedIds.has(rec.checkId);
           const PriorityIcon = config.icon;
           const isCopied = copiedId === rec.checkId;
 
@@ -160,7 +177,7 @@ const RecommendationsSection = ({ recommendations }: RecommendationsSectionProps
                     </p>
 
                     <button
-                      onClick={() => setExpandedId(isExpanded ? null : rec.checkId)}
+                      onClick={() => toggleExpanded(rec.checkId)}
                       className="flex items-center gap-2 text-sm font-medium text-accent mt-4 hover:opacity-80 transition-opacity"
                     >
                       <Wrench className="h-4 w-4" />
@@ -352,6 +369,26 @@ const RecommendationsSection = ({ recommendations }: RecommendationsSectionProps
           );
         })}
       </div>
+
+      {/* Show more/less toggle */}
+      {hiddenCount > 0 && (
+        <button
+          onClick={() => setShowAll(!showAll)}
+          className="w-full mt-4 py-3 border border-border bg-secondary/30 hover:bg-secondary/50 transition-colors flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground"
+        >
+          {showAll ? (
+            <>
+              <ChevronUp className="h-4 w-4" />
+              Show less
+            </>
+          ) : (
+            <>
+              <ChevronDown className="h-4 w-4" />
+              Show {hiddenCount} more recommendation{hiddenCount > 1 ? "s" : ""}
+            </>
+          )}
+        </button>
+      )}
     </section>
   );
 };
