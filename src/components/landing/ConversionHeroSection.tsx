@@ -46,17 +46,29 @@ const ConversionHeroSection = () => {
           {/* Left: Conversion-focused content */}
           <div className="max-w-xl">
             {/* Social proof eyebrow */}
-            <div className="flex items-center gap-2 mb-6 animate-fade-in">
-              <div className="flex -space-x-1">
-                {[...Array(3)].map((_, i) => <div key={i} className="w-6 h-6 rounded-full bg-muted border-2 border-background flex items-center justify-center">
-                    <span className="text-[10px] font-medium text-muted-foreground">
-                      {["S", "M", "A"][i]}
-                    </span>
-                  </div>)}
+            <div className="flex flex-col gap-4 mb-6 animate-fade-in">
+              {/* Counter */}
+              <div className="flex items-center gap-2">
+                <span className="inline-flex h-2 w-2 rounded-full bg-accent animate-pulse" />
+                <span className="text-sm text-muted-foreground">
+                  <span className="font-semibold text-foreground">{auditCount.toLocaleString()}+</span> stores analyzed
+                </span>
               </div>
-              <span className="text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">{auditCount.toLocaleString()}+</span> stores analyzed
-              </span>
+              
+              {/* Company logos placeholder */}
+              <div className="flex items-center gap-4">
+                <span className="text-xs text-muted-foreground uppercase tracking-wider">Trusted by</span>
+                <div className="flex items-center gap-3 opacity-60">
+                  {["Logo 1", "Logo 2", "Logo 3", "Logo 4"].map((placeholder, i) => (
+                    <div
+                      key={i}
+                      className="h-6 px-3 bg-muted/50 border border-border rounded flex items-center justify-center"
+                    >
+                      <span className="text-[10px] text-muted-foreground font-medium">{placeholder}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* Headline - Benefit focused */}
