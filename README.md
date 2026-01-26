@@ -4,7 +4,6 @@
 
 Agent Pulse is a free diagnostic tool that evaluates how well your e-commerce store is optimized for AI shopping agents like ChatGPT, Claude, Perplexity, and other LLM-powered assistants that increasingly drive product discovery and purchasing decisions.
 
-🔗 **Live Tool**: [ai-commerce-audit.lovable.app](https://ai-commerce-audit.lovable.app)  
 📧 **Contact**: hello@refoundlabs.com
 
 ---
