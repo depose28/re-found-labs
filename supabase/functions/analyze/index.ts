@@ -157,6 +157,7 @@ interface FirecrawlResponse {
   data?: {
     markdown?: string;
     html?: string;
+    rawHtml?: string;
     metadata?: {
       title?: string;
       description?: string;
@@ -185,7 +186,7 @@ async function scrapeWithFirecrawl(url: string): Promise<{ html: string; metadat
       },
       body: JSON.stringify({
         url,
-        formats: ["html", "markdown"],
+        formats: ["rawHtml", "html", "markdown"],
         onlyMainContent: false,
         waitFor: 3000, // Wait for JS rendering
       }),
@@ -198,9 +199,10 @@ async function scrapeWithFirecrawl(url: string): Promise<{ html: string; metadat
       return await basicFetch(url);
     }
 
-    console.log("Firecrawl scrape successful");
+    console.log("Firecrawl scrape successful, rawHtml length:", data.data?.rawHtml?.length || 0);
     return {
-      html: data.data?.html || "",
+      // Prefer rawHtml for schema extraction (contains unprocessed script tags)
+      html: data.data?.rawHtml || data.data?.html || "",
       metadata: data.data?.metadata || {},
     };
   } catch (error) {
@@ -216,7 +218,10 @@ async function basicFetch(url: string): Promise<{ html: string; metadata: any }>
   try {
     const response = await fetch(url, {
       signal: controller.signal,
-      headers: { "User-Agent": "AgentPulseBot/1.0 (+https://refoundlabs.com)" },
+      headers: { 
+        "User-Agent": "Mozilla/5.0 (compatible; AgentPulseBot/1.0; +https://refoundlabs.com) AppleWebKit/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+      },
     });
     clearTimeout(timeoutId);
     const html = await response.text();
@@ -429,9 +434,20 @@ function extractAllSchemas(html: string): any[] {
   const jsonLdRegex = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
   let match;
 
+  console.log(`[Schema] Extracting from HTML of length ${html.length} chars`);
+
   while ((match = jsonLdRegex.exec(html)) !== null) {
     try {
-      const json = JSON.parse(match[1]);
+      // Clean up common issues before parsing
+      let jsonContent = match[1]
+        .trim()
+        .replace(/^\s*<!--/, '')  // Remove HTML comments at start
+        .replace(/-->\s*$/, '')   // Remove HTML comments at end
+        .replace(/\n/g, ' ')      // Normalize newlines
+        .replace(/\t/g, ' ');     // Normalize tabs
+      
+      const json = JSON.parse(jsonContent);
+      
       if (json["@graph"]) {
         schemas.push(...(Array.isArray(json["@graph"]) ? json["@graph"] : [json["@graph"]]));
       } else if (Array.isArray(json)) {
@@ -440,24 +456,43 @@ function extractAllSchemas(html: string): any[] {
         schemas.push(json);
       }
     } catch (e) {
-      console.log("Failed to parse JSON-LD:", e);
+      console.log("[Schema] Failed to parse JSON-LD block:", e);
+      console.log("[Schema] Content preview:", match[1].substring(0, 200));
     }
   }
 
+  const schemaTypes = schemas.map(s => s["@type"]).filter(Boolean);
+  console.log(`[Schema] Extracted ${schemas.length} schemas, types: ${schemaTypes.join(", ") || "none"}`);
+  
   return schemas;
 }
 
 function findSchemaByType(schemas: any[], type: string): any | null {
+  // Type variants - related schema types that should match
+  const typeVariants: Record<string, string[]> = {
+    "Product": ["Product", "ProductGroup", "IndividualProduct"],
+    "Offer": ["Offer", "AggregateOffer"]
+  };
+  
+  const typesToCheck = typeVariants[type] || [type];
+  
   for (const schema of schemas) {
     const schemaType = schema["@type"];
-    if (schemaType === type || (Array.isArray(schemaType) && schemaType.includes(type))) {
-      return schema;
+    for (const checkType of typesToCheck) {
+      if (schemaType === checkType || 
+          (Array.isArray(schemaType) && schemaType.includes(checkType))) {
+        console.log(`[Schema] Found ${schemaType} when looking for ${type}`);
+        return schema;
+      }
     }
   }
   return null;
 }
 
 function validateProductSchema(schemas: any[]): SchemaValidation {
+  console.log(`[Schema] Looking for Product schema among ${schemas.length} schemas`);
+  console.log(`[Schema] Available types: ${schemas.map(s => s["@type"]).filter(Boolean).join(", ") || "none"}`);
+  
   const productSchema = findSchemaByType(schemas, "Product");
   const result: SchemaValidation = {
     found: !!productSchema,
@@ -468,7 +503,13 @@ function validateProductSchema(schemas: any[]): SchemaValidation {
     warnings: []
   };
 
-  if (!productSchema) return result;
+  if (!productSchema) {
+    console.log("[Schema] No Product/ProductGroup schema found");
+    return result;
+  }
+  
+  console.log(`[Schema] Found product: ${productSchema.name || "unnamed"}`);
+
 
   // Required fields for Product schema
   const requiredFields = ["name", "description", "image"];
