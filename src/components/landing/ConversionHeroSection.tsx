@@ -46,29 +46,11 @@ const ConversionHeroSection = () => {
           {/* Left: Conversion-focused content */}
           <div className="max-w-xl">
             {/* Social proof eyebrow */}
-            <div className="flex flex-col gap-4 mb-6 animate-fade-in">
-              {/* Counter */}
-              <div className="flex items-center gap-2">
-                <span className="inline-flex h-2 w-2 rounded-full bg-accent animate-pulse" />
-                <span className="text-sm text-muted-foreground">
-                  <span className="font-semibold text-foreground">{auditCount.toLocaleString()}+</span> stores analyzed
-                </span>
-              </div>
-              
-              {/* Company logos placeholder */}
-              <div className="flex items-center gap-4">
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">Trusted by</span>
-                <div className="flex items-center gap-3 opacity-60">
-                  {["Logo 1", "Logo 2", "Logo 3", "Logo 4"].map((placeholder, i) => (
-                    <div
-                      key={i}
-                      className="h-6 px-3 bg-muted/50 border border-border rounded flex items-center justify-center"
-                    >
-                      <span className="text-[10px] text-muted-foreground font-medium">{placeholder}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            <div className="flex items-center gap-2 mb-6 animate-fade-in">
+              <span className="inline-flex h-2 w-2 rounded-full bg-accent animate-pulse" />
+              <span className="text-sm text-muted-foreground">
+                <span className="font-semibold text-foreground">{auditCount.toLocaleString()}+</span> stores analyzed
+              </span>
             </div>
 
             {/* Headline - Benefit focused */}
@@ -116,6 +98,23 @@ const ConversionHeroSection = () => {
               <div className="flex items-center gap-1.5">
                 <Zap className="h-4 w-4 text-success" />
                 <span>100% free</span>
+              </div>
+            </div>
+
+            {/* Company logos placeholder */}
+            <div className="flex items-center gap-4 mt-8 pt-6 border-t border-border animate-slide-up" style={{
+            animationDelay: "0.25s"
+          }}>
+              <span className="text-xs text-muted-foreground uppercase tracking-wider">Trusted by</span>
+              <div className="flex items-center gap-3 opacity-60">
+                {["Logo 1", "Logo 2", "Logo 3", "Logo 4"].map((placeholder, i) => (
+                  <div
+                    key={i}
+                    className="h-6 px-3 bg-muted/50 border border-border rounded flex items-center justify-center"
+                  >
+                    <span className="text-[10px] text-muted-foreground font-medium">{placeholder}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
