@@ -9,6 +9,7 @@ const checkSteps = [
   { id: "bots", label: "Checking AI bot access" },
   { id: "schema", label: "Analyzing structured data" },
   { id: "performance", label: "Testing page performance" },
+  { id: "distribution", label: "Discovering product feeds" },
   { id: "trust", label: "Verifying trust signals" },
 ];
 
