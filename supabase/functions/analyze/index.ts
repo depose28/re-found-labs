@@ -522,6 +522,244 @@ function findSchemaByType(schemas: any[], type: string): any | null {
   return null;
 }
 
+// ============================================
+// PAGE TYPE DETECTION & SMART SCHEMA EXTRACTION
+// ============================================
+
+interface PageTypeInfo {
+  isCategory: boolean;
+  isCategoryByUrl: boolean;
+  isCategoryBySchema: boolean;
+  categoryPatterns: string[];
+}
+
+function detectPageType(url: string, schemas: any[]): PageTypeInfo {
+  const urlLower = url.toLowerCase();
+  const categoryPatterns: string[] = [];
+  
+  // URL-based detection
+  const categoryUrlPatterns = ['/c/', '/category/', '/categories/', '/collection/', '/collections/', '/shop/', '/catalog/'];
+  const isCategoryByUrl = categoryUrlPatterns.some(pattern => {
+    if (urlLower.includes(pattern)) {
+      categoryPatterns.push(`URL contains "${pattern}"`);
+      return true;
+    }
+    return false;
+  });
+  
+  // Schema-based detection
+  const hasCollectionPage = schemas.some(s => 
+    s["@type"] === "CollectionPage" || 
+    s["@type"] === "ItemList" ||
+    s["@type"] === "SearchResultsPage"
+  );
+  
+  if (hasCollectionPage) {
+    categoryPatterns.push("CollectionPage/ItemList schema detected");
+  }
+  
+  return {
+    isCategory: isCategoryByUrl || hasCollectionPage,
+    isCategoryByUrl,
+    isCategoryBySchema: hasCollectionPage,
+    categoryPatterns
+  };
+}
+
+function findProductLinkOnPage(html: string, baseUrl: string): string | null {
+  const urlObj = new URL(baseUrl);
+  const domain = urlObj.origin;
+  
+  // Product URL patterns
+  const productPatterns = [
+    /href=["']([^"']*\/p\/[^"']+)["']/gi,
+    /href=["']([^"']*\/product\/[^"']+)["']/gi,
+    /href=["']([^"']*\/products\/[^"']+)["']/gi,
+    /href=["']([^"']*\/item\/[^"']+)["']/gi,
+    /href=["']([^"']*\/pd\/[^"']+)["']/gi,
+    /href=["']([^"']*-p-\d+[^"']*)["']/gi,
+  ];
+  
+  for (const pattern of productPatterns) {
+    const match = pattern.exec(html);
+    if (match && match[1]) {
+      let productUrl = match[1];
+      
+      // Make absolute URL
+      if (productUrl.startsWith('/')) {
+        productUrl = domain + productUrl;
+      } else if (!productUrl.startsWith('http')) {
+        productUrl = domain + '/' + productUrl;
+      }
+      
+      // Validate it's on the same domain
+      try {
+        const productUrlObj = new URL(productUrl);
+        if (productUrlObj.hostname === urlObj.hostname) {
+          return productUrl;
+        }
+      } catch {
+        continue;
+      }
+    }
+  }
+  
+  return null;
+}
+
+interface SchemaQuality {
+  level: 'full' | 'partial' | 'none';
+  hasProduct: boolean;
+  hasOffer: boolean;
+  hasGtin: boolean;
+  hasAggregateOffer: boolean;
+  hasItemList: boolean;
+  productCount?: number;
+}
+
+function assessSchemaQuality(schemas: any[]): SchemaQuality {
+  const productSchema = findSchemaByType(schemas, "Product");
+  const offerSchema = findSchemaByType(schemas, "Offer");
+  const aggregateOffer = findSchemaByType(schemas, "AggregateOffer");
+  const itemList = findSchemaByType(schemas, "ItemList");
+  
+  const hasProduct = !!productSchema;
+  const hasOffer = !!(offerSchema || productSchema?.offers);
+  const hasGtin = !!(productSchema?.gtin || productSchema?.sku || productSchema?.mpn);
+  const hasAggregateOffer = !!aggregateOffer;
+  const hasItemList = !!itemList;
+  
+  // Count products in ItemList
+  let productCount = 0;
+  if (itemList?.itemListElement) {
+    productCount = Array.isArray(itemList.itemListElement) 
+      ? itemList.itemListElement.length 
+      : 1;
+  }
+  
+  // Determine quality level
+  let level: 'full' | 'partial' | 'none' = 'none';
+  if (hasProduct && hasOffer) {
+    level = 'full';
+  } else if (hasAggregateOffer || hasItemList || hasProduct) {
+    level = 'partial';
+  }
+  
+  return { level, hasProduct, hasOffer, hasGtin, hasAggregateOffer, hasItemList, productCount };
+}
+
+interface SmartSchemaResult {
+  schemas: any[];
+  schemaQuality: SchemaQuality;
+  productValidation: SchemaValidation;
+  sourceUrl: string;
+  checkedProductPage: boolean;
+  productPageUrl?: string;
+  categoryPageSchemas?: any[];
+  message: string;
+}
+
+async function extractSchemasSmartly(
+  html: string, 
+  url: string, 
+  domain: string
+): Promise<SmartSchemaResult> {
+  // Extract schemas from submitted URL
+  const schemas = extractAllSchemas(html);
+  const pageType = detectPageType(url, schemas);
+  const schemaQuality = assessSchemaQuality(schemas);
+  
+  console.log(`[SmartSchema] Page type: ${pageType.isCategory ? 'Category' : 'Product'}, Schema quality: ${schemaQuality.level}`);
+  
+  // If we have full Product + Offer schema, use it
+  if (schemaQuality.level === 'full') {
+    const productValidation = validateProductSchema(schemas);
+    return {
+      schemas,
+      schemaQuality,
+      productValidation,
+      sourceUrl: url,
+      checkedProductPage: false,
+      message: "Product schema found on submitted page"
+    };
+  }
+  
+  // If it's a category page without full schema, try to find a product page
+  if (pageType.isCategory) {
+    console.log(`[SmartSchema] Category page detected with ${schemaQuality.level} schema, looking for product link...`);
+    
+    const productLink = findProductLinkOnPage(html, url);
+    
+    if (productLink) {
+      console.log(`[SmartSchema] Found product link: ${productLink}`);
+      
+      try {
+        // Scrape the product page
+        const productPageResult = await withTimeout(
+          scrapeWithFirecrawl(productLink),
+          CHECK_TIMEOUT_MS,
+          { html: "", metadata: {} },
+          "Product page scrape"
+        );
+        
+        if (productPageResult.html && productPageResult.html.length > 0) {
+          const productPageSchemas = extractAllSchemas(productPageResult.html);
+          const productPageQuality = assessSchemaQuality(productPageSchemas);
+          
+          console.log(`[SmartSchema] Product page schema quality: ${productPageQuality.level}`);
+          
+          // Use product page schemas if they're better
+          if (productPageQuality.level === 'full' || 
+              (productPageQuality.level === 'partial' && schemaQuality.level === 'none')) {
+            const productValidation = validateProductSchema(productPageSchemas);
+            return {
+              schemas: productPageSchemas,
+              schemaQuality: productPageQuality,
+              productValidation,
+              sourceUrl: productLink,
+              checkedProductPage: true,
+              productPageUrl: productLink,
+              categoryPageSchemas: schemas,
+              message: schemaQuality.level === 'none' 
+                ? "Product schema found on product pages"
+                : "Full Product schema found on product pages (category page has partial data)"
+            };
+          }
+        }
+      } catch (error) {
+        console.log(`[SmartSchema] Failed to scrape product page: ${error}`);
+      }
+    }
+    
+    // Couldn't find better schema on product page
+    const productValidation = validateProductSchema(schemas);
+    return {
+      schemas,
+      schemaQuality,
+      productValidation,
+      sourceUrl: url,
+      checkedProductPage: !!productLink,
+      productPageUrl: productLink || undefined,
+      message: schemaQuality.level === 'partial'
+        ? "Category page has partial schema. Product pages may have complete data."
+        : "No structured data found on category or product pages"
+    };
+  }
+  
+  // Not a category page, use what we have
+  const productValidation = validateProductSchema(schemas);
+  return {
+    schemas,
+    schemaQuality,
+    productValidation,
+    sourceUrl: url,
+    checkedProductPage: false,
+    message: schemaQuality.level === 'none' 
+      ? "No structured product data found"
+      : "Partial schema found on page"
+  };
+}
+
 function validateProductSchema(schemas: any[]): SchemaValidation {
   console.log(`[Schema] Looking for Product schema among ${schemas.length} schemas`);
   console.log(`[Schema] Available types: ${schemas.map(s => s["@type"]).filter(Boolean).join(", ") || "none"}`);
@@ -735,6 +973,17 @@ function detectPlatform(html: string, domain: string): PlatformDetection {
 
   const lowerHtml = html.toLowerCase();
 
+  // eobuwie/MODIVO detection (add before Shopify)
+  if (lowerHtml.includes("img.eobuwie.cloud") || 
+      lowerHtml.includes("eobuwie.") ||
+      lowerHtml.includes("modivo.")) {
+    result.detected = true;
+    result.platform = "eobuwie/MODIVO";
+    result.confidence = "high";
+    result.indicators.push("eobuwie platform assets detected");
+    return result;
+  }
+
   // Shopify detection
   if (lowerHtml.includes("shopify.") || 
       lowerHtml.includes("cdn.shopify.com") ||
@@ -812,15 +1061,22 @@ function detectPlatform(html: string, domain: string): PlatformDetection {
     return result;
   }
 
-  // Check for generic e-commerce indicators
-  if (lowerHtml.includes("add-to-cart") || 
-      lowerHtml.includes("add_to_cart") ||
-      lowerHtml.includes("checkout") ||
-      lowerHtml.includes("shopping-cart")) {
-    result.detected = false;
+  // Enhanced fallback: If no platform but good e-commerce signals
+  const ecommerceSignals = [
+    lowerHtml.includes("add-to-cart"),
+    lowerHtml.includes("add_to_cart"),
+    lowerHtml.includes("checkout"),
+    lowerHtml.includes("shopping-cart"),
+    lowerHtml.includes("product-price"),
+    lowerHtml.includes("buy-now"),
+    lowerHtml.includes("cart-button")
+  ].filter(Boolean).length;
+
+  if (ecommerceSignals >= 2) {
+    result.detected = true;
     result.platform = "Custom";
-    result.confidence = "low";
-    result.indicators.push("E-commerce patterns detected but no known platform");
+    result.confidence = ecommerceSignals >= 4 ? "medium" : "low";
+    result.indicators.push(`${ecommerceSignals} e-commerce patterns detected`);
   }
 
   return result;
@@ -838,6 +1094,7 @@ interface FeedInfo {
   productCount?: number;
   hasRequiredFields?: boolean;
   missingFields?: string[];
+  isEmpty?: boolean;
 }
 
 interface FeedDiscoveryResult {
@@ -873,17 +1130,41 @@ async function discoverFeeds(domain: string, html: string, robotsTxt: string | n
         url: url.startsWith("http") ? url : url,
         type,
         source,
-        accessible: true
+        accessible: true,
+        productCount: 0,
+        hasRequiredFields: false
       };
 
       // Validate JSON feed (Shopify style)
       if (type === "json" || content.trim().startsWith("{") || content.trim().startsWith("[")) {
         try {
           const json = JSON.parse(content);
+          
+          // Check for empty feed
+          if (Object.keys(json).length === 0) {
+            feedInfo.productCount = 0;
+            feedInfo.hasRequiredFields = false;
+            feedInfo.isEmpty = true;
+            return feedInfo;
+          }
+          
+          if (Array.isArray(json) && json.length === 0) {
+            feedInfo.productCount = 0;
+            feedInfo.hasRequiredFields = false;
+            feedInfo.isEmpty = true;
+            return feedInfo;
+          }
+          
           const products = json.products || json.items || (Array.isArray(json) ? json : null);
           if (products && Array.isArray(products)) {
             feedInfo.type = "json";
             feedInfo.productCount = products.length;
+            
+            if (products.length === 0) {
+              feedInfo.isEmpty = true;
+              feedInfo.hasRequiredFields = false;
+              return feedInfo;
+            }
             
             // Check for required fields
             const missingFields: string[] = [];
@@ -909,6 +1190,9 @@ async function discoverFeeds(domain: string, html: string, robotsTxt: string | n
         const itemMatches = content.match(/<item|<product|<entry/gi);
         feedInfo.productCount = itemMatches ? itemMatches.length : 0;
         feedInfo.hasRequiredFields = feedInfo.productCount > 0;
+        if (feedInfo.productCount === 0) {
+          feedInfo.isEmpty = true;
+        }
         return feedInfo;
       }
 
@@ -1272,7 +1556,8 @@ async function performDistributionChecks(
   domain: string,
   html: string,
   robotsTxt: string | null,
-  productValidation: SchemaValidation
+  productValidation: SchemaValidation,
+  smartSchemaResult?: SmartSchemaResult
 ): Promise<DistributionResult> {
   // Platform detection
   const platform = detectPlatform(html, domain);
@@ -1291,7 +1576,7 @@ async function performDistributionChecks(
   let totalScore = 0;
   const maxScore = 15;
 
-  // P1: Platform Detection (1 point - reduced from 2)
+  // P1: Platform Detection (1 point) - Updated messaging
   const p1: Check = {
     id: "P1",
     name: "Platform Detected",
@@ -1307,21 +1592,35 @@ async function performDistributionChecks(
     p1.status = "pass";
     p1.score = 1;
     p1.details = `${platform.platform} platform detected`;
+  } else if (platform.platform === "Custom" && platform.confidence === "medium") {
+    // Good e-commerce signals but unknown platform
+    p1.status = "pass";
+    p1.score = 1;
+    p1.details = "Custom e-commerce platform with good infrastructure";
   } else if (platform.platform === "Custom") {
     p1.status = "partial";
     p1.score = 0;
-    p1.details = "E-commerce patterns found but no known platform";
+    p1.details = "Custom platform detected (limited e-commerce signals)";
   } else {
     p1.status = "fail";
     p1.score = 0;
-    p1.details = "Could not detect e-commerce platform";
+    p1.details = "No e-commerce platform signals detected";
   }
   checks.push(p1);
   totalScore += p1.score;
 
-  // P2: Structured Data Complete (3 points) - Product + Offer + GTIN/SKU
-  const hasGtin = !!(productValidation.schema?.gtin || productValidation.schema?.sku || productValidation.schema?.mpn);
-  const hasOffer = !!(productValidation.schema?.offers);
+  // P2: Structured Data Complete (3 points) - Updated for category page handling
+  // Use smart schema result if available, otherwise fall back to productValidation
+  const schemaQuality = smartSchemaResult?.schemaQuality;
+  const hasGtin = !!(smartSchemaResult?.productValidation?.schema?.gtin || 
+                     smartSchemaResult?.productValidation?.schema?.sku || 
+                     smartSchemaResult?.productValidation?.schema?.mpn ||
+                     productValidation.schema?.gtin || 
+                     productValidation.schema?.sku || 
+                     productValidation.schema?.mpn);
+  const hasOffer = !!(smartSchemaResult?.productValidation?.schema?.offers || productValidation.schema?.offers);
+  const effectiveProductValidation = smartSchemaResult?.productValidation || productValidation;
+  
   const p2: Check = {
     id: "P2",
     name: "Structured Data Complete",
@@ -1331,34 +1630,48 @@ async function performDistributionChecks(
     maxScore: 3,
     details: "",
     data: { 
-      hasProduct: productValidation.found,
+      hasProduct: effectiveProductValidation.found,
       hasOffer,
       hasGtin,
-      missingFields: productValidation.missingFields
+      missingFields: effectiveProductValidation.missingFields,
+      schemaSource: smartSchemaResult?.sourceUrl,
+      checkedProductPage: smartSchemaResult?.checkedProductPage,
+      schemaQuality: schemaQuality?.level
     }
   };
 
-  if (productValidation.found && hasOffer && hasGtin) {
+  if (effectiveProductValidation.found && hasOffer && hasGtin) {
     p2.status = "pass";
     p2.score = 3;
-    p2.details = "Complete: Product + Offer + GTIN/SKU";
-  } else if (productValidation.found && hasOffer) {
+    p2.details = smartSchemaResult?.checkedProductPage 
+      ? "Complete: Product + Offer + GTIN/SKU (found on product pages)"
+      : "Complete: Product + Offer + GTIN/SKU";
+  } else if (effectiveProductValidation.found && hasOffer) {
     p2.status = "partial";
     p2.score = 2;
-    p2.details = "Product + Offer present, missing GTIN/SKU";
-  } else if (productValidation.found) {
+    p2.details = smartSchemaResult?.checkedProductPage
+      ? "Product + Offer present on product pages, missing GTIN/SKU"
+      : "Product + Offer present, missing GTIN/SKU";
+  } else if (schemaQuality?.hasAggregateOffer || schemaQuality?.hasItemList) {
+    // Partial credit for category page schema
+    p2.status = "partial";
+    p2.score = 2;
+    p2.details = schemaQuality.hasItemList
+      ? `ItemList with ${schemaQuality.productCount || 'multiple'} products detected`
+      : "AggregateOffer schema detected (price range data)";
+  } else if (effectiveProductValidation.found) {
     p2.status = "partial";
     p2.score = 1;
     p2.details = "Product schema only, missing Offer and identifiers";
   } else {
     p2.status = "fail";
     p2.score = 0;
-    p2.details = "No structured product data found";
+    p2.details = smartSchemaResult?.message || "No structured product data found";
   }
   checks.push(p2);
   totalScore += p2.score;
 
-  // P3: Product Feed Exists (3 points)
+  // P3: Product Feed Exists (3 points) - Updated for empty feed handling
   const p3: Check = {
     id: "P3",
     name: "Product Feed Exists",
@@ -1367,17 +1680,28 @@ async function performDistributionChecks(
     score: 0,
     maxScore: 3,
     details: "",
-    data: { feeds: feeds.map(f => ({ url: f.url, type: f.type, source: f.source, productCount: f.productCount })) }
+    data: { feeds: feeds.map(f => ({ url: f.url, type: f.type, source: f.source, productCount: f.productCount, isEmpty: f.isEmpty })) }
   };
 
-  if (primaryFeed && primaryFeed.productCount && primaryFeed.productCount > 0) {
+  // Check for empty feeds
+  const emptyFeeds = feeds.filter(f => f.isEmpty);
+  const nonEmptyFeeds = feeds.filter(f => !f.isEmpty && f.productCount && f.productCount > 0);
+  const nonEmptyPrimaryFeed = nonEmptyFeeds[0];
+
+  if (nonEmptyPrimaryFeed && nonEmptyPrimaryFeed.productCount && nonEmptyPrimaryFeed.productCount > 0) {
     p3.status = "pass";
     p3.score = 3;
-    p3.details = `Feed found (${primaryFeed.productCount} products at ${primaryFeed.url})`;
+    p3.details = `Feed found (${nonEmptyPrimaryFeed.productCount} products at ${nonEmptyPrimaryFeed.url})`;
+  } else if (emptyFeeds.length > 0) {
+    // Feed exists but is empty
+    p3.status = "fail";
+    p3.score = 0;
+    p3.details = `Feed exists at ${emptyFeeds[0].url} but is empty (0 products)`;
+    (p3.data as any).isEmpty = true;
   } else if (feeds.length > 0) {
     p3.status = "partial";
-    p3.score = 2;
-    p3.details = `Feed detected at ${feeds[0].url} but could not verify`;
+    p3.score = 1;
+    p3.details = `Feed detected at ${feeds[0].url} but could not verify product count`;
   } else if (platform.platform === "Shopify") {
     p3.status = "partial";
     p3.score = 1;
@@ -2339,12 +2663,39 @@ serve(async (req) => {
           console.log("[Analysis] Warning: Empty HTML received, site may be blocking requests");
         }
         
-        // Extract all schemas from the page
-        const schemas = extractAllSchemas(html);
-        console.log(`Found ${schemas.length} schema objects`);
+        // Use smart schema extraction for better category page handling
+        const defaultSmartSchemaResult: SmartSchemaResult = {
+          schemas: [],
+          schemaQuality: { level: 'none', hasProduct: false, hasOffer: false, hasGtin: false, hasAggregateOffer: false, hasItemList: false },
+          productValidation: { found: false, valid: false, schema: null, missingFields: [], invalidFields: [], warnings: [] },
+          sourceUrl: normalizedUrl,
+          checkedProductPage: false,
+          message: "Smart schema extraction timed out"
+        };
+        
+        const smartSchemaResult = await withTimeout(
+          extractSchemasSmartly(html, normalizedUrl, domain),
+          CHECK_TIMEOUT_MS * 2, // Allow extra time for potential product page fetch
+          defaultSmartSchemaResult,
+          "Smart schema extraction"
+        );
+        
+        console.log(`[Analysis] Smart schema result: ${smartSchemaResult.message}`);
+        
+        // Use the smart schema result for validation
+        const schemas = smartSchemaResult.schemas;
+        const productValidation = smartSchemaResult.productValidation;
 
-        // Deep validation checks (sync, no timeout needed)
-        const { check: d2, validation: productValidation } = checkProductSchemaDeep(schemas);
+        // Deep validation checks - use schemas from smart extraction
+        const { check: d2 } = checkProductSchemaDeep(schemas);
+        
+        // Update D2 check message based on smart schema result
+        if (smartSchemaResult.checkedProductPage && d2.status === "pass") {
+          d2.details = d2.details.replace("Complete", "Complete (from product pages)");
+          d2.data.schemaSource = smartSchemaResult.productPageUrl;
+          d2.data.checkedProductPage = true;
+        }
+        
         const { check: t1, validation: offerValidation } = checkOfferSchemaDeep(schemas, productValidation);
         const { check: r1, validation: orgValidation } = checkOrganizationSchemaDeep(schemas);
         const { check: r2, validation: returnValidation } = checkReturnPolicySchemaDeep(schemas);
@@ -2371,15 +2722,15 @@ serve(async (req) => {
           checkoutApis: []
         };
 
-        // Distribution checks with timeout
+        // Distribution checks with timeout - pass smart schema result
         const distributionResult = await withTimeout(
-          performDistributionChecks(domain, html, botAccessResult.rawRobotsTxt, productValidation),
+          performDistributionChecks(domain, html, botAccessResult.rawRobotsTxt, productValidation, smartSchemaResult),
           CHECK_TIMEOUT_MS * 1.5, // 30 seconds for distribution
           defaultDistributionResult,
           "Distribution checks"
         );
 
-        return { scrapeResult, pageSpeedMetrics, botAccessResult, sitemapCheck, d2, t1, r1, r2, n1, t2, productValidation, offerValidation, orgValidation, returnValidation, distributionResult };
+        return { scrapeResult, pageSpeedMetrics, botAccessResult, sitemapCheck, d2, t1, r1, r2, n1, t2, productValidation, offerValidation, orgValidation, returnValidation, distributionResult, smartSchemaResult };
       })(),
       analysisTimeoutPromise
     ]);
