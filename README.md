@@ -480,10 +480,11 @@ POST /functions/v1/analyze
 
 | Function | Purpose |
 |----------|---------|
-| `scrapeWithFirecrawl()` | JS-rendered page scraping via Firecrawl API |
-| `basicFetch()` | Fallback static HTML fetch |
+| `decideScrapingStrategy()` | **NEW** - Determines if Firecrawl is needed or basic fetch suffices |
+| `scrapeWithFirecrawl()` | JS-rendered page scraping via Firecrawl API (3s wait, rawHtml only) |
+| `basicFetch()` | Static HTML fetch (tried first to save credits) |
 | `extractAllSchemas()` | Parse JSON-LD, Microdata, RDFa |
-| `extractSchemasSmartly()` | Category→product page following |
+| `extractSchemasSmartly()` | Category→product page following (conservative mode) |
 | `detectPageType()` | Identify category vs product pages |
 | `findProductLinkOnPage()` | Extract product URLs from HTML |
 | `assessSchemaQuality()` | Rate schema as full/partial/none |
@@ -550,7 +551,7 @@ POST /functions/v1/generate-report
 
 ### 1. Firecrawl API
 
-**Purpose**: JavaScript-rendered page scraping
+**Purpose**: JavaScript-rendered page scraping (with credit optimization)
 
 **Endpoint**: `https://api.firecrawl.dev/v1/scrape`
 
@@ -558,9 +559,9 @@ POST /functions/v1/generate-report
 ```typescript
 {
   url: targetUrl,
-  formats: ["rawHtml", "html", "links"],
+  formats: ["rawHtml"],        // Optimized: only request needed format
   onlyMainContent: false,
-  waitFor: 5000  // 5s for JS rendering
+  waitFor: 3000                // Optimized: reduced from 5s to 3s
 }
 ```
 
@@ -569,7 +570,83 @@ POST /functions/v1/generate-report
 - Preserves JSON-LD script tags in `rawHtml`
 - Returns rendered DOM after JavaScript execution
 
-**Fallback**: Basic `fetch()` for static HTML when Firecrawl unavailable.
+**Credit Optimization Strategy**:
+
+Agent Pulse uses a **tiered scraping approach** to minimize Firecrawl API costs:
+
+```
+User submits URL
+       │
+       ▼
+┌─────────────────────────────────────┐
+│  1. basicFetch(url)                 │  ← FREE (no credits)
+│     - Check HTML size               │
+│     - Extract schemas               │
+│     - Detect platform               │
+└─────────────────────────────────────┘
+       │
+       ▼
+┌─────────────────────────────────────┐
+│  2. decideScrapingStrategy()        │
+│     - Schema found with offers?     │
+│     - Static platform detected?     │
+│     - JS-only rendering signals?    │
+└─────────────────────────────────────┘
+       │
+    NO │                    YES (static)
+       ▼                     ▼
+┌───────────────────┐  ┌─────────────────────────┐
+│ scrapeWithFire-   │  │ Use basic fetch result  │
+│ crawl(url)        │  │ (0 Firecrawl credits)   │
+│ (1 credit)        │  │                         │
+└───────────────────┘  └─────────────────────────┘
+```
+
+**When Firecrawl is Skipped**:
+- Full Product schema with `offers` found in static HTML
+- Static platforms detected (WooCommerce, PrestaShop, Magento) with schema
+- Shopify pages with Product schema in server-rendered HTML
+
+**When Firecrawl is Required**:
+- JS-only rendering signals (`id="__next"`, empty `<body>`, noscript warnings)
+- Basic fetch returns < 500 bytes of HTML
+- Shopify category pages without Product schema
+- Unknown platforms where static rendering can't be confirmed
+
+**JS-Only Rendering Detection**:
+```typescript
+const jsOnlySignals = [
+  html.includes('id="__next"') && !html.includes('application/ld+json'),
+  html.includes('id="app"') && html.length < 5000,
+  html.includes('noscript') && html.includes('enable JavaScript'),
+  html.match(/<body[^>]*>\s*<div[^>]*><\/div>\s*<script/i),
+].filter(Boolean).length;
+
+if (jsOnlySignals >= 2) {
+  // Use Firecrawl
+}
+```
+
+**Product Page Follow Optimization**:
+
+For category pages, the engine is conservative about secondary scrapes:
+- **No schema**: Follow product link and scrape via Firecrawl (1 credit)
+- **Partial schema** (ItemList, AggregateOffer): Use what we have, skip secondary scrape
+- **Full schema**: Use directly, no secondary scrape needed
+
+**Expected Credit Savings**:
+
+| Scenario | Before | After |
+|----------|--------|-------|
+| Static site with schema | 1 credit | 0 credits |
+| Shopify product page | 1 credit | 0-1 credits |
+| Shopify category page | 2 credits | 1 credit |
+| SPA with no static content | 1-2 credits | 1-2 credits |
+| WooCommerce store | 1 credit | 0 credits |
+
+**Estimated savings: 30-50% reduction in Firecrawl credits**
+
+**Fallback**: Basic `fetch()` for static HTML when Firecrawl unavailable or unnecessary.
 
 ---
 
