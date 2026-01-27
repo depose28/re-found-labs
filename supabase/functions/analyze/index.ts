@@ -205,12 +205,12 @@ async function scrapeWithFirecrawl(url: string): Promise<{ html: string; metadat
   const apiKey = Deno.env.get("FIRECRAWL_API_KEY");
   
   if (!apiKey) {
-    console.log("Firecrawl not configured, falling back to basic fetch");
+    console.log("[Firecrawl] API key not configured, falling back to basic fetch");
     return await basicFetch(url);
   }
 
   try {
-    console.log("Scraping with Firecrawl:", url);
+    console.log("[Firecrawl] Scraping with JavaScript rendering:", url);
     const response = await fetch("https://api.firecrawl.dev/v1/scrape", {
       method: "POST",
       headers: {
@@ -219,27 +219,48 @@ async function scrapeWithFirecrawl(url: string): Promise<{ html: string; metadat
       },
       body: JSON.stringify({
         url,
-        formats: ["rawHtml", "html", "markdown"],
+        formats: ["rawHtml", "html", "links"],
         onlyMainContent: false,
-        waitFor: 3000, // Wait for JS rendering
+        waitFor: 5000, // Wait 5s for JS rendering (SPAs, dynamic content)
       }),
     });
 
-    const data: FirecrawlResponse = await response.json();
-    
-    if (!response.ok || !data.success) {
-      console.error("Firecrawl error:", data.error);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("[Firecrawl] API error:", response.status, errorText);
       return await basicFetch(url);
     }
 
-    console.log("Firecrawl scrape successful, rawHtml length:", data.data?.rawHtml?.length || 0);
+    const data: FirecrawlResponse = await response.json();
+    
+    if (!data.success) {
+      console.error("[Firecrawl] Scrape failed:", data.error);
+      return await basicFetch(url);
+    }
+
+    const rawHtmlLength = data.data?.rawHtml?.length || 0;
+    const htmlLength = data.data?.html?.length || 0;
+    console.log(`[Firecrawl] Success - rawHtml: ${rawHtmlLength} chars, html: ${htmlLength} chars`);
+    
+    // Prefer rawHtml for schema extraction (contains unprocessed script tags)
+    const html = data.data?.rawHtml || data.data?.html || "";
+    
+    // Log if we got meaningful content
+    if (html.length < 1000) {
+      console.warn("[Firecrawl] Warning: HTML content very short, may indicate rendering issue");
+    }
+    
     return {
-      // Prefer rawHtml for schema extraction (contains unprocessed script tags)
-      html: data.data?.rawHtml || data.data?.html || "",
-      metadata: data.data?.metadata || {},
+      html,
+      metadata: {
+        ...data.data?.metadata,
+        firecrawlUsed: true,
+        rawHtmlLength,
+        htmlLength,
+      },
     };
   } catch (error) {
-    console.error("Firecrawl fetch failed:", error);
+    console.error("[Firecrawl] Fetch failed:", error);
     return await basicFetch(url);
   }
 }
