@@ -569,21 +569,42 @@ function detectPageType(url: string, schemas: any[]): PageTypeInfo {
 function findProductLinkOnPage(html: string, baseUrl: string): string | null {
   const urlObj = new URL(baseUrl);
   const domain = urlObj.origin;
+  const hostname = urlObj.hostname;
   
-  // Product URL patterns
+  // Product URL patterns - expanded for various e-commerce platforms
   const productPatterns = [
-    /href=["']([^"']*\/p\/[^"']+)["']/gi,
-    /href=["']([^"']*\/product\/[^"']+)["']/gi,
-    /href=["']([^"']*\/products\/[^"']+)["']/gi,
-    /href=["']([^"']*\/item\/[^"']+)["']/gi,
-    /href=["']([^"']*\/pd\/[^"']+)["']/gi,
-    /href=["']([^"']*-p-\d+[^"']*)["']/gi,
+    // Specific patterns first
+    /href=["']([^"']*\/p\/[^"'#?\s]+)/gi,
+    /href=["']([^"']*\/product\/[^"'#?\s]+)/gi,
+    /href=["']([^"']*\/products\/[^"'#?\s]+)/gi,
+    /href=["']([^"']*\/item\/[^"'#?\s]+)/gi,
+    /href=["']([^"']*\/pd\/[^"'#?\s]+)/gi,
+    // ID-based patterns (eobuwie uses -i followed by numbers)
+    /href=["']([^"'\s]*-i\d+[^"'\s]*)/gi,
+    /href=["']([^"'\s]*-p-\d+[^"'\s]*)/gi,
+    /href=["']([^"'\s]*-\d{5,}\.html[^"'\s]*)/gi,
+    /href=["']([^"'\s]*\/dp\/[A-Z0-9]+[^"'\s]*)/gi,
   ];
   
+  console.log(`[FindProductLink] Searching for product links in ${html.length} chars HTML from ${hostname}`);
+  
+  // First, try specific patterns
   for (const pattern of productPatterns) {
+    pattern.lastIndex = 0;
     const match = pattern.exec(html);
     if (match && match[1]) {
       let productUrl = match[1];
+      
+      // Skip category/collection URLs
+      if (productUrl.includes('/c/') || 
+          productUrl.includes('/category/') || 
+          productUrl.includes('/collection/') ||
+          productUrl.includes('/collections/') ||
+          productUrl.includes('/shop/') ||
+          productUrl.includes('/catalog/') ||
+          productUrl === baseUrl) {
+        continue;
+      }
       
       // Make absolute URL
       if (productUrl.startsWith('/')) {
@@ -592,10 +613,10 @@ function findProductLinkOnPage(html: string, baseUrl: string): string | null {
         productUrl = domain + '/' + productUrl;
       }
       
-      // Validate it's on the same domain
       try {
         const productUrlObj = new URL(productUrl);
-        if (productUrlObj.hostname === urlObj.hostname) {
+        if (productUrlObj.hostname === hostname) {
+          console.log(`[FindProductLink] Found via pattern: ${productUrl}`);
           return productUrl;
         }
       } catch {
@@ -603,6 +624,67 @@ function findProductLinkOnPage(html: string, baseUrl: string): string | null {
       }
     }
   }
+  
+  // Fallback: Extract all hrefs and look for product-like URLs
+  const allHrefs = html.matchAll(/href=["']([^"'\s]+)["']/gi);
+  const candidateUrls: string[] = [];
+  
+  for (const match of allHrefs) {
+    const href = match[1];
+    // Skip obvious non-products
+    if (href.startsWith('#') || 
+        href.startsWith('javascript:') ||
+        href.startsWith('mailto:') ||
+        href.includes('/c/') ||
+        href.includes('/category/') ||
+        href.includes('/collection/') ||
+        href.includes('/account') ||
+        href.includes('/login') ||
+        href.includes('/cart') ||
+        href.includes('/checkout') ||
+        href.includes('.css') ||
+        href.includes('.js') ||
+        href.includes('.png') ||
+        href.includes('.jpg') ||
+        href.includes('.svg')) {
+      continue;
+    }
+    
+    // Look for URL that looks like a product (has slug with dashes and/or ID)
+    if ((href.match(/-[a-z]+-[a-z]+/i) && href.match(/\d{3,}/)) || // has-words-with-numbers
+        href.match(/-i\d+/) ||  // eobuwie -i pattern
+        href.match(/-\d{5,}/) ||  // long numeric ID
+        href.includes('/product')) {
+      
+      let productUrl = href;
+      if (productUrl.startsWith('/')) {
+        productUrl = domain + productUrl;
+      } else if (!productUrl.startsWith('http')) {
+        continue; // Skip relative paths without /
+      }
+      
+      try {
+        const productUrlObj = new URL(productUrl);
+        if (productUrlObj.hostname === hostname && 
+            productUrlObj.pathname !== urlObj.pathname) {
+          candidateUrls.push(productUrl);
+        }
+      } catch {
+        continue;
+      }
+    }
+  }
+  
+  if (candidateUrls.length > 0) {
+    console.log(`[FindProductLink] Found ${candidateUrls.length} candidate URLs, using first: ${candidateUrls[0]}`);
+    return candidateUrls[0];
+  }
+  
+  // Log sample of found hrefs for debugging
+  const sampleHrefs = [...html.matchAll(/href=["']([^"'\s]+)["']/gi)]
+    .slice(0, 10)
+    .map(m => m[1]);
+  console.log(`[FindProductLink] No product link found. Sample hrefs: ${JSON.stringify(sampleHrefs)}`);
   
   return null;
 }
