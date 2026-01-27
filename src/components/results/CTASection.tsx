@@ -1,5 +1,5 @@
-import { Calendar, RotateCcw, ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Calendar, ArrowRight } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 
 const CTASection = () => {
@@ -26,7 +26,7 @@ const CTASection = () => {
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 md:justify-end">
+        <div className="flex justify-center md:justify-end">
           <Button
             asChild
             size="lg"
@@ -37,17 +37,6 @@ const CTASection = () => {
               Book a Free Call
               <ArrowRight className="ml-2 h-4 w-4" />
             </a>
-          </Button>
-          <Button
-            asChild
-            variant="outline"
-            size="lg"
-            className="border-background/30 text-background hover:bg-background/10 font-medium"
-          >
-            <Link to="/">
-              <RotateCcw className="mr-2 h-4 w-4" />
-              Check Another URL
-            </Link>
           </Button>
         </div>
       </div>
