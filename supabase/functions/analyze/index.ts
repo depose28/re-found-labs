@@ -219,9 +219,9 @@ async function scrapeWithFirecrawl(url: string): Promise<{ html: string; metadat
       },
       body: JSON.stringify({
         url,
-        formats: ["rawHtml", "html", "links"],
+        formats: ["rawHtml"], // Only request rawHtml - saves bandwidth and credits
         onlyMainContent: false,
-        waitFor: 5000, // Wait 5s for JS rendering (SPAs, dynamic content)
+        waitFor: 3000, // 3s is sufficient for most JS rendering
       }),
     });
 
@@ -283,6 +283,127 @@ async function basicFetch(url: string): Promise<{ html: string; metadata: any }>
   } catch (error) {
     clearTimeout(timeoutId);
     throw error;
+  }
+}
+
+// ============================================
+// SMART SCRAPING STRATEGY
+// ============================================
+
+interface ScrapeDecision {
+  needsFirecrawl: boolean;
+  reason: string;
+  html?: string;
+  metadata?: any;
+}
+
+/**
+ * Decides whether to use Firecrawl (costs credits) or basic fetch (free).
+ * Tries basic fetch first, only uses Firecrawl if JS rendering is needed.
+ */
+async function decideScrapingStrategy(url: string): Promise<ScrapeDecision> {
+  try {
+    console.log("[ScrapeStrategy] Trying basic fetch first to check for static content...");
+    const basicResult = await basicFetch(url);
+    const html = basicResult.html;
+    
+    // Check if we got meaningful content
+    if (!html || html.length < 500) {
+      return { needsFirecrawl: true, reason: "HTML too short, likely JS-rendered" };
+    }
+    
+    // Check for signs of JS-only rendering (SPA indicators)
+    const jsOnlySignals = [
+      // Next.js empty shell
+      html.includes('id="__next"') && !html.includes('application/ld+json'),
+      // Vue/React empty app div
+      html.includes('id="app"') && html.length < 5000,
+      // Explicit JS requirement message
+      html.includes('noscript') && html.includes('enable JavaScript'),
+      // Empty body with just script tags
+      !!html.match(/<body[^>]*>\s*<div[^>]*><\/div>\s*<script/i),
+      // Angular apps
+      html.includes('ng-app') && !html.includes('application/ld+json'),
+    ].filter(Boolean).length;
+    
+    if (jsOnlySignals >= 2) {
+      return { needsFirecrawl: true, reason: `JS-only rendering detected (${jsOnlySignals} signals)` };
+    }
+    
+    // Extract schemas from basic fetch
+    const schemas = extractAllSchemas(html);
+    const productSchema = findSchemaByType(schemas, "Product");
+    
+    // If we have full Product + Offer schema, no Firecrawl needed!
+    if (productSchema && productSchema.offers) {
+      console.log("[ScrapeStrategy] Full Product schema found in static HTML - skipping Firecrawl");
+      return { 
+        needsFirecrawl: false, 
+        reason: "Full Product schema found in static HTML",
+        html,
+        metadata: { ...basicResult.metadata, firecrawlSkipped: true }
+      };
+    }
+    
+    // Check for known static e-commerce platforms (server-rendered)
+    const staticPlatformIndicators = [
+      { pattern: 'woocommerce', name: 'WooCommerce' },
+      { pattern: 'prestashop', name: 'PrestaShop' },
+      { pattern: 'magento', name: 'Magento' },
+      { pattern: 'opencart', name: 'OpenCart' },
+      { pattern: 'bigcommerce', name: 'BigCommerce' },
+    ];
+    
+    const htmlLower = html.toLowerCase();
+    const detectedStaticPlatform = staticPlatformIndicators.find(p => htmlLower.includes(p.pattern));
+    
+    if (detectedStaticPlatform && schemas.length > 0) {
+      console.log(`[ScrapeStrategy] Static platform ${detectedStaticPlatform.name} with schema - skipping Firecrawl`);
+      return {
+        needsFirecrawl: false,
+        reason: `${detectedStaticPlatform.name} (static) with schema detected`,
+        html,
+        metadata: { ...basicResult.metadata, firecrawlSkipped: true, platform: detectedStaticPlatform.name }
+      };
+    }
+    
+    // Check for Shopify (hybrid - usually has schema in static HTML)
+    if (htmlLower.includes('shopify') || htmlLower.includes('cdn.shopify.com')) {
+      if (productSchema) {
+        console.log("[ScrapeStrategy] Shopify with Product schema - skipping Firecrawl");
+        return { 
+          needsFirecrawl: false, 
+          reason: "Shopify with Product schema", 
+          html, 
+          metadata: { ...basicResult.metadata, firecrawlSkipped: true, platform: 'Shopify' } 
+        };
+      }
+      // Shopify category/collection pages may need Firecrawl for product links
+      return { needsFirecrawl: true, reason: "Shopify page without Product schema - needs JS rendering" };
+    }
+    
+    // If we found ANY schema with basic fetch, probably don't need Firecrawl
+    if (schemas.length > 0) {
+      const schemaTypes = schemas.map(s => s["@type"]).filter(Boolean);
+      console.log(`[ScrapeStrategy] Found ${schemas.length} schemas in static HTML: ${schemaTypes.join(', ')}`);
+      
+      // If we have product-related schemas, use static
+      if (schemaTypes.some(t => ['Product', 'ItemList', 'CollectionPage', 'AggregateOffer'].includes(t))) {
+        return {
+          needsFirecrawl: false,
+          reason: `Product-related schemas found in static HTML (${schemaTypes.join(', ')})`,
+          html,
+          metadata: { ...basicResult.metadata, firecrawlSkipped: true }
+        };
+      }
+    }
+    
+    // Default: use Firecrawl if we couldn't confirm static rendering has what we need
+    return { needsFirecrawl: true, reason: "Could not confirm static HTML has required schema data" };
+    
+  } catch (error) {
+    console.log(`[ScrapeStrategy] Basic fetch failed: ${error}`);
+    return { needsFirecrawl: true, reason: `Basic fetch failed: ${error}` };
   }
 }
 
@@ -787,65 +908,79 @@ async function extractSchemasSmartly(
     };
   }
   
-  // If it's a category page without full schema, try to find a product page
+  // If it's a category page, be conservative about following to product pages
   if (pageType.isCategory) {
-    console.log(`[SmartSchema] Category page detected with ${schemaQuality.level} schema, looking for product link...`);
+    // If we have partial schema (ItemList, AggregateOffer, etc.), use it without following
+    // This saves 1 Firecrawl credit per category page scan
+    if (schemaQuality.level === 'partial') {
+      console.log(`[SmartSchema] Category page with partial schema - using existing data (conserving API credits)`);
+      const productValidation = validateProductSchema(schemas);
+      return {
+        schemas,
+        schemaQuality,
+        productValidation,
+        sourceUrl: url,
+        checkedProductPage: false,
+        message: "Using partial schema from category page (conserving API credits)"
+      };
+    }
     
-    const productLink = findProductLinkOnPage(html, url);
-    
-    if (productLink) {
-      console.log(`[SmartSchema] Found product link: ${productLink}`);
+    // Only follow to product page if schema is COMPLETELY absent
+    if (schemaQuality.level === 'none') {
+      console.log(`[SmartSchema] Category page with NO schema, looking for product link...`);
       
-      try {
-        // Scrape the product page
-        const productPageResult = await withTimeout(
-          scrapeWithFirecrawl(productLink),
-          CHECK_TIMEOUT_MS,
-          { html: "", metadata: {} },
-          "Product page scrape"
-        );
+      const productLink = findProductLinkOnPage(html, url);
+      
+      if (productLink) {
+        console.log(`[SmartSchema] Found product link: ${productLink}`);
         
-        if (productPageResult.html && productPageResult.html.length > 0) {
-          const productPageSchemas = extractAllSchemas(productPageResult.html);
-          const productPageQuality = assessSchemaQuality(productPageSchemas);
+        try {
+          // Scrape the product page (this will use smart strategy internally)
+          const productPageResult = await withTimeout(
+            scrapeWithFirecrawl(productLink),
+            CHECK_TIMEOUT_MS,
+            { html: "", metadata: {} },
+            "Product page scrape"
+          );
           
-          console.log(`[SmartSchema] Product page schema quality: ${productPageQuality.level}`);
-          
-          // Use product page schemas if they're better
-          if (productPageQuality.level === 'full' || 
-              (productPageQuality.level === 'partial' && schemaQuality.level === 'none')) {
-            const productValidation = validateProductSchema(productPageSchemas);
-            return {
-              schemas: productPageSchemas,
-              schemaQuality: productPageQuality,
-              productValidation,
-              sourceUrl: productLink,
-              checkedProductPage: true,
-              productPageUrl: productLink,
-              categoryPageSchemas: schemas,
-              message: schemaQuality.level === 'none' 
-                ? "Product schema found on product pages"
-                : "Full Product schema found on product pages (category page has partial data)"
-            };
+          if (productPageResult.html && productPageResult.html.length > 0) {
+            const productPageSchemas = extractAllSchemas(productPageResult.html);
+            const productPageQuality = assessSchemaQuality(productPageSchemas);
+            
+            console.log(`[SmartSchema] Product page schema quality: ${productPageQuality.level}`);
+            
+            // Use product page schemas if they have ANY useful data
+            if (productPageQuality.level !== 'none') {
+              const productValidation = validateProductSchema(productPageSchemas);
+              return {
+                schemas: productPageSchemas,
+                schemaQuality: productPageQuality,
+                productValidation,
+                sourceUrl: productLink,
+                checkedProductPage: true,
+                productPageUrl: productLink,
+                categoryPageSchemas: schemas,
+                message: productPageQuality.level === 'full'
+                  ? "Product schema found on product pages"
+                  : "Partial Product schema found on product pages"
+              };
+            }
           }
+        } catch (error) {
+          console.log(`[SmartSchema] Failed to scrape product page: ${error}`);
         }
-      } catch (error) {
-        console.log(`[SmartSchema] Failed to scrape product page: ${error}`);
       }
     }
     
-    // Couldn't find better schema on product page
+    // Couldn't find better schema on product page (only reached if schemaQuality.level === 'none')
     const productValidation = validateProductSchema(schemas);
     return {
       schemas,
       schemaQuality,
       productValidation,
       sourceUrl: url,
-      checkedProductPage: !!productLink,
-      productPageUrl: productLink || undefined,
-      message: schemaQuality.level === 'partial'
-        ? "Category page has partial schema. Product pages may have complete data."
-        : "No structured data found on category or product pages"
+      checkedProductPage: true, // We attempted but didn't find useful data
+      message: "No structured data found on category or product pages"
     };
   }
   
@@ -2750,14 +2885,47 @@ serve(async (req) => {
         };
         const defaultSitemapCheck: Check = { id: "D3", name: "Sitemap Exists", category: "discovery", status: "fail" as CheckStatus, score: 0, maxScore: 5, details: "Check timed out", data: {} };
 
-        // Parallel fetch with individual timeouts: Firecrawl + PageSpeed + Robots + Sitemap
+        // Smart scraping: try basic fetch first, use Firecrawl only if needed
+        console.log("[Analysis] Determining scraping strategy...");
+        
+        const scrapeDecision = await decideScrapingStrategy(normalizedUrl);
+        console.log(`[Analysis] Scrape decision: ${scrapeDecision.needsFirecrawl ? 'Firecrawl needed' : 'Basic fetch sufficient'} - ${scrapeDecision.reason}`);
+        
+        // Parallel fetch with individual timeouts: Scrape (if needed) + PageSpeed + Robots + Sitemap
         console.log("[Analysis] Starting parallel checks with individual timeouts");
-        const [scrapeResult, pageSpeedMetrics, botAccessResult, sitemapCheck] = await Promise.all([
-          withTimeout(scrapeWithFirecrawl(normalizedUrl), CHECK_TIMEOUT_MS, defaultScrapeResult, "Firecrawl scrape"),
-          withTimeout(getPageSpeedMetrics(normalizedUrl), CHECK_TIMEOUT_MS * 2, defaultPageSpeedMetrics, "PageSpeed Insights"), // PageSpeed can be slow
-          withTimeout(checkAiBotAccess(domain), CHECK_TIMEOUT_MS, defaultBotAccessResult, "Bot access check"),
-          withTimeout(checkSitemap(domain), CHECK_TIMEOUT_MS, defaultSitemapCheck, "Sitemap check")
-        ]);
+        
+        let scrapeResult: { html: string; metadata: any };
+        
+        if (scrapeDecision.needsFirecrawl) {
+          // Need Firecrawl for JS rendering
+          const [firecrawlResult, pageSpeedResult, botAccessResultTemp, sitemapCheckTemp] = await Promise.all([
+            withTimeout(scrapeWithFirecrawl(normalizedUrl), CHECK_TIMEOUT_MS, defaultScrapeResult, "Firecrawl scrape"),
+            withTimeout(getPageSpeedMetrics(normalizedUrl), CHECK_TIMEOUT_MS * 2, defaultPageSpeedMetrics, "PageSpeed Insights"),
+            withTimeout(checkAiBotAccess(domain), CHECK_TIMEOUT_MS, defaultBotAccessResult, "Bot access check"),
+            withTimeout(checkSitemap(domain), CHECK_TIMEOUT_MS, defaultSitemapCheck, "Sitemap check")
+          ]);
+          scrapeResult = firecrawlResult;
+          var pageSpeedMetrics = pageSpeedResult;
+          var botAccessResult = botAccessResultTemp;
+          var sitemapCheck = sitemapCheckTemp;
+        } else {
+          // Use the basic fetch result - saves 1 Firecrawl credit!
+          scrapeResult = {
+            html: scrapeDecision.html || "",
+            metadata: { ...scrapeDecision.metadata, firecrawlSkipped: true, skipReason: scrapeDecision.reason }
+          };
+          console.log(`[Credits] Saved 1 Firecrawl credit by using basic fetch`);
+          
+          // Run remaining checks in parallel
+          const [pageSpeedResult, botAccessResultTemp, sitemapCheckTemp] = await Promise.all([
+            withTimeout(getPageSpeedMetrics(normalizedUrl), CHECK_TIMEOUT_MS * 2, defaultPageSpeedMetrics, "PageSpeed Insights"),
+            withTimeout(checkAiBotAccess(domain), CHECK_TIMEOUT_MS, defaultBotAccessResult, "Bot access check"),
+            withTimeout(checkSitemap(domain), CHECK_TIMEOUT_MS, defaultSitemapCheck, "Sitemap check")
+          ]);
+          var pageSpeedMetrics = pageSpeedResult;
+          var botAccessResult = botAccessResultTemp;
+          var sitemapCheck = sitemapCheckTemp;
+        }
 
         const { html } = scrapeResult;
         
@@ -2872,6 +3040,12 @@ serve(async (req) => {
 
     const recommendations = generateRecommendations(checks, validations);
     const analysisDuration = Date.now() - startTime;
+    
+    // Log credit usage for monitoring
+    const firecrawlUsed = !analysisResult.scrapeResult.metadata?.firecrawlSkipped;
+    const productPageScraped = analysisResult.smartSchemaResult?.checkedProductPage || false;
+    console.log(`[Credits] Firecrawl main page: ${firecrawlUsed ? 'Yes (1 credit)' : 'No (saved)'}, Product page: ${productPageScraped ? 'Yes (1 credit)' : 'No'}`);
+    console.log(`[Credits] Total estimated credits: ${(firecrawlUsed ? 1 : 0) + (productPageScraped ? 1 : 0)}`);
 
     console.log(`Analysis complete: ${totalScore}/100 (${grade}) in ${analysisDuration}ms`);
 
