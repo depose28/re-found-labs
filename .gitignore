@@ -7,10 +7,23 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+.pnpm-store
+
+# Build outputs
 dist
 dist-ssr
+.next
+.turbo
+*.tsbuildinfo
+
+# Environment files
 *.local
+.env
+.env.local
+.env.*.local
+apps/api/.env
 
 # Editor directories and files
 .vscode/*
@@ -22,3 +35,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Testing
+coverage
+
+# Supabase
+.supabase
