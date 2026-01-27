@@ -15,6 +15,8 @@ import TimelineGraphic from "@/components/results/TimelineGraphic";
 import PriorityFixSpotlight from "@/components/results/PriorityFixSpotlight";
 import WhatUnlocksSection from "@/components/results/WhatUnlocksSection";
 import MarketContextCard from "@/components/results/MarketContextCard";
+import SocialProofBanner from "@/components/results/SocialProofBanner";
+import StickyBottomCTA from "@/components/results/StickyBottomCTA";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface AnalysisResult {
@@ -137,6 +139,9 @@ const Results = () => {
 
         {/* Stakes Cards - Revenue at Risk, Industry Comparison, Timeline */}
         <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20 py-12">
+          {/* Social Proof Banner */}
+          <SocialProofBanner />
+          
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
             <RevenueAtRiskCard score={analysis.total_score} />
             <div className="p-6 border border-border bg-card">
@@ -159,7 +164,7 @@ const Results = () => {
           />
 
           {/* SECTION 3: DETAILED RESULTS */}
-          <div className="mt-16 space-y-16">
+          <div className="mt-16 space-y-16" data-section="recommendations">
             <ChecksAccordion checks={analysis.checks} />
             <RecommendationsSection recommendations={analysis.recommendations} />
           </div>
@@ -173,6 +178,9 @@ const Results = () => {
         </div>
 
         <CTASection />
+        
+        {/* Sticky Bottom CTA Bar */}
+        <StickyBottomCTA score={analysis.total_score} grade={analysis.grade} />
       </main>
       <Footer />
     </div>

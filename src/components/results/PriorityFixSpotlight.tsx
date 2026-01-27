@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Zap, ArrowRight, ChevronDown, Copy, Check, ExternalLink } from "lucide-react";
+import { Zap, ArrowRight, ChevronDown, Copy, Check, ExternalLink, Unlock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
@@ -22,6 +22,36 @@ const priorityPoints = {
   medium: 5,
 };
 
+// Mapping of check IDs to "Unlocks" messages
+const getUnlocksMessage = (checkId: string, checkName: string): string => {
+  // Robots.txt related
+  if (checkId.startsWith("D1") || checkName.toLowerCase().includes("robot")) {
+    return "GPTBot, ClaudeBot, PerplexityBot, and other AI agents can discover your products";
+  }
+  // Schema related
+  if (checkId.startsWith("D2") || checkName.toLowerCase().includes("schema") || checkName.toLowerCase().includes("structured")) {
+    return "AI agents can read your product names, prices, availability, and reviews";
+  }
+  // Performance related
+  if (checkId.startsWith("P") || checkName.toLowerCase().includes("performance") || checkName.toLowerCase().includes("speed")) {
+    return "AI agents can reliably fetch your content without timing out";
+  }
+  // Transaction/checkout related
+  if (checkId.startsWith("T") || checkName.toLowerCase().includes("transaction") || checkName.toLowerCase().includes("checkout")) {
+    return "AI shopping agents can complete purchases on behalf of customers";
+  }
+  // Feed/distribution related
+  if (checkId.startsWith("F") || checkName.toLowerCase().includes("feed") || checkName.toLowerCase().includes("distribution")) {
+    return "Product feeds can sync with Google Shopping, Klarna, and AI marketplaces";
+  }
+  // Trust related
+  if (checkName.toLowerCase().includes("trust") || checkName.toLowerCase().includes("security") || checkName.toLowerCase().includes("ssl")) {
+    return "AI agents can confidently recommend your store to shoppers";
+  }
+  // Default
+  return "AI shopping agents can better discover and recommend your products";
+};
+
 const PriorityFixSpotlight = ({ recommendations }: PriorityFixSpotlightProps) => {
   const [showDetails, setShowDetails] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -38,6 +68,7 @@ const PriorityFixSpotlight = ({ recommendations }: PriorityFixSpotlightProps) =>
   
   const topFix = sortedRecs[0];
   const pointGain = priorityPoints[topFix.priority] || 5;
+  const unlocksMessage = getUnlocksMessage(topFix.checkId, topFix.checkName);
 
   const handleCopy = async () => {
     try {
@@ -71,9 +102,18 @@ const PriorityFixSpotlight = ({ recommendations }: PriorityFixSpotlightProps) =>
               <h2 className="font-display text-xl md:text-2xl text-foreground mb-2">
                 {topFix.title}
               </h2>
-              <p className="text-muted-foreground leading-relaxed">
+              <p className="text-muted-foreground leading-relaxed mb-3">
                 {topFix.description}
               </p>
+              
+              {/* Unlocks line */}
+              <div className="flex items-start gap-2 p-3 bg-success/10 border border-success/20">
+                <Unlock className="h-4 w-4 text-success flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-foreground">
+                  <span className="font-medium text-success">Unlocks:</span>{" "}
+                  {unlocksMessage}
+                </p>
+              </div>
             </div>
           </div>
 

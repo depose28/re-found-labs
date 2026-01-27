@@ -18,8 +18,8 @@ const TimelineGraphic = () => {
     },
     { 
       date: "H2 2026", 
-      label: "Winners Decided", 
-      description: "Early optimizers capture market share",
+      label: "Market Locks In", 
+      description: "Late movers compete for scraps as AI agents default to indexed competitors",
       status: "future",
       icon: Trophy
     },
