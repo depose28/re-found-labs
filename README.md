@@ -4,7 +4,27 @@
 
 Agent Pulse is a free diagnostic tool that evaluates how well your e-commerce store is optimized for AI shopping agents like ChatGPT, Claude, Perplexity, and other LLM-powered assistants that increasingly drive product discovery and purchasing decisions.
 
-📧 **Contact**: hello@refoundlabs.com
+📧 **Contact**: hello@refoundlabs.com  
+🌐 **Live App**: [ai-commerce-audit.lovable.app](https://ai-commerce-audit.lovable.app)
+
+---
+
+## Table of Contents
+
+1. [What is Agent Pulse?](#what-is-agent-pulse)
+2. [Architecture Overview](#architecture-overview)
+3. [Tech Stack](#tech-stack)
+4. [Project Structure](#project-structure)
+5. [The 5-Pillar Analysis Framework](#the-5-pillar-analysis-framework)
+6. [Edge Functions](#edge-functions)
+7. [External API Integrations](#external-api-integrations)
+8. [Database Schema](#database-schema)
+9. [Security Features](#security-features)
+10. [User Flow](#user-flow)
+11. [Scoring System](#scoring-system)
+12. [Local Development](#local-development)
+13. [Environment Variables](#environment-variables)
+14. [Deployment](#deployment)
 
 ---
 
@@ -15,20 +35,223 @@ AI shopping agents are fundamentally changing how consumers discover and purchas
 **The Reality**: 73% of e-commerce stores fail basic AI agent readiness checks. Most sites were built for human browsers, not machine readers.
 
 Agent Pulse analyzes your store across **five critical dimensions** and provides:
-- A **0-100 score** with letter grade (A+ to F)
+- A **0-100 score** with letter grade (Agent-Native, Optimized, Needs Work, Invisible)
 - **Category-by-category breakdown** with specific issues identified
 - **Prioritized recommendations** with code snippets to fix problems
 - **Downloadable PDF report** for stakeholder sharing
 
 ---
 
-## What We Test
+## Architecture Overview
 
-### 1. 🔍 Discovery (Bot Access & Product Data) — 35 pts
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           FRONTEND (React + Vite)                        │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Pages:                                                                  │
+│  ├── Index.tsx          → Landing page with ConversionHeroSection       │
+│  ├── Analyzing.tsx      → Interstitial progress UI (5 steps)            │
+│  ├── Results.tsx        → Full analysis results display                 │
+│  ├── Services.tsx       → Agency service tiers                          │
+│  ├── Products.tsx       → Stealth product roadmap                       │
+│  ├── About.tsx          → Company thesis & mission                      │
+│  └── Blog.tsx           → Blog listing & posts                          │
+│                                                                          │
+│  Key Components:                                                         │
+│  ├── landing/           → Hero, CTAs, social proof                      │
+│  ├── results/           → Score display, recommendations, charts        │
+│  └── ui/                → shadcn/ui components                          │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    SUPABASE EDGE FUNCTIONS (Deno)                        │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │  /analyze                                                        │    │
+│  │  ════════════════════════════════════════════════════════════    │    │
+│  │  Main analysis engine (~2900 lines)                              │    │
+│  │                                                                   │    │
+│  │  1. SSRF Protection & Rate Limiting                              │    │
+│  │  2. Firecrawl API scraping (JS rendering)                        │    │
+│  │  3. Smart Schema Extraction (category→product page follow)       │    │
+│  │  4. PageSpeed Insights API integration                           │    │
+│  │  5. robots.txt parsing (10 AI bots)                              │    │
+│  │  6. Distribution/Protocol checks (UCP, ACP, MCP)                 │    │
+│  │  7. Feed discovery & validation                                  │    │
+│  │  8. Scoring engine (5 pillars, 100 points)                       │    │
+│  │  9. Recommendation generation                                    │    │
+│  │  10. Database persistence                                        │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                                                                          │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │  /generate-report                                                │    │
+│  │  ════════════════════════════════════════════════════════════    │    │
+│  │  PDF report generation & email delivery (~700 lines)             │    │
+│  │                                                                   │    │
+│  │  1. Fetch analysis from database                                 │    │
+│  │  2. Generate jsPDF document (5 pages)                            │    │
+│  │  3. Send via Resend API                                          │    │
+│  │  4. Track delivery status in email_captures table                │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         SUPABASE DATABASE                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Tables:                                                                 │
+│  ├── analyses          → Stores all analysis results                    │
+│  ├── email_captures    → Tracks report requests & delivery              │
+│  └── rate_limits       → IP-based rate limiting                         │
+│                                                                          │
+│  RLS Policies: Strict access controls (see Security section)            │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                       EXTERNAL API INTEGRATIONS                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  ├── Firecrawl API     → JavaScript-rendered page scraping              │
+│  ├── PageSpeed API     → Google Core Web Vitals data                    │
+│  └── Resend API        → Transactional email delivery                   │
+└─────────────────────────────────────────────────────────────────────────┘
+```
 
-**AI Bot Access via robots.txt**
+---
 
-We verify your site explicitly allows these critical AI crawlers:
+## Tech Stack
+
+| Layer | Technology | Purpose |
+|-------|------------|---------|
+| **Frontend** | React 18 + TypeScript | UI components and state management |
+| **Build Tool** | Vite | Fast development and optimized builds |
+| **Styling** | Tailwind CSS | Utility-first CSS framework |
+| **UI Components** | shadcn/ui | Pre-built accessible components |
+| **Routing** | React Router DOM | Client-side navigation |
+| **State/Data** | TanStack Query | Server state management |
+| **Backend** | Supabase Edge Functions | Serverless Deno runtime |
+| **Database** | Supabase PostgreSQL | Data persistence with RLS |
+| **Scraping** | Firecrawl API | JavaScript-rendered content extraction |
+| **Performance Data** | Google PageSpeed Insights API | Core Web Vitals metrics |
+| **PDF Generation** | jsPDF | Client-side PDF creation |
+| **Email Delivery** | Resend | Transactional email API |
+| **Charts** | Recharts | Data visualization |
+| **Markdown** | react-markdown | Blog content rendering |
+
+---
+
+## Project Structure
+
+```
+├── src/
+│   ├── components/
+│   │   ├── landing/                    # Homepage sections
+│   │   │   ├── AgencyHeroSection.tsx   # Re:found Labs intro
+│   │   │   ├── AgentPulseSection.tsx   # Live audit counter
+│   │   │   ├── ConversionHeroSection.tsx # URL input form
+│   │   │   ├── CTASection.tsx          # Final call-to-action
+│   │   │   ├── HowItWorksSection.tsx   # 3-step process
+│   │   │   ├── ProblemSection.tsx      # "The Shift" narrative
+│   │   │   ├── PulseRadar.tsx          # Animated radar visual
+│   │   │   ├── ServicesOverviewSection.tsx
+│   │   │   ├── SocialProofSection.tsx  # Dynamic audit counter
+│   │   │   ├── WhatWeCheckSection.tsx  # 5-pillar breakdown
+│   │   │   └── WhoWeWorkWithSection.tsx
+│   │   │
+│   │   ├── results/                    # Results page components
+│   │   │   ├── ScoreHeader.tsx         # Main score display
+│   │   │   ├── CategoryBreakdown.tsx   # 5-pillar scores
+│   │   │   ├── ChecksAccordion.tsx     # Detailed check results
+│   │   │   ├── RecommendationsSection.tsx
+│   │   │   ├── PriorityFixSpotlight.tsx # #1 priority highlight
+│   │   │   ├── RevenueAtRiskCard.tsx   # Loss aversion element
+│   │   │   ├── IndustryComparisonBars.tsx
+│   │   │   ├── MarketContextCard.tsx
+│   │   │   ├── EmailCapture.tsx        # Report request form
+│   │   │   ├── TimelineGraphic.tsx
+│   │   │   ├── WhatUnlocksSection.tsx
+│   │   │   ├── StickyBottomCTA.tsx
+│   │   │   ├── SocialProofBanner.tsx
+│   │   │   └── CTASection.tsx
+│   │   │
+│   │   ├── ui/                         # shadcn/ui components
+│   │   │   ├── button.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── accordion.tsx
+│   │   │   ├── progress.tsx
+│   │   │   ├── PulseDot.tsx            # Animated status indicator
+│   │   │   └── ... (40+ components)
+│   │   │
+│   │   ├── Header.tsx                  # Global navigation
+│   │   ├── Footer.tsx                  # Global footer
+│   │   └── NavLink.tsx
+│   │
+│   ├── pages/
+│   │   ├── Index.tsx                   # Homepage (landing)
+│   │   ├── Analyzing.tsx               # Interstitial loading page
+│   │   ├── Results.tsx                 # Analysis results display
+│   │   ├── Services.tsx                # Service tiers page
+│   │   ├── Products.tsx                # Product roadmap teaser
+│   │   ├── About.tsx                   # Company mission/thesis
+│   │   ├── Blog.tsx                    # Blog listing
+│   │   ├── BlogPost.tsx                # Individual blog post
+│   │   └── NotFound.tsx                # 404 page
+│   │
+│   ├── data/
+│   │   └── blogPosts.ts                # Static blog content
+│   │
+│   ├── hooks/
+│   │   ├── use-mobile.tsx              # Responsive detection
+│   │   └── use-toast.ts                # Toast notifications
+│   │
+│   ├── integrations/
+│   │   └── supabase/
+│   │       ├── client.ts               # Supabase client (auto-generated)
+│   │       └── types.ts                # Database types (auto-generated)
+│   │
+│   ├── lib/
+│   │   └── utils.ts                    # Utility functions (cn, etc.)
+│   │
+│   ├── App.tsx                         # Root component with routes
+│   ├── App.css                         # Global styles
+│   ├── index.css                       # Tailwind base + design tokens
+│   └── main.tsx                        # React entry point
+│
+├── supabase/
+│   ├── functions/
+│   │   ├── analyze/
+│   │   │   └── index.ts                # Main analysis engine (~2900 lines)
+│   │   └── generate-report/
+│   │       └── index.ts                # PDF generation & email (~700 lines)
+│   └── config.toml                     # Supabase configuration
+│
+├── public/
+│   ├── favicon.ico
+│   ├── favicon.svg
+│   ├── placeholder.svg
+│   └── robots.txt
+│
+├── .env                                # Environment variables
+├── tailwind.config.ts                  # Tailwind configuration
+├── vite.config.ts                      # Vite configuration
+├── tsconfig.json                       # TypeScript configuration
+└── package.json                        # Dependencies
+```
+
+---
+
+## The 5-Pillar Analysis Framework
+
+Agent Pulse evaluates e-commerce sites across five weighted pillars totaling 100 points:
+
+### 1. 🔍 Discovery (35 points) — "Can AI Agents Find You?"
+
+**AI Bot Access (12 points)**
+
+We verify your site explicitly allows these 10 critical AI crawlers via `robots.txt`:
 
 | Bot | Owner | Purpose |
 |-----|-------|---------|
@@ -43,56 +266,47 @@ We verify your site explicitly allows these critical AI crawlers:
 | Applebot-Extended | Apple | Siri and Apple Intelligence |
 | Bytespider | ByteDance/TikTok | TikTok's product discovery |
 
-**How we check**: We fetch your `/robots.txt` file and parse the User-agent rules to determine if each bot is explicitly allowed, disallowed, or not mentioned (implicit allow).
+**Product Schema (18 points)**
 
-**Product Schema (schema.org/Product)**
+We validate structured data (JSON-LD, Microdata, RDFa) for:
+- Product name, description, brand
+- SKU/GTIN/MPN identifiers
+- Product images
+- Availability status
 
-We validate your structured data includes:
-- ✅ Product name (`name`)
-- ✅ Description (`description`)
-- ✅ SKU/GTIN identifiers (`sku`, `gtin`, `gtin13`, `gtin14`)
-- ✅ Brand information (`brand.name`)
-- ✅ Product images (`image`)
-- ✅ Availability status (`availability`)
+**Sitemap (5 points)**
 
-**How we check**: We scrape your page and extract JSON-LD, Microdata, and RDFa structured data, then validate against schema.org Product specifications.
+We check for `sitemap.xml` presence and accessibility.
 
 ---
 
-### 2. ⚡ Performance (Speed & Core Web Vitals) — 15 pts
+### 2. ⚡ Performance (15 points) — "Is Your Site Fast?"
 
-We pull real performance data from **Google PageSpeed Insights API**, which reflects actual Chrome User Experience Report (CrUX) data from real users.
+We pull real performance data from **Google PageSpeed Insights API** (Chrome User Experience Report):
 
-**Metrics we measure**:
+| Metric | Target | Weight |
+|--------|--------|--------|
+| LCP (Largest Contentful Paint) | < 2.5s | Loading performance |
+| FID (First Input Delay) | < 100ms | Interactivity |
+| CLS (Cumulative Layout Shift) | < 0.1 | Visual stability |
+| Overall Performance Score | 0-100 | Combined metric |
 
-| Metric | Full Name | What It Measures |
-|--------|-----------|------------------|
-| LCP | Largest Contentful Paint | Loading performance (target: < 2.5s) |
-| FID | First Input Delay | Interactivity (target: < 100ms) |
-| CLS | Cumulative Layout Shift | Visual stability (target: < 0.1) |
-| FCP | First Contentful Paint | Initial render speed |
-| TTFB | Time to First Byte | Server response time |
-
-**Overall Performance Score**: 0-100 from PageSpeed Insights, weighted across all Core Web Vitals.
-
-**Why this matters for AI agents**: Most AI agents operate with strict timeouts (often 5-10 seconds). If your page takes too long to load or render, agents abandon the request and recommend faster competitors.
+**Why this matters**: AI agents operate with strict timeouts (5-10 seconds). Slow pages get abandoned.
 
 ---
 
-### 3. 💳 Transaction (Purchasability Signals) — 20 pts
+### 3. 💳 Transaction (20 points) — "Can Agents Buy?"
 
-**Offer Schema (schema.org/Offer)**
-
-We validate your pricing and availability data:
+**Offer Schema (18 points)**
 
 | Field | Validation |
 |-------|------------|
 | `price` | Numeric value present |
-| `priceCurrency` | Valid ISO 4217 code (USD, EUR, GBP, JPY, etc.) |
-| `priceValidUntil` | Valid date format if present |
-| `availability` | Valid schema.org enum value |
-| `itemCondition` | Valid condition type if present |
-| `seller` | Organization or Person data if present |
+| `priceCurrency` | Valid ISO 4217 code (USD, EUR, GBP, etc.) |
+| `availability` | Valid schema.org enum |
+| `priceValidUntil` | Valid date format |
+| `itemCondition` | Valid condition type |
+| `seller` | Organization/Person data |
 
 **Valid Availability Values**:
 - `https://schema.org/InStock`
@@ -101,18 +315,16 @@ We validate your pricing and availability data:
 - `https://schema.org/BackOrder`
 - `https://schema.org/SoldOut`
 - `https://schema.org/LimitedAvailability`
-- `https://schema.org/OnlineOnly`
-- `https://schema.org/InStoreOnly`
 
-**How we check**: We parse structured data and validate each field against schema.org specifications and ISO standards.
+**HTTPS (2 points)**
+
+Secure connection verification.
 
 ---
 
-### 4. 📡 Distribution (Protocol Readiness) — 15 pts
+### 4. 📡 Distribution (15 points) — "Protocol Ready?"
 
-AI agents use a layered protocol stack to discover products, complete transactions, and process payments. We evaluate readiness across **three protocol layers** using a protocol-centric approach.
-
-**Protocol Layer Architecture**
+This pillar evaluates readiness across a **three-layer protocol stack**:
 
 ```
 DISCOVERY LAYER (Can agents find products?)
@@ -129,218 +341,441 @@ PAYMENT LAYER (What rails exist?)
 └── Stripe · Google Pay · Apple Pay · Klarna · PayPal
 ```
 
-**Platform Detection**
+**Distribution Checks**:
 
-We identify your e-commerce platform:
+| Check ID | Name | Points | Pass Condition |
+|----------|------|--------|----------------|
+| P1 | Platform Detected | 1 | Known e-commerce platform identified |
+| P2 | Structured Data Complete | 3 | Product + Offer + GTIN/SKU present |
+| P3 | Product Feed Exists | 3 | At least one feed URL found |
+| P4 | Feed Discoverable | 2 | Feed in sitemap, robots.txt, or HTML |
+| P5 | Feed Accessible + Valid | 2 | Feed returns 200 with valid content |
+| P6 | Commerce API Indicators | 2 | Stripe/Shopify/payment rails detected |
+| P7 | Protocol Manifest | 2 | UCP or MCP well-known endpoint found |
+
+**Platform Detection**:
 
 | Platform | Detection Method |
 |----------|------------------|
-| Shopify | `Shopify.` in source, `cdn.shopify.com` assets, `/products.json` endpoint |
-| WooCommerce | `woocommerce` classes, `/wp-json/wc/` API |
-| Magento | `Mage.` or `magento` in source, `/rest/V1/` patterns |
-| BigCommerce | `bigcommerce` scripts, stencil indicators |
-| Custom | Fallback when none detected |
+| Shopify | `cdn.shopify.com`, `/products.json` |
+| WooCommerce | `woocommerce` classes, `/wp-json/wc/` |
+| Magento | `Mage.`, `/rest/V1/` patterns |
+| BigCommerce | `bigcommerce` scripts |
+| eobuwie/MODIVO | `img.eobuwie.cloud` assets |
+| Custom | Fallback with e-commerce signal detection |
 
-**Feed Discovery**
+**Feed Discovery Sources**:
+- Shopify native: `/products.json`, `/collections/all/products.json`
+- robots.txt references
+- sitemap.xml entries
+- HTML `<link rel="alternate">` tags
+- Common paths: `/feed.xml`, `/products.xml`, `/catalog.xml`
+- JSON-LD `DataFeed` or `ItemList` schemas
 
-We search for product feeds from multiple sources:
-- **Shopify Native**: `/products.json`, `/collections/all/products.json`
-- **Robots.txt**: Feed URLs or Sitemap references
-- **Sitemap.xml**: "product" or "feed" entries
-- **Common Paths**: `/feed.xml`, `/products.xml`, `/catalog.xml`
-- **HTML**: `<link rel="alternate">` with product/feed keywords
-- **JSON-LD**: `DataFeed` or `ItemList` schema types
+**Smart Schema Detection**:
 
-**Protocol Readiness Matrix**
-
-| Layer | Protocol | Ready | Partial | Not Ready |
-|-------|----------|-------|---------|-----------|
-| Discovery | Google Shopping | Feed + title/price/availability + GTIN | Feed exists, missing fields | No feed |
-| Discovery | Klarna APP | Feed + GTIN on >80% products | Feed + GTIN on <80% | No GTIN |
-| Discovery | Answer Engines | Complete Product + Offer schema | Partial schema | No schema |
-| Commerce | UCP | `/.well-known/ucp.json` manifest detected | Commerce patterns detected | Nothing found |
-| Commerce | ACP (ChatGPT) | Stripe + `/.well-known/ai-plugin.json` | Stripe detected, no plugin | No Stripe |
-| Commerce | MCP | `/.well-known/mcp.json` or SAP indicators | API patterns detected | Nothing found |
-
-**New Protocol Detection**
-
-| Protocol | What We Check |
-|----------|---------------|
-| **UCP (Universal Commerce Protocol)** | `/.well-known/ucp.json`, `/.well-known/commerce.json`, `/api/commerce/manifest` |
-| **ACP (ChatGPT Shopping)** | Stripe integration + `/.well-known/ai-plugin.json` plugin manifest |
-| **MCP (Model Context Protocol)** | `/.well-known/mcp.json`, `/mcp/capabilities`, SAP Commerce indicators (`/occ/v2/`, `/rest/v2/`) |
-
-**Payment Rails Detection**
-
-We detect checkout infrastructure:
-- **Stripe**: `stripe.js`, `js.stripe.com`
-- **Google Pay**: `pay.google.com`
-- **Apple Pay**: `ApplePaySession`, `apple-pay-button`
-- **Klarna**: `klarna.*payments`, `klarnacdn.net`
-- **PayPal**: `paypal.com/sdk`
-- **Shopify Checkout**: `checkout.shopify.com`
-
-**Distribution Checks (15 points)**:
-
-| Check | Points | Pass Condition |
-|-------|--------|----------------|
-| Platform Detected | 1 | Known e-commerce platform identified |
-| Structured Data Complete | 3 | Product + Offer + GTIN/SKU present |
-| Product Feed Exists | 3 | At least one feed URL found or native feed available |
-| Feed Discoverable | 2 | Feed linked in sitemap, robots.txt, or HTML |
-| Feed Accessible + Valid | 2 | Feed URL returns 200 and valid content |
-| Commerce API Indicators | 2 | Stripe/Shopify Checkout/payment rails detected |
-| Protocol Manifest | 2 | UCP or MCP well-known endpoint found |
+When users submit category pages, the engine:
+1. Detects page type via URL patterns (`/c/`, `/category/`, `/collection/`, `/shop/`)
+2. Checks for CollectionPage/ItemList schemas
+3. If no full Product schema found, finds a product link on the page
+4. Scrapes the product page via Firecrawl
+5. Uses the best schema from either page
 
 ---
 
-### 5. 🛡️ Trust (Brand Verification) — 15 pts
+### 5. 🛡️ Trust (15 points) — "Will Agents Recommend?"
 
-**Organization Schema (schema.org/Organization)**
+**Organization Schema (10 points)**
 
 | Field | What We Check |
 |-------|---------------|
-| `name` | Legal business name present |
+| `name` | Legal business name |
 | `logo` | Valid logo URL |
-| `contactPoint` | Customer service contact info |
-| `sameAs` | Social media profile links |
-| `address` | Physical address/location |
+| `contactPoint` | Customer service contact |
+| `sameAs` | Social media profiles |
+| `address` | Physical location |
 
-**MerchantReturnPolicy Schema**
+**MerchantReturnPolicy (5 points)**
 
 | Field | What We Check |
 |-------|---------------|
-| `returnPolicyType` | Refund, exchange, or store credit |
-| `merchantReturnDays` | Return window length |
-| `returnFees` | Whether returns are free or paid |
-| `returnMethod` | How customers return items |
-
-**Why this matters**: AI agents verify merchant legitimacy before recommending stores. Missing trust signals trigger warnings like "unverified seller" that kill conversions.
+| `returnPolicyType` | Refund/exchange/credit |
+| `merchantReturnDays` | Return window |
+| `returnFees` | Free or paid returns |
+| `returnMethod` | How to return |
 
 ---
 
-## What We Don't Test
+## Edge Functions
 
-To be transparent about our scope, here's what Agent Pulse **does not** currently analyze:
+### `/analyze` — Main Analysis Engine
 
-### ❌ Not Tested
+**Location**: `supabase/functions/analyze/index.ts` (~2900 lines)
 
-| Category | What's Excluded | Why |
-|----------|-----------------|-----|
-| **Content Quality** | Product descriptions, copywriting, keyword optimization | Subjective and requires human judgment |
-| **Image Recognition** | Whether product images are high-quality or well-composed | Requires computer vision analysis |
-| **Competitive Pricing** | Whether your prices are competitive in the market | Requires market data we don't collect |
-| **Inventory Accuracy** | Whether your availability data matches actual stock | Requires backend integration |
-| **Multi-page Crawling** | Deep site audits beyond the submitted URL | We analyze single pages for speed |
-| **JavaScript-heavy SPAs** | Sites requiring complex authentication or dynamic loading | Limited by scraping capabilities |
-| **Mobile-specific Issues** | Separate mobile site versions | We analyze the primary URL only |
-| **Checkout Flow** | Whether purchases can actually complete | Requires end-to-end transaction testing |
-| **Review Schema** | AggregateRating and Review structured data | Focus is on core commerce signals |
-| **FAQ Schema** | FAQPage and Question/Answer markup | Not critical for AI shopping agents |
-| **Local Business** | LocalBusiness schema and location-specific data | Focused on e-commerce, not local SEO |
-| **Security Headers** | HTTPS validation, CSP, HSTS | Not directly relevant to AI agents |
-| **Accessibility** | WCAG compliance, screen reader compatibility | Separate audit domain |
+**Request**:
+```json
+POST /functions/v1/analyze
+{
+  "url": "https://example.com/products/widget"
+}
+```
 
-### ⚠️ Limitations
+**Response**:
+```json
+{
+  "success": true,
+  "analysisId": "uuid-here"
+}
+```
 
-- **Single-page analysis**: We test the URL you provide, not your entire site
-- **Point-in-time snapshot**: Results reflect the page state at analysis time
-- **Public content only**: We can't analyze content behind logins or paywalls
-- **robots.txt focus**: We check your rules but can't verify actual bot behavior
-- **PageSpeed API dependency**: Performance data requires Google to have CrUX data for your domain
+**Internal Flow**:
+
+```
+1. URL Validation
+   ├── Normalize URL (add https:// if missing)
+   ├── SSRF protection (block localhost, private IPs, metadata endpoints)
+   └── Rate limit check (10/hour per IP)
+
+2. Parallel Data Collection (with individual timeouts)
+   ├── Firecrawl API scrape (5s JS rendering wait)
+   ├── PageSpeed Insights API call
+   ├── robots.txt fetch and parse
+   └── sitemap.xml check
+
+3. Smart Schema Extraction
+   ├── Extract JSON-LD, Microdata, RDFa from HTML
+   ├── Detect page type (category vs product)
+   ├── If category page with incomplete schema:
+   │   ├── Find product link on page
+   │   ├── Scrape product page via Firecrawl
+   │   └── Use best schema from either page
+   └── Assess schema quality (full/partial/none)
+
+4. Check Execution
+   ├── D1: AI Bot Access (parse robots.txt for 10 bots)
+   ├── D2: Product Schema Deep Validation
+   ├── D3: Sitemap Exists
+   ├── N1: PageSpeed Performance
+   ├── T1: Offer Schema Deep Validation
+   ├── T2: HTTPS Check
+   ├── P1-P7: Distribution Checks (feeds, protocols, payments)
+   ├── R1: Organization Schema
+   └── R2: Return Policy Schema
+
+5. Scoring
+   ├── Calculate category scores
+   ├── Sum to total (0-100)
+   └── Assign grade (Agent-Native/Optimized/Needs Work/Invisible)
+
+6. Recommendations
+   ├── Generate prioritized fix list
+   ├── Include code snippets
+   └── Map to affected checks
+
+7. Persistence
+   └── Insert into analyses table
+```
+
+**Key Functions**:
+
+| Function | Purpose |
+|----------|---------|
+| `scrapeWithFirecrawl()` | JS-rendered page scraping via Firecrawl API |
+| `basicFetch()` | Fallback static HTML fetch |
+| `extractAllSchemas()` | Parse JSON-LD, Microdata, RDFa |
+| `extractSchemasSmartly()` | Category→product page following |
+| `detectPageType()` | Identify category vs product pages |
+| `findProductLinkOnPage()` | Extract product URLs from HTML |
+| `assessSchemaQuality()` | Rate schema as full/partial/none |
+| `checkAiBotAccess()` | Parse robots.txt for 10 AI bots |
+| `getPageSpeedMetrics()` | Fetch Google PageSpeed data |
+| `performDistributionChecks()` | Run all P1-P7 checks |
+| `detectPlatform()` | Identify Shopify/WooCommerce/etc |
+| `discoverFeeds()` | Find product feeds |
+| `checkFeedUrl()` | Validate feed content |
+| `assessProtocolReadiness()` | Check UCP/ACP/MCP |
+| `generateRecommendations()` | Create fix suggestions |
+
+---
+
+### `/generate-report` — PDF Report & Email
+
+**Location**: `supabase/functions/generate-report/index.ts` (~700 lines)
+
+**Request**:
+```json
+POST /functions/v1/generate-report
+{
+  "email": "user@example.com",
+  "analysisId": "uuid-here"
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "message": "Report sent successfully"
+}
+```
+
+**Internal Flow**:
+
+```
+1. Fetch analysis data from database
+2. Generate PDF (5 pages):
+   ├── Page 1: Executive Summary (score, grade, impact statement)
+   ├── Page 2: #1 Priority Fix spotlight
+   ├── Page 3: Detailed check results by category
+   ├── Page 4: All recommendations with code snippets
+   └── Page 5: Next steps & service tiers
+3. Build HTML email with:
+   ├── Dynamic subject line based on score
+   ├── Protocol readiness matrix
+   ├── Category score breakdown
+   └── CTA to book consultation
+4. Send via Resend API
+5. Update email_captures table with delivery status
+```
+
+**Dynamic Email Subject Lines**:
+- Score < 50: `⚠️ Your store is invisible to AI agents (Score: X/100)`
+- Score 50-69: `Your store scored X/100 for AI visibility — here's what to fix`
+- Score 70-84: `Good news: X/100 AI readiness — here's how to reach 85+`
+- Score 85+: `🏆 Excellent! X/100 — you're a market leader`
+
+---
+
+## External API Integrations
+
+### 1. Firecrawl API
+
+**Purpose**: JavaScript-rendered page scraping
+
+**Endpoint**: `https://api.firecrawl.dev/v1/scrape`
+
+**Configuration**:
+```typescript
+{
+  url: targetUrl,
+  formats: ["rawHtml", "html", "links"],
+  onlyMainContent: false,
+  waitFor: 5000  // 5s for JS rendering
+}
+```
+
+**Why Firecrawl**:
+- Handles SPAs and client-side rendered content
+- Preserves JSON-LD script tags in `rawHtml`
+- Returns rendered DOM after JavaScript execution
+
+**Fallback**: Basic `fetch()` for static HTML when Firecrawl unavailable.
+
+---
+
+### 2. Google PageSpeed Insights API
+
+**Purpose**: Core Web Vitals metrics from real Chrome users
+
+**Endpoint**: `https://www.googleapis.com/pagespeedonline/v5/runPagespeed`
+
+**Parameters**:
+```
+?url={encoded_url}
+&key={API_KEY}
+&category=performance
+&strategy=mobile
+```
+
+**Response Parsing**:
+```typescript
+{
+  lcp: audits["largest-contentful-paint"]?.numericValue,
+  fid: audits["max-potential-fid"]?.numericValue,
+  cls: audits["cumulative-layout-shift"]?.numericValue,
+  tti: audits["interactive"]?.numericValue,
+  speedIndex: audits["speed-index"]?.numericValue,
+  performanceScore: Math.round(categories.performance.score * 100)
+}
+```
+
+---
+
+### 3. Resend API
+
+**Purpose**: Transactional email delivery for PDF reports
+
+**Endpoint**: Via `resend` npm package
+
+**Configuration**:
+```typescript
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+
+await resend.emails.send({
+  from: "Agent Pulse <reports@yourdomain.com>",
+  to: userEmail,
+  subject: dynamicSubject,
+  html: emailHtml,
+  attachments: [{
+    filename: "agent-pulse-report.pdf",
+    content: pdfBase64
+  }]
+});
+```
+
+---
+
+## Database Schema
+
+### Table: `analyses`
+
+Stores all analysis results.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | Primary key |
+| `url` | TEXT | Analyzed URL |
+| `domain` | TEXT | Domain hostname |
+| `total_score` | INTEGER | 0-100 score |
+| `grade` | TEXT | Agent-Native/Optimized/Needs Work/Invisible |
+| `discovery_score` | INTEGER | Discovery pillar score |
+| `discovery_max` | INTEGER | Max possible (35) |
+| `performance_score` | INTEGER | Performance pillar score |
+| `performance_max` | INTEGER | Max possible (15) |
+| `transaction_score` | INTEGER | Transaction pillar score |
+| `transaction_max` | INTEGER | Max possible (20) |
+| `distribution_score` | INTEGER | Distribution pillar score |
+| `distribution_max` | INTEGER | Max possible (15) |
+| `trust_score` | INTEGER | Trust pillar score |
+| `trust_max` | INTEGER | Max possible (15) |
+| `platform_detected` | TEXT | Shopify/WooCommerce/etc |
+| `platform_name` | TEXT | Platform display name |
+| `feeds_found` | JSONB | Array of discovered feeds |
+| `protocol_compatibility` | JSONB | UCP/ACP/MCP readiness |
+| `checks` | JSONB | All individual check results |
+| `recommendations` | JSONB | Generated recommendations |
+| `analysis_duration_ms` | INTEGER | Processing time |
+| `created_at` | TIMESTAMPTZ | Creation timestamp |
+
+### Table: `email_captures`
+
+Tracks report requests and delivery.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | Primary key |
+| `email` | TEXT | User email address |
+| `analysis_id` | UUID | FK to analyses |
+| `source` | TEXT | Capture source |
+| `report_sent_at` | TIMESTAMPTZ | Delivery timestamp |
+| `report_error` | TEXT | Error message if failed |
+| `created_at` | TIMESTAMPTZ | Request timestamp |
+
+### Table: `rate_limits`
+
+IP-based rate limiting for the analyze endpoint.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | Primary key |
+| `ip` | TEXT | Client IP address |
+| `endpoint` | TEXT | Rate-limited endpoint |
+| `count` | INTEGER | Request count in window |
+| `window_start` | TIMESTAMPTZ | Current window start |
+| `created_at` | TIMESTAMPTZ | Record creation |
+
+---
+
+## Security Features
+
+### SSRF Protection
+
+The analyze endpoint blocks requests to:
+- Localhost (`127.0.0.1`, `localhost`, `::1`)
+- Private IPs (`10.x.x.x`, `172.16-31.x.x`, `192.168.x.x`)
+- Link-local (`169.254.x.x`)
+- Cloud metadata (`169.254.169.254`, `metadata.google.internal`)
+- Internal hostnames (`*internal*`, `*intranet*`, `*corp*`)
+
+### Rate Limiting
+
+| Endpoint | Limit | Window |
+|----------|-------|--------|
+| `/analyze` (single-page) | 10 requests | 1 hour |
+| `/analyze` (deep crawl) | 3 requests | 1 hour |
+
+Rate limit headers returned:
+- `X-RateLimit-Limit`: Maximum requests allowed
+- `X-RateLimit-Remaining`: Requests remaining
+- `Retry-After`: Seconds until reset (on 429)
+
+### Row Level Security (RLS)
+
+| Table | Policy | Effect |
+|-------|--------|--------|
+| `analyses` | Public SELECT, INSERT only | No UPDATE/DELETE |
+| `email_captures` | Service role only | No public access |
+| `rate_limits` | Service role only | No public access |
+
+---
+
+## User Flow
+
+```
+1. LANDING PAGE (Index.tsx)
+   └── User enters URL in ConversionHeroSection
+   └── Navigates to /analyzing?url={encoded_url}
+
+2. ANALYZING PAGE (Analyzing.tsx)
+   ├── 5-step progress animation:
+   │   ├── "Checking AI bot access..."
+   │   ├── "Analyzing structured data..."
+   │   ├── "Testing page performance..."
+   │   ├── "Discovering product feeds..."
+   │   └── "Verifying trust signals..."
+   ├── Calls /analyze edge function
+   └── Redirects to /results?id={analysisId}
+
+3. RESULTS PAGE (Results.tsx)
+   ├── ScoreHeader: Main score + grade
+   ├── RevenueAtRiskCard: Loss aversion messaging
+   ├── PriorityFixSpotlight: #1 recommendation
+   ├── CategoryBreakdown: 5-pillar scores
+   ├── ChecksAccordion: Detailed pass/fail list
+   ├── IndustryComparisonBars: Benchmarking
+   ├── RecommendationsSection: All fixes
+   ├── EmailCapture: PDF report form
+   └── StickyBottomCTA: Persistent action button
+
+4. REPORT DELIVERY
+   ├── User enters email
+   ├── Calls /generate-report edge function
+   ├── PDF generated with jsPDF
+   └── Sent via Resend
+```
 
 ---
 
 ## Scoring System
 
-| Grade | Score Range | Meaning |
-|-------|-------------|---------|
-| Agent-Native | 85-100 | Excellent — Fully agent-optimized |
-| Optimized | 70-84 | Great — Minor improvements possible |
-| Needs Work | 50-69 | Some gaps to address |
-| Invisible | 0-49 | Failing — Largely invisible to AI agents |
+| Grade | Score Range | Label | Meaning |
+|-------|-------------|-------|---------|
+| Agent-Native | 85-100 | MARKET LEADER | Fully optimized for AI agents |
+| Optimized | 70-84 | COMPETITIVE | Minor improvements possible |
+| Needs Work | 50-69 | LOSING GROUND | Some gaps to address |
+| Invisible | 0-49 | INVISIBLE TO AI | Critical issues, largely invisible |
 
-**Scoring Weight Distribution**:
+**Category Weights**:
 - Discovery: 35 points (35%)
 - Performance: 15 points (15%)
 - Transaction: 20 points (20%)
-- Distribution: 15 points (15%) **NEW**
+- Distribution: 15 points (15%)
 - Trust: 15 points (15%)
 
-Each check contributes points to category scores, which roll up to the total score.
-
----
-
-## Technical Implementation
-
-### Analysis Flow
-
-```
-1. URL Submission
-   └─> SSRF Protection (block localhost, private IPs, metadata endpoints)
-   └─> Rate Limit Check (10/hour per IP)
-
-2. Page Scraping
-   └─> Firecrawl API (JavaScript-rendered content)
-   └─> Fallback: Basic fetch (static HTML only)
-
-3. Parallel Analysis
-   ├─> robots.txt parsing (AI bot rules)
-   ├─> Schema.org extraction (JSON-LD, Microdata, RDFa)
-   ├─> PageSpeed Insights API call
-   ├─> sitemap.xml presence check
-   └─> Feed discovery & platform detection **NEW**
-
-4. Scoring Engine
-   └─> Calculate category scores (5 pillars)
-   └─> Calculate protocol compatibility
-   └─> Generate prioritized recommendations
-   └─> Assign letter grade
-
-5. Result Persistence
-   └─> Store in database
-   └─> Return analysis ID for results page
-```
-
-### Stack
-
-- **Frontend**: React 18 + TypeScript + Vite
-- **Styling**: Tailwind CSS + shadcn/ui
-- **Backend**: Edge Functions (Deno runtime)
-- **Scraping**: Firecrawl API with basic fetch fallback
-- **Performance Data**: Google PageSpeed Insights API
-- **PDF Generation**: jsPDF
-- **Email Delivery**: Resend
-
-### Security Features
-
-- **SSRF Protection**: Blocks requests to localhost, private IPs (10.x, 172.16-31.x, 192.168.x), and cloud metadata endpoints
-- **Rate Limiting**: 10 analyses per hour per IP address
-- **RLS Policies**: Strict database access controls protecting email captures and rate limit data
-
----
-
-## Service Tiers
-
-Agent Pulse is the free entry point for Re:found Labs' AI optimization services:
-
-| Tier | What's Included | Best For |
-|------|-----------------|----------|
-| **Free Audit** | Self-serve Agent Pulse scan, PDF report | Quick health check |
-| **Deep Audit** | Expert review + real AI agent simulation with screen recordings | Brands wanting proof |
-| **Implementation** | Done-for-you optimization with +20 point score guarantee in 60 days | Serious about results |
-
----
-
-## User-Agent Identification
-
-When Agent Pulse crawls your site, it identifies as:
-
-```
-AgentPulseBot/1.0 (+https://refoundlabs.com)
-```
-
-This allows you to identify our requests in your server logs if needed.
+**Color Coding**:
+- Green (success): ≥ 70%
+- Orange (warning): 40-69%
+- Red (destructive): < 40%
 
 ---
 
@@ -348,24 +783,125 @@ This allows you to identify our requests in your server logs if needed.
 
 ```bash
 # Clone the repository
-git clone <YOUR_GIT_URL>
-cd <YOUR_PROJECT_NAME>
+git clone <repository-url>
+cd agent-pulse
 
 # Install dependencies
 npm install
 
 # Start development server
 npm run dev
+
+# Run tests
+npm run test
 ```
 
-### Required Environment Variables
+### Supabase Local Development
 
-| Variable | Purpose |
-|----------|---------|
-| `GOOGLE_PAGESPEED_API_KEY` | PageSpeed Insights API access |
-| `RESEND_API_KEY` | Email delivery for PDF reports |
-| `FIRECRAWL_API_KEY` | JavaScript-rendered page scraping + feed discovery |
-| `VITE_CALENDLY_URL` | Booking link for strategy calls |
+```bash
+# Install Supabase CLI
+brew install supabase/tap/supabase
+
+# Start local Supabase
+supabase start
+
+# Deploy edge functions locally
+supabase functions serve analyze --env-file .env.local
+supabase functions serve generate-report --env-file .env.local
+```
+
+---
+
+## Environment Variables
+
+### Frontend (Vite)
+
+| Variable | Purpose | Required |
+|----------|---------|----------|
+| `VITE_SUPABASE_URL` | Supabase project URL | Yes |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase anon key | Yes |
+| `VITE_SUPABASE_PROJECT_ID` | Project ID | Yes |
+| `VITE_CALENDLY_URL` | Booking link for CTAs | No |
+
+### Edge Functions (Supabase Secrets)
+
+| Secret | Purpose | Required |
+|--------|---------|----------|
+| `SUPABASE_URL` | Database connection | Yes (auto) |
+| `SUPABASE_ANON_KEY` | API authentication | Yes (auto) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Admin operations | Yes (auto) |
+| `FIRECRAWL_API_KEY` | JS-rendered scraping | Yes |
+| `GOOGLE_PAGESPEED_API_KEY` | Performance metrics | Yes |
+| `RESEND_API_KEY` | Email delivery | Yes |
+
+---
+
+## Deployment
+
+### Frontend
+
+The frontend is deployed via Lovable's built-in deployment:
+- **Preview URL**: `https://id-preview--{project-id}.lovable.app`
+- **Published URL**: `https://ai-commerce-audit.lovable.app`
+
+### Edge Functions
+
+Edge functions are auto-deployed when files in `supabase/functions/` change.
+
+Manual deployment:
+```bash
+supabase functions deploy analyze
+supabase functions deploy generate-report
+```
+
+### Database Migrations
+
+Migrations are managed via Lovable Cloud UI or Supabase CLI:
+```bash
+supabase db push
+```
+
+---
+
+## What We Don't Test
+
+To maintain transparency about scope:
+
+| Category | Excluded | Reason |
+|----------|----------|--------|
+| Content Quality | Product descriptions, copy | Subjective |
+| Image Recognition | Photo quality | Requires CV |
+| Competitive Pricing | Market comparison | No market data |
+| Inventory Accuracy | Stock levels | Needs backend |
+| Deep Crawling | Multi-page audits | Speed constraint |
+| Mobile-specific | Separate mobile sites | Single URL focus |
+| Checkout Flow | Purchase completion | E2E testing |
+| Review Schema | AggregateRating | Not core commerce |
+| FAQ Schema | FAQPage | Not AI shopping |
+| Security Headers | HTTPS, CSP, HSTS | Different domain |
+| Accessibility | WCAG | Separate audit |
+
+---
+
+## User-Agent Identification
+
+When Agent Pulse crawls your site:
+
+```
+Mozilla/5.0 (compatible; AgentPulseBot/1.0; +https://refoundlabs.com) AppleWebKit/537.36
+```
+
+---
+
+## Service Tiers
+
+Agent Pulse is the free entry point for Re:found Labs' AI optimization services:
+
+| Tier | Price | Includes |
+|------|-------|----------|
+| **Free Audit** | €0 | Self-serve Agent Pulse scan, PDF report |
+| **Deep Audit + Simulation** | From €750 | Expert review, real AI agent testing with screen recordings |
+| **Implementation** | From €2,500 | Done-for-you optimization, +20 point score guarantee in 60 days |
 
 ---
 
