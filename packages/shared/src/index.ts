@@ -80,7 +80,9 @@ export const SCHEMA_AVAILABILITY_VALUES = [
 ] as const;
 
 // Types
-export type CheckStatus = 'pass' | 'partial' | 'fail';
+// 'skipped' is used when a check cannot be performed (e.g., PageSpeed API unavailable)
+// Skipped checks have score=0 and maxScore=0, so they don't affect the total
+export type CheckStatus = 'pass' | 'partial' | 'fail' | 'skipped';
 export type Grade = 'Agent-Native' | 'Optimized' | 'Needs Work' | 'Invisible';
 export type CheckCategory = 'discovery' | 'performance' | 'transaction' | 'distribution' | 'trust';
 

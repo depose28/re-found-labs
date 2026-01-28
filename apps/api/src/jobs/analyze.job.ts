@@ -227,13 +227,23 @@ export async function runAnalysis(payload: AnalyzeJobPayload): Promise<AnalyzeJo
       returnPolicyResult.check,   // R2
     ];
 
+    // Calculate scores
+    // Note: performanceMax is dynamic - if PageSpeed API fails, maxScore=0 (check excluded)
     const discoveryScore = botAccessResult.check.score + productSchemaResult.check.score + sitemapResult.check.score;
     const performanceScore = pageSpeedResult.check.score;
+    const performanceMax = pageSpeedResult.check.maxScore; // Dynamic: 0 if skipped, 15 if measured
     const transactionScore = offerSchemaResult.check.score + httpsResult.check.score;
     const distributionScore = distributionResult.totalScore;
     const trustScore = orgSchemaResult.check.score + returnPolicyResult.check.score;
     const totalScore = discoveryScore + performanceScore + transactionScore + distributionScore + trustScore;
-    const grade = getGrade(totalScore);
+
+    // Calculate max possible score (accounts for skipped checks)
+    const maxPossibleScore = SCORING.discovery.max + performanceMax + SCORING.transaction.max + SCORING.distribution.max + SCORING.trust.max;
+
+    // Calculate grade based on percentage of max possible score
+    // This ensures fair grading even when some checks are skipped
+    const normalizedScore = maxPossibleScore > 0 ? Math.round((totalScore / maxPossibleScore) * 100) : 0;
+    const grade = getGrade(normalizedScore);
 
     // Generate recommendations
     const recommendations = generateRecommendations(checks, {
@@ -247,12 +257,16 @@ export async function runAnalysis(payload: AnalyzeJobPayload): Promise<AnalyzeJo
 
     log.info({
       totalScore,
+      maxPossibleScore,
+      normalizedScore,
       grade,
       discoveryScore,
       performanceScore,
+      performanceMax,
       transactionScore,
       distributionScore,
       trustScore,
+      pageSpeedSkipped: pageSpeedResult.check.status === 'skipped',
       durationMs: analysisDuration,
     }, 'Analysis scoring complete');
 
@@ -267,7 +281,7 @@ export async function runAnalysis(payload: AnalyzeJobPayload): Promise<AnalyzeJo
         discovery_score: discoveryScore,
         discovery_max: SCORING.discovery.max,
         performance_score: performanceScore,
-        performance_max: SCORING.performance.max,
+        performance_max: performanceMax, // Dynamic: 0 if skipped, 15 if measured
         transaction_score: transactionScore,
         transaction_max: SCORING.transaction.max,
         distribution_score: distributionScore,
