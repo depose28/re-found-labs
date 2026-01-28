@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "installCommand": "cd ../.. && pnpm install",
+  "buildCommand": "cd ../.. && pnpm build --filter @agent-pulse/web",
+  "env": {
+    "VITE_SUPABASE_URL": "@vite-supabase-url",
+    "VITE_SUPABASE_PUBLISHABLE_KEY": "@vite-supabase-publishable-key",
+    "VITE_API_URL": "@vite-api-url"
+  }
+}

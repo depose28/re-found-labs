@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api" }
+  ],
+  "env": {
+    "SUPABASE_URL": "@supabase-url",
+    "SUPABASE_SERVICE_ROLE_KEY": "@supabase-service-role-key",
+    "FIRECRAWL_API_KEY": "@firecrawl-api-key",
+    "GOOGLE_PAGESPEED_API_KEY": "@google-pagespeed-api-key",
+    "TRIGGER_SECRET_KEY": "@trigger-secret-key"
+  }
+}

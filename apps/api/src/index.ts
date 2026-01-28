@@ -13,7 +13,12 @@ const log = createLogger('api');
 
 // Middleware
 app.use('*', cors({
-  origin: ['http://localhost:8080', 'http://localhost:5173', 'https://ai-commerce-audit.lovable.app'],
+  origin: [
+    'http://localhost:8080',
+    'http://localhost:5173',
+    'https://ai-commerce-audit.lovable.app',
+    // Add your Vercel frontend URL here once deployed
+  ],
   allowMethods: ['GET', 'POST', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
 }));
@@ -23,6 +28,19 @@ app.use('*', prettyJSON());
 // Health check
 app.get('/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Root endpoint
+app.get('/', (c) => {
+  return c.json({
+    name: 'Agent Pulse API',
+    version: '1.0.0',
+    endpoints: {
+      analyze: 'POST /api/analyze',
+      jobs: 'GET /api/jobs/:id',
+      health: 'GET /health',
+    },
+  });
 });
 
 // API routes
@@ -41,14 +59,21 @@ app.notFound((c) => {
   return c.json({ error: 'Not found' }, 404);
 });
 
-const port = parseInt(process.env.PORT || '3001');
-log.info({ port }, 'Starting API server');
+// Export for Vercel serverless
+export default app;
 
-import { serve } from '@hono/node-server';
+// Local development server
+// Only start the server if not running on Vercel
+if (!process.env.VERCEL) {
+  const port = parseInt(process.env.PORT || '3001');
+  log.info({ port }, 'Starting API server');
 
-serve({
-  fetch: app.fetch,
-  port,
-}, (info) => {
-  log.info({ port: info.port }, 'Server listening');
-});
+  import('@hono/node-server').then(({ serve }) => {
+    serve({
+      fetch: app.fetch,
+      port,
+    }, (info) => {
+      log.info({ port: info.port }, 'Server listening');
+    });
+  });
+}

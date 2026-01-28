@@ -1,10 +1,12 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
+import { tasks } from "@trigger.dev/sdk/v3";
 import { supabase } from '../lib/supabase';
 import { createLogger } from '../lib/logger';
 import { validateUrlSecurity } from '../lib/security';
 import { runAnalysis } from '../jobs/analyze.job';
+import type { analyzeTask } from '../trigger/analyze';
 
 const log = createLogger('analyze');
 
@@ -72,6 +74,11 @@ function normalizeUrl(url: string): string {
   return normalized;
 }
 
+// Check if Trigger.dev is configured
+function isTriggerConfigured(): boolean {
+  return !!process.env.TRIGGER_SECRET_KEY;
+}
+
 // Async job-based endpoint (returns immediately, poll for status)
 analyzeRoutes.post('/', zValidator('json', analyzeSchema), async (c) => {
   const { url, depth } = c.req.valid('json');
@@ -126,11 +133,22 @@ analyzeRoutes.post('/', zValidator('json', analyzeSchema), async (c) => {
 
     log.info({ jobId: job.id, url: normalizedUrl }, 'Job created, starting analysis');
 
-    // Run analysis inline (will be moved to Trigger.dev later)
-    // Don't await - let it run in background
-    runAnalysis({ jobId: job.id, url: normalizedUrl }).catch((err) => {
-      log.error({ jobId: job.id, error: err }, 'Background analysis failed');
-    });
+    // Use Trigger.dev if configured, otherwise run inline
+    if (isTriggerConfigured()) {
+      // Trigger the analysis task via Trigger.dev
+      const handle = await tasks.trigger<typeof analyzeTask>(
+        "analyze-ecommerce-site",
+        { jobId: job.id, url: normalizedUrl }
+      );
+
+      log.info({ jobId: job.id, triggerRunId: handle.id }, 'Analysis triggered via Trigger.dev');
+    } else {
+      // Fallback: run analysis inline (for local development without Trigger.dev)
+      log.info({ jobId: job.id }, 'Running analysis inline (Trigger.dev not configured)');
+      runAnalysis({ jobId: job.id, url: normalizedUrl }).catch((err) => {
+        log.error({ jobId: job.id, error: err }, 'Background analysis failed');
+      });
+    }
 
     return c.json({
       success: true,
@@ -146,6 +164,7 @@ analyzeRoutes.post('/', zValidator('json', analyzeSchema), async (c) => {
 
 // Sync endpoint for compatibility with existing frontend
 // This waits for the analysis to complete before returning
+// Note: This endpoint always runs inline (not via Trigger.dev) for immediate response
 analyzeRoutes.post('/sync', zValidator('json', analyzeSchema), async (c) => {
   const { url } = c.req.valid('json');
   const clientIp =
