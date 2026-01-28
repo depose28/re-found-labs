@@ -1,0 +1,29 @@
+{
+  "configPath": "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/re-found-labs/apps/api/trigger.config.mjs",
+  "customConditions": [
+  ],
+  "queues": [
+  ],
+  "runtime": "node",
+  "runtimeVersion": "25.4.0",
+  "tasks": [
+    {
+      "entryPoint": "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/re-found-labs/apps/api/src/trigger/analyze.mjs",
+      "filePath": "src/trigger/analyze.ts",
+      "id": "analyze-ecommerce-site",
+      "maxDuration": 300,
+      "retry": {
+        "factor": 2,
+        "maxAttempts": 2,
+        "maxTimeoutInMs": 30000,
+        "minTimeoutInMs": 5000,
+        "randomize": true
+      }
+    }
+  ],
+  "timings": {
+    "src/scrapers/basic.ts": 5.604792000000003,
+    "src/trigger/analyze.ts": 8.730916999999977
+  },
+  "workerEntryPoint": "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/.npm/_npx/14e26f7f01a559c9/node_modules/trigger.dev/dist/esm/entryPoints/dev-run-worker.mjs"
+}

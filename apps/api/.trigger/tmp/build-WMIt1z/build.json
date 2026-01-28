@@ -1,0 +1,116 @@
+{
+  "build": {
+  },
+  "cliPackageVersion": "4.3.3",
+  "config": {
+    "dirs": [
+      "./src/trigger"
+    ],
+    "project": "proj_mdzorueyzbcotqvlcgdn"
+  },
+  "configPath": "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/re-found-labs/apps/api/trigger.config.mjs",
+  "contentHash": "b2ab4c3e12ca42176097f2ff7ceca8be",
+  "customConditions": [
+  ],
+  "deploy": {
+    "env": {
+    }
+  },
+  "environment": "dev",
+  "externals": [
+    {
+      "name": "import-in-the-middle",
+      "version": "1.11.0"
+    }
+  ],
+  "files": [
+    {
+      "entry": "src/scrapers/basic.ts",
+      "out": "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/basic-65D7LKEJ.mjs"
+    },
+    {
+      "entry": "src/trigger/analyze.ts",
+      "out": "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/re-found-labs/apps/api/src/trigger/analyze.mjs"
+    }
+  ],
+  "indexWorkerEntryPoint": "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/.npm/_npx/14e26f7f01a559c9/node_modules/trigger.dev/dist/esm/entryPoints/dev-index-worker.mjs",
+  "otelImportHook": {
+    "include": [
+    ]
+  },
+  "outputHashes": {
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/.npm/_npx/14e26f7f01a559c9/node_modules/trigger.dev/dist/esm/entryPoints/dev-index-worker.mjs": "wGmnZwVnaMA",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/.npm/_npx/14e26f7f01a559c9/node_modules/trigger.dev/dist/esm/entryPoints/dev-index-worker.mjs.map": "xB477DYQOJI",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/.npm/_npx/14e26f7f01a559c9/node_modules/trigger.dev/dist/esm/entryPoints/dev-run-worker.mjs": "myBgWsX/wqs",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/.npm/_npx/14e26f7f01a559c9/node_modules/trigger.dev/dist/esm/entryPoints/dev-run-worker.mjs.map": "6td6AuY8f0g",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/basic-65D7LKEJ.mjs": "XaVSw8YqBCU",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/basic-65D7LKEJ.mjs.map": "0b4tlwmkM3g",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/chunk-7MXX25KT.mjs": "Fks7bALF+D8",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/chunk-7MXX25KT.mjs.map": "hjibbyJLZuY",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/chunk-DH7HKMKD.mjs": "k2jg0DdIVqM",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/chunk-DH7HKMKD.mjs.map": "a2y7B6gxE8Q",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/chunk-EST6YP46.mjs": "tiY7wpQRAek",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/chunk-EST6YP46.mjs.map": "UIp9ZrsnsFE",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/chunk-G5RPVOTZ.mjs": "X5lzbDZkZck",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/chunk-G5RPVOTZ.mjs.map": "EHSUmPvWGiw",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/chunk-HNWWJ6GA.mjs": "PGtTFfKn7eE",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/chunk-HNWWJ6GA.mjs.map": "N7g2JTigr7M",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/chunk-N6E3MFVR.mjs": "rVo0ysvp6w0",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/chunk-N6E3MFVR.mjs.map": "dFItNdcBLWM",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/chunk-N6NY64LT.mjs": "fJaM3oRu/gI",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/chunk-N6NY64LT.mjs.map": "3Xq0vFn24h4",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/chunk-PWYC62E7.mjs": "z5brCKMOnuQ",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/chunk-PWYC62E7.mjs.map": "8IPM3hdLOQM",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/crypto.node-2PGVIBAY.mjs": "JqgaC3BeZdo",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/crypto.node-2PGVIBAY.mjs.map": "6GwgRy0rLzc",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/crypto.node-IPMB6KZW.mjs": "SgBEJdqGlfM",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/crypto.node-IPMB6KZW.mjs.map": "0b4tlwmkM3g",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/esm-7A7XNZSE.mjs": "3M8TNR9KuhY",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/esm-7A7XNZSE.mjs.map": "wxNrJfbCRm0",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/esm-XXPDNTGP.mjs": "SgxFa5kLUNI",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/esm-XXPDNTGP.mjs.map": "XFGqoDiYKvo",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/getMachineId-bsd-JW3MNQNU.mjs": "dQW3qD9Zja0",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/getMachineId-bsd-JW3MNQNU.mjs.map": "ikIfCichchA",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/getMachineId-darwin-23I7JVTY.mjs": "w61hkQfD4zE",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/getMachineId-darwin-23I7JVTY.mjs.map": "viLGCSSxKTw",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/getMachineId-linux-PVZAK6YT.mjs": "YuRS2pfdBpc",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/getMachineId-linux-PVZAK6YT.mjs.map": "Q27hvbW+3X4",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/getMachineId-unsupported-UESGT5JP.mjs": "9llksL41mkk",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/getMachineId-unsupported-UESGT5JP.mjs.map": "9B49WhNsujM",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/getMachineId-win-PATJHA2N.mjs": "l9Ocy+vrUss",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/getMachineId-win-PATJHA2N.mjs.map": "m29T4EiB1lg",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/re-found-labs/apps/api/src/trigger/analyze.mjs": "xUD2CCwHZHM",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/re-found-labs/apps/api/src/trigger/analyze.mjs.map": "+NZWMtylN3s",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/re-found-labs/apps/api/trigger.config.mjs": "1j3K0oQCWuQ",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/re-found-labs/apps/api/trigger.config.mjs.map": "A/HPyTGD7UE",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/s2s-S3YER3JQ.mjs": "1kH2lfRWOwc",
+    "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/s2s-S3YER3JQ.mjs.map": "6sga5vEkdIQ"
+  },
+  "outputPath": "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z",
+  "packageVersion": "4.3.3",
+  "runWorkerEntryPoint": "/Users/philippbeer/re-found-labs/apps/api/.trigger/tmp/build-WMIt1z/.npm/_npx/14e26f7f01a559c9/node_modules/trigger.dev/dist/esm/entryPoints/dev-run-worker.mjs",
+  "runtime": "node",
+  "sources": {
+    "package.json": {
+      "contentHash": "ca4f10fa6dd6e5194ef95af6de889ef6",
+      "contents": "eJxtkstSwzAMRff9Ck+WDFGT9EHbFQv4DWaMLVqXxPbYTigw/Dt+NUkZdvbVkSxd+XtBSCFph8WBFI/0iNKVum8tLqkWxX2IDmisUDIAFVRQJ9V96pjTKd63mDTLjNDOevnbX73AcQiMsxfyQR07EWvYUkiOF/DYfYJee9HyhPX6hiBl+aZMRx1B2/kLn5Kso8aFJKk4Ei6sy1nnEQkdshOy91Sb+QJSPXfCjQDaWGIQ4URML+eRQ+x4ihc+9BPH5KjRvyWZwNmsN+bZEzUYh/pQ5t1qyvBwd63+eFJSLUPjpUXj7Q3cSw31Hva3zJfi5UBbwalTiapgnTcQIG8YfaXhvXwozzZiDezrGeeMOB7RgN/H0vJoyMsaVrC6Elw5lEPq4wGaKRDayPgWqquqRVb3f9VSG3TuM1Va+e8yRv0sUV1Bs4GH7dzO4el/R8MGbTQqDdVAvYXNOJV3jmE7xTewgWY37tB7EuWdH7Sa1Esex7tdzb9K+ry50G5yIG8/tw7r2PjiZ/ELUwjemw=="
+    },
+    "src/scrapers/basic.ts": {
+      "contentHash": "6e9482b4f5367d3f802071a6ca3b000e",
+      "contents": "eJyNV2tX2zgQ/c6v0ObsqR2a2HR72IcDdCmHbtuFnh4Cux/abqvY40StLbmSvJCl+e87evgRSAE+OdKd8Z2ZqyvDykpITa5JKoFqOBHzOUiyIrkUJQmiKC7YLC7sajDZ2koFV5rgb7K/FhEGKpW0ApnMqGJpMGyxF9Pjs4+Hfxy/OceQ4FT8x4qCxrvRDglTUVZUs1kBE3I4B67f1oWC50LHT6KdCXm80LpSSRxLyEXNs4LOVIQxQ3JYVQX8DbM/mY53n/4SPf3ZcIMrWwrjGmROUyBTS+kMVF1ghVuELHRZJERpyfh8gr9L0DSjmiZ2l+AO1bU6EhkkhNflDOTErmMlGumdLyvoh7cbJ8DnerEeIyFjElINWUJmQhRAudvIGafFhVwjsppsrdoCqFrylOQ1TzUTnNiGvgCdLsK6ixoRzUoQtT5V2NcnO/g3TMhbnBpTsNev/MAW54Zh+EpRFDjifcLhkhzO8I1H7Wo4nLRYn/9VhlAF+tz9DMMh2T/oJYqoSREOe4TM8AnRcunbinKJMpjV8/CaYAlkNSLBVFOpsQ5XHslNfYELbAhIUBU+AL6fXlKmHcg0YeQT48TYHLuZ9Pm4pZEHLIBmIFXSRhASXCiQYyu4IOnpc9QhDtMUKrMbaLjSsdHNiKLoWErNTOIrs/L46uZqWUy+7u9Ev42242379GtwK+n4hPJ5TedgsgMfX0xHwC14twWvmodGRAjNsTpx6SGrtlOoK9mMpp3Yeh8N17aHTVMjU5gbd18cXuUIb4G+g9EcdBh4zFgjKBiSb99IEGzI4Q4EZqmoVPCK6/DudIXF+4Q7wQgFbZ8N9cht+pJ6WvI9Mnpo1NA7v+0L3WIDWSN4s83mrLZx3aLvOar2eSdWYtyrANxuZStB15K3SrOq8c83neaBbNes59biehEPLGPdglpYr4tefStrTAS1jcWGIKWQCaF8OfQl3C09lvuYiNMS9bSP5m/N5tgsBsO2D2agl1Ry5w19W7vZcLOTEdwLvGzRYxZSXFojs2nDTy/WkYTmeBmQH6/brKtSffLhq05RlmnDwJfq2JegFB7WW2Ryygo3+o6HjbBdM24ex+RoAekX0wq9APLy/PSEqBpvS6UVuQSkjSRfT3EGHE8EemFzAbTWbxDqtTprAGH/AkO7v7aI/g2DyagSvMHg/DrzR/sA+dKZgT1YWpyYpSOqIHRzQ85/Afq2WhgerQEL7CJHDVOukPBY8GK55UbcO6Bkj+ziJeQH25yFlqGWNYxaesFZk1sL4V8XFuwLFMvmDcPAS9ATc83MhTQnr8TuYOtyieK6FBKbzDNjw0JiaxmSgbLSS2xLtmzrNz9OrZp9/aX5EcZ7ZuPdPwcftg/Cd+/V++mH7WfDvfexWT6IWe9KNCtH7uxhji7fs+753ZMPEba+xGsysd7oyB9bOsid46EZd+Qc2bVKpBDad7f3vq7JP3VNNph2qhHjaVFnoMKAZfuDjx85OvzAeer3QOZd90DwgkNEd17vG+xaLRn6o7GemzPxozXD7Qb8RuA3JKs0MXaA4lVb368QOMXPRvKZ/ktd0PeL6DCEKeT5tUY/zLqS7i0I46cuvgluGLb13ZDqG0EqKbI61USlCygpytPaPdqHtQGjYhgbHYNMYVwI8cWkU0yDatW2oOq4gUztR4351NtUIs0yPEdo1dL1wfvaRuBYi/H9wFm9JBw/N+4EVZKl4G+/lvJbV/jU1b2Z7+B38/0wSAa+S4O739PAycPwg8DigyTw8GDgOFrD2tDUR4/ID7eY4+LG47e783CTO25H7D9UFZnhpcTFZln0VXQrdY7R/dzTnpzwjKKtKLxd8pylzHzYun8p/gdmHH94"
+    },
+    "src/trigger/analyze.ts": {
+      "contentHash": "c97b873ce192f4f8cf1b407b48094cc5",
+      "contents": "eJyVVNtu2zAMfc9XEHlKusTONmQPKTqsWDegAwoMa3+AkeVYiywZkpzLivz7qFucdsCAPsUizznkoaiIttPGwTM4tNsZSL3ZcAMnqI1uYfzFGeEDRcV3pa225e7j+HokMsf06lahPFphZxC+/vAfev0Tj1JjdVYpivK3XtsSI6KgA6mMyqurEVzB01AiNAG1Nl5ZCbUBPme6bblhHDBVKogUeI2wkdCgqiSnQ8Oh4bg7ghS183Rdrzx0Do/MYOcjHW4IOVmjFQxq7lgD7+C7MJwAewk1SrlGtp1G2reDM8iCFNWAHUpRYTha1vAWbYT9St0SGd4vgVJsawGZ0dbCEjohJZqE/YqS9TKLaEPdeOkNV9zEKPXiPStfSSub7R47wVBC1ZsQX8HHxfzTAiyhVRXEH/BwkV5CK1TvvFun04zASr0HKyjqHZYjfghXSRLWQbqfJz/TmzDayfMIQFQrGKfcnOf7mHuV8YzyZQm30uv2HVCloa6/yKEgIVs83F20v/Bsw505rsAXCoBb53jbObuCD7MYE+pJtFz37l49UHi5iMSAfpEhxZyq6da0SRqnUKenmmiPisGkiwu6+ndnp3DzOfUSZ/IMtK331Qx6I2mhbyBxaX89KL6XQqhaT8aPDk3albiq49kr/jTRorb1eO+AZO/Q8ULp/SRDaCqpkQynVemlIyzuUbjLx5cNZW5m5GV4oU87eC58neAvbGRVEmk7yR2vvI+EhOTnfLQ9Y9zS9GN7RToPgDyM++qMGUIDLPfqLzJ/p+Rp8EXb0huVdGL3J2Don/GEG+OvHNVx+mpyb51DULoYRI1C/n8KqXb4KVryT38zb/XmGkNvJUgkZ3F3PeQv7v/HGQ=="
+    },
+    "trigger.config.ts": {
+      "contentHash": "fafd53a568ede52a8f37884fd948f79b",
+      "contents": "eJxlkU9PwzAMxe/9FFZPm1Stg8GlXEDsMgkuiBtCKGvcKqyJN8ep9kf77qShQyAuifV7fs6zYuyWWOAEGhvj8JFcY1o4Q8NkIb8XNm2LPNPYl15vyn6R32UZ7pMpWlTo5I91csoAtkyfWEsF+VB9WH0kDng4rmuSXd/VrXZ5Efs4ODEWY58jjQl11D5hj11ksUyoLOEFd8EwajAO+psKrNobGyzowEoMOWiIQbkDiPIbmNyCNS4I+sQpDJrqDt74aZwXzcvRV8FiPk9JMG6KvoIhPgA6te5Qr9wS+wokhi8SHze+tKVZDyJotxK9i+JCjXuNe1GQlXuOwtX8+5XR8U/7ERtVC3EF1xfAymmy5oi/U5yHKx3acBzxls9Kz3U5flb+XmTn6V32BTZHlHk="
+    },
+    "tsconfig.json": {
+      "contentHash": "840e3c821191daabf2385b78ab4c9867",
+      "contents": "eJxtkUFLxDAQhe/7K0qOy+JKj56EqrBiV1A8SZE0md0NmyYlk8jC0v/uJG2oFS8h+d7LZF7muioKJmzXKw3utffKGmR3xZUwCZ67I3g6s8f38rYs2WbknZVBw8j3cPFL/gZodYiloqMNRlLtbNGqJfqZCzYTRu+UiC95F2BigHWqtzMenO2XIp5V/6La6gTivFQO1gmoKIdCD8ZXHJU57swTJdzzDnDpdrHZb3hGa+qc6pcsQWju+BTmf6Hmf3qzwT8oF8PfbCV1kbM7a2cBnci85QgfTieeWc/9aZ4EgfvtOn1cukn7JgkDrUO8wpQROkhInuRYR1OS4DJLxkr4GueEbEM5Yn/Nalj9AEKtlDM="
+    }
+  },
+  "target": "dev"
+}

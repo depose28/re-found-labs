@@ -1,9 +1,11 @@
 import { defineConfig } from "@trigger.dev/sdk/v3";
 
 export default defineConfig({
-  project: "agent-pulse",
+  project: "proj_mdzorueyzbcotqvlcgdn",
   runtime: "node",
   logLevel: "log",
+  // Required in v4: maximum duration for any task (5 minutes for our analysis)
+  maxDuration: 300,
   retries: {
     enabledInDev: true,
     default: {
