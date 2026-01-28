@@ -17,6 +17,7 @@ export interface ProtocolReadiness {
     ucp: ProtocolStatus;
     acp: ProtocolStatus;
     mcp: ProtocolStatus;
+    shopifyStorefront: ProtocolStatus;
   };
   payments: {
     rails: string[];
@@ -145,6 +146,49 @@ export function detectAPIPatterns(html: string): string[] {
   return patterns;
 }
 
+// Detect Shopify Storefront API
+export function detectShopifyStorefrontAPI(html: string): {
+  detected: boolean;
+  indicators: string[];
+} {
+  const indicators: string[] = [];
+
+  // Check for Storefront Access Token patterns
+  if (/Shopify\.storefrontAccessToken|storefrontAccessToken/i.test(html)) {
+    indicators.push('storefrontAccessToken');
+  }
+
+  // Check for Storefront API GraphQL endpoint patterns
+  if (/\/api\/\d{4}-\d{2}\/graphql\.json/i.test(html)) {
+    indicators.push('graphql-endpoint');
+  }
+
+  // Check for Storefront SDK or Hydrogen
+  if (/storefront-api-client|@shopify\/hydrogen|@shopify\/storefront/i.test(html)) {
+    indicators.push('storefront-sdk');
+  }
+
+  // Check for Buy SDK (older but still used)
+  if (/shopify-buy|@shopify\/buy-button-js/i.test(html)) {
+    indicators.push('buy-sdk');
+  }
+
+  // Check for Hydrogen framework indicators
+  if (/hydrogen|remix.*shopify|shopify.*remix/i.test(html)) {
+    indicators.push('hydrogen');
+  }
+
+  // Check for headless Shopify patterns in meta/config
+  if (/storefront\.shopify\.com|shopify-storefront/i.test(html)) {
+    indicators.push('storefront-domain');
+  }
+
+  return {
+    detected: indicators.length > 0,
+    indicators,
+  };
+}
+
 // Calculate full protocol readiness
 export async function calculateProtocolReadiness(
   domain: string,
@@ -158,6 +202,7 @@ export async function calculateProtocolReadiness(
   const paymentRails = detectCheckoutInfrastructure(html);
   const apiPatterns = detectAPIPatterns(html);
   const hasStripe = paymentRails.includes('stripe');
+  const shopifyStorefront = detectShopifyStorefrontAPI(html);
 
   // Check manifests in parallel
   const [ucpResult, mcpResult] = await Promise.all([
@@ -177,6 +222,7 @@ export async function calculateProtocolReadiness(
       ucp: { status: 'not_ready', reason: '' },
       acp: { status: 'not_ready', reason: '' },
       mcp: { status: 'not_ready', reason: '' },
+      shopifyStorefront: { status: 'not_ready', reason: '' },
     },
     payments: { rails: paymentRails },
     readyCount: 0,
@@ -253,6 +299,36 @@ export async function calculateProtocolReadiness(
     result.partialCount++;
   } else {
     result.commerce.mcp = { status: 'not_ready', reason: 'No MCP server detected' };
+  }
+
+  // Shopify Storefront API
+  if (shopifyStorefront.detected) {
+    const hasFullAPI = shopifyStorefront.indicators.includes('storefrontAccessToken') ||
+      shopifyStorefront.indicators.includes('graphql-endpoint');
+    const hasHydrogen = shopifyStorefront.indicators.includes('hydrogen');
+
+    if (hasFullAPI || hasHydrogen) {
+      result.commerce.shopifyStorefront = {
+        status: 'ready',
+        reason: `Shopify Storefront API: ${shopifyStorefront.indicators.join(', ')}`,
+      };
+      result.readyCount++;
+    } else {
+      result.commerce.shopifyStorefront = {
+        status: 'partial',
+        reason: `Shopify headless indicators: ${shopifyStorefront.indicators.join(', ')}`,
+      };
+      result.partialCount++;
+    }
+  } else if (paymentRails.includes('shopifyCheckout')) {
+    // Shopify store but not using Storefront API (traditional Liquid theme)
+    result.commerce.shopifyStorefront = {
+      status: 'partial',
+      reason: 'Shopify store (traditional theme, no Storefront API)',
+    };
+    result.partialCount++;
+  } else {
+    result.commerce.shopifyStorefront = { status: 'not_ready', reason: 'Not a Shopify store or no Storefront API' };
   }
 
   return result;

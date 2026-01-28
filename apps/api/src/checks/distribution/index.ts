@@ -273,6 +273,7 @@ export async function performDistributionChecks(
   // P7: Protocol Manifest (2 points)
   const ucpReady = protocolReadiness.commerce.ucp.status === 'ready';
   const mcpReady = protocolReadiness.commerce.mcp.status === 'ready';
+  const shopifyStorefrontReady = protocolReadiness.commerce.shopifyStorefront.status === 'ready';
 
   const p7: Check = {
     id: CHECKS.P7.id,
@@ -282,19 +283,27 @@ export async function performDistributionChecks(
     score: 0,
     maxScore: CHECKS.P7.maxScore,
     details: '',
-    data: { protocolReadiness, ucpReady, mcpReady },
+    data: {
+      protocolReadiness,
+      ucpReady,
+      mcpReady,
+      shopifyStorefrontReady,
+      shopifyStorefrontIndicators: protocolReadiness.commerce.shopifyStorefront.reason,
+    },
   };
 
-  if (ucpReady || mcpReady) {
+  if (ucpReady || mcpReady || shopifyStorefrontReady) {
     p7.status = 'pass';
     p7.score = 2;
     const protocols = [];
     if (ucpReady) protocols.push('UCP');
     if (mcpReady) protocols.push('MCP');
-    p7.details = `Protocol manifest: ${protocols.join(', ')}`;
+    if (shopifyStorefrontReady) protocols.push('Shopify Storefront API');
+    p7.details = `Protocol/API ready: ${protocols.join(', ')}`;
   } else if (
     protocolReadiness.commerce.ucp.status === 'partial' ||
-    protocolReadiness.commerce.mcp.status === 'partial'
+    protocolReadiness.commerce.mcp.status === 'partial' ||
+    protocolReadiness.commerce.shopifyStorefront.status === 'partial'
   ) {
     p7.status = 'partial';
     p7.score = 1;
