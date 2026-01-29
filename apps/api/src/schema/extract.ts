@@ -162,6 +162,39 @@ export function findReturnPolicySchema(schemas: ExtractedSchema[]): Record<strin
   return null;
 }
 
+// Find WebSite schema
+export function findWebSiteSchema(schemas: ExtractedSchema[]): Record<string, any> | null {
+  const websites = findSchemasByType(schemas, 'WebSite');
+  if (websites.length > 0) {
+    return websites[0].data;
+  }
+  return null;
+}
+
+// Find OfferShippingDetails schema (nested in Product > Offer or standalone)
+export function findShippingSchema(schemas: ExtractedSchema[]): Record<string, any> | null {
+  // Direct OfferShippingDetails
+  const shipping = findSchemasByType(schemas, 'OfferShippingDetails');
+  if (shipping.length > 0) return shipping[0].data;
+
+  // Check inside Offer schemas
+  for (const schema of schemas) {
+    if (schema.data.shippingDetails) return schema.data.shippingDetails;
+    if (schema.data.offers?.shippingDetails) return schema.data.offers.shippingDetails;
+  }
+
+  // Check inside Product > Offers
+  const product = findProductSchema(schemas);
+  if (product?.offers) {
+    const offers = Array.isArray(product.offers) ? product.offers : [product.offers];
+    for (const offer of offers) {
+      if (offer.shippingDetails) return offer.shippingDetails;
+    }
+  }
+
+  return null;
+}
+
 // Assess overall schema quality
 export interface SchemaQuality {
   level: 'full' | 'partial' | 'none';

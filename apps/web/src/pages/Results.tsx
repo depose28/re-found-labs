@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { endpoints } from "@/config/api";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ScoreHeader from "@/components/results/ScoreHeader";
 import CategoryBreakdown from "@/components/results/CategoryBreakdown";
+import LayerBreakdown from "@/components/results/LayerBreakdown";
 import ChecksAccordion from "@/components/results/ChecksAccordion";
+import ManualVerificationChecklist from "@/components/results/ManualVerificationChecklist";
 import RecommendationsSection from "@/components/results/RecommendationsSection";
 import EmailCapture from "@/components/results/EmailCapture";
 import CTASection from "@/components/results/CTASection";
@@ -25,6 +27,7 @@ interface AnalysisResult {
   domain: string;
   total_score: number;
   grade: string;
+  scoring_model?: string;
   discovery_score: number;
   discovery_max: number | null;
   performance_score: number;
@@ -61,17 +64,20 @@ const Results = () => {
 
     const fetchAnalysis = async () => {
       try {
-        const { data, error } = await supabase
-          .from("analyses")
-          .select("*")
-          .eq("id", analysisId)
-          .single();
+        const response = await fetch(endpoints.analysis(analysisId));
 
-        if (error) throw error;
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error("Analysis not found");
+          }
+          throw new Error(`Failed to fetch analysis: ${response.status}`);
+        }
+
+        const data = await response.json();
         setAnalysis(data);
       } catch (err: any) {
         console.error("Failed to fetch analysis:", err);
-        setError("Could not load analysis results.");
+        setError(err.message || "Could not load analysis results.");
       } finally {
         setLoading(false);
       }
@@ -141,7 +147,7 @@ const Results = () => {
         <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20 py-12">
           {/* Social Proof Banner */}
           <SocialProofBanner />
-          
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
             <RevenueAtRiskCard score={analysis.total_score} />
             <div className="p-6 border border-border bg-card">
@@ -155,19 +161,32 @@ const Results = () => {
           {/* SECTION 2: THE DIAGNOSIS */}
           <PriorityFixSpotlight recommendations={analysis.recommendations} />
 
-          <CategoryBreakdown
-            discovery={{ score: analysis.discovery_score, max: analysis.discovery_max ?? 35 }}
-            performance={{ score: analysis.performance_score, max: analysis.performance_max ?? 15 }}
-            transaction={{ score: analysis.transaction_score, max: analysis.transaction_max ?? 20 }}
-            distribution={{ score: analysis.distribution_score, max: analysis.distribution_max ?? 15 }}
-            trust={{ score: analysis.trust_score, max: analysis.trust_max ?? 15 }}
-          />
+          {analysis.scoring_model === 'v2_3layer' ? (
+            <LayerBreakdown
+              discovery={{ score: analysis.discovery_score, max: analysis.discovery_max ?? 45 }}
+              trust={{ score: analysis.trust_score, max: analysis.trust_max ?? 25 }}
+              transaction={{ score: analysis.transaction_score, max: analysis.transaction_max ?? 30 }}
+            />
+          ) : (
+            <CategoryBreakdown
+              discovery={{ score: analysis.discovery_score, max: analysis.discovery_max ?? 35 }}
+              performance={{ score: analysis.performance_score, max: analysis.performance_max ?? 15 }}
+              transaction={{ score: analysis.transaction_score, max: analysis.transaction_max ?? 20 }}
+              distribution={{ score: analysis.distribution_score, max: analysis.distribution_max ?? 15 }}
+              trust={{ score: analysis.trust_score, max: analysis.trust_max ?? 15 }}
+            />
+          )}
 
           {/* SECTION 3: DETAILED RESULTS */}
           <div className="mt-16 space-y-16" data-section="recommendations">
             <ChecksAccordion checks={analysis.checks} />
             <RecommendationsSection recommendations={analysis.recommendations} />
           </div>
+
+          {/* Manual Verification Checklist (v2 only) */}
+          {analysis.scoring_model === 'v2_3layer' && (
+            <ManualVerificationChecklist />
+          )}
 
           {/* SECTION 4: THE PATH FORWARD */}
           <div className="mt-16">
@@ -178,7 +197,7 @@ const Results = () => {
         </div>
 
         <CTASection />
-        
+
         {/* Sticky Bottom CTA Bar */}
         <StickyBottomCTA score={analysis.total_score} grade={analysis.grade} />
       </main>

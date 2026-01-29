@@ -19,7 +19,7 @@ export function checkOrganizationSchema(
   schemas: ExtractedSchema[],
   options: OrganizationCheckOptions = {}
 ): OrganizationResult {
-  const { id, name, category, maxScore } = CHECKS.R1;
+  const { id, name, category, maxScore } = CHECKS.T1;
   const { source } = options;
 
   log.debug({ schemaCount: schemas.length, source }, 'Checking organization schema');

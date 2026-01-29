@@ -1,2 +1,2 @@
-export { checkOfferSchema, type OfferSchemaResult } from './offerSchema';
-export { checkHttps, type HttpsResult } from './https';
+export { checkUcpCompliance, type UcpComplianceResult } from './ucpCompliance';
+export { checkPaymentMethods, type PaymentMethodsResult } from './paymentMethods';

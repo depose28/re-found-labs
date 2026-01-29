@@ -4,55 +4,76 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { CheckCircle2, AlertTriangle, XCircle, Search, Zap, CreditCard, Shield, Radio, Bot, Globe, Tag, Clock, Store, Rss, Link } from "lucide-react";
+import { CheckCircle2, AlertTriangle, XCircle, Search, CreditCard, Shield, Bot, Globe, Tag, Clock, Store, Rss, Link } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface CheckData {
-  // Bot access data
+  // Bot access data (D1)
   botsAllowed?: string[];
   botsBlocked?: string[];
   totalBots?: number;
-  
+
   // Schema validation data
   missingFields?: string[];
   invalidFields?: string[];
   warnings?: string[];
-  
-  // Sitemap data
+
+  // Sitemap data (D2)
   sitemapUrl?: string;
   urlCount?: number;
-  
-  // PageSpeed data
-  performanceScore?: number;
-  lcp?: string;
-  cls?: string;
-  tti?: string;
-  
-  // Offer data
+
+  // TTFB data (D3)
+  ttfbMs?: number;
+  threshold?: string;
+
+  // Offer / UCP data (X1)
   price?: string | number;
   currency?: string;
   availability?: string;
   issues?: string[];
-  
-  // Organization data
+  offerFound?: boolean;
+  offerValid?: boolean;
+  offerScore?: number;
+  shippingFound?: boolean;
+  shippingValid?: boolean;
+  shippingScore?: number;
+  hasApplicableCountry?: boolean;
+  applicableCountry?: string;
+  countryScore?: number;
+
+  // Organization data (T1)
   name?: string;
   type?: string;
   hasContact?: boolean;
-  
-  // Return policy data
+  source?: string;
+
+  // Trust signals data (T2)
+  isHttps?: boolean;
+  httpsScore?: number;
+  returnPolicyFound?: boolean;
+  returnPolicyScore?: number;
   returnDays?: number;
   returnMethod?: string;
-  
-  // Distribution data
+
+  // Payment methods data (X4)
   platform?: string;
   confidence?: string;
-  indicators?: string[];
+  paymentRails?: string[];
+  paymentCount?: number;
+
+  // Product feed data (D7)
   feeds?: { url: string; type: string; source: string; productCount?: number }[];
-  source?: string;
-  format?: string;
-  url?: string;
-  
-  // New 3-layer protocol structure
+  feedCount?: number;
+  accessibleCount?: number;
+  discoverySources?: string[];
+  platformHint?: string;
+
+  // Commerce API data (D9)
+  hasCheckoutInfra?: boolean;
+  hasProtocolManifest?: boolean;
+  checkoutApis?: string[];
+  ucpReady?: boolean;
+  mcpReady?: boolean;
   protocolReadiness?: {
     discovery: {
       googleShopping: { status: string; reason: string };
@@ -68,22 +89,6 @@ interface CheckData {
       rails: string[];
     };
   };
-  
-  // Payment and checkout detection
-  paymentRails?: string[];
-  checkoutApis?: string[];
-  
-  // Protocol manifests
-  ucpReady?: boolean;
-  mcpReady?: boolean;
-  
-  // Structured data completeness (P2)
-  hasProduct?: boolean;
-  hasOffer?: boolean;
-  hasGtin?: boolean;
-  
-  // Generic
-  isHttps?: boolean;
 }
 
 interface Check {
@@ -102,17 +107,27 @@ interface ChecksAccordionProps {
 }
 
 const categoryConfig = {
-  discovery: { icon: Search, label: "Discovery", description: "AI agent visibility" },
-  performance: { icon: Zap, label: "Performance", description: "Speed & Core Web Vitals" },
-  transaction: { icon: CreditCard, label: "Transaction", description: "Purchase capability" },
-  distribution: { icon: Radio, label: "Distribution", description: "Protocol & feed readiness" },
-  trust: { icon: Shield, label: "Trust", description: "Business credibility" },
+  discovery: { icon: Search, label: "Discovery", description: "Can agents find you?" },
+  trust: { icon: Shield, label: "Trust", description: "Will agents recommend you?" },
+  transaction: { icon: CreditCard, label: "Transaction", description: "Can agents buy?" },
 };
 
 const statusConfig = {
   pass: { icon: CheckCircle2, color: "text-success", bg: "bg-success/10", label: "Passed" },
   partial: { icon: AlertTriangle, color: "text-warning", bg: "bg-warning/10", label: "Partial" },
   fail: { icon: XCircle, color: "text-destructive", bg: "bg-destructive/10", label: "Failed" },
+};
+
+const formatPaymentRail = (rail: string): string => {
+  const labels: Record<string, string> = {
+    stripe: 'Stripe',
+    shopifyCheckout: 'Shopify Checkout',
+    googlePay: 'Google Pay',
+    applePay: 'Apple Pay',
+    klarna: 'Klarna',
+    paypal: 'PayPal',
+  };
+  return labels[rail] || rail;
 };
 
 const CheckDataDisplay = ({ check }: { check: Check }) => {
@@ -152,42 +167,42 @@ const CheckDataDisplay = ({ check }: { check: Check }) => {
     );
   }
 
-  // Platform detection check (P1)
-  if (check.id === "P1" && data.platform) {
+  // Sitemap check (D2 — was D3)
+  if (check.id === "D2" && data.urlCount) {
+    return (
+      <div className="mt-3">
+        <Badge variant="outline" className="text-xs">
+          <Globe className="h-3 w-3 mr-1" />
+          {data.urlCount} URLs indexed
+        </Badge>
+      </div>
+    );
+  }
+
+  // TTFB check (D3)
+  if (check.id === "D3" && data.ttfbMs !== undefined) {
+    const ttfbColor = (data.ttfbMs as number) < 400
+      ? "bg-success/10 text-success border-success/20"
+      : (data.ttfbMs as number) < 800
+      ? "bg-warning/10 text-warning border-warning/20"
+      : "bg-destructive/10 text-destructive border-destructive/20";
     return (
       <div className="mt-3 flex flex-wrap gap-2">
-        <Badge variant="outline" className={`text-xs ${check.status === "pass" ? "bg-success/10 text-success border-success/20" : ""}`}>
-          <Store className="h-3 w-3 mr-1" />
-          {data.platform}
+        <Badge variant="outline" className={`text-xs ${ttfbColor}`}>
+          <Clock className="h-3 w-3 mr-1" />
+          {data.ttfbMs}ms TTFB
         </Badge>
-        {data.confidence && (
+        {data.threshold && (
           <Badge variant="outline" className="text-xs">
-            {data.confidence} confidence
+            {data.threshold}
           </Badge>
         )}
       </div>
     );
   }
 
-  // Structured Data Complete check (P2)
-  if (check.id === "P2" && (data.hasProduct !== undefined || data.hasOffer !== undefined || data.hasGtin !== undefined)) {
-    return (
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Badge variant="outline" className={`text-xs ${data.hasProduct ? "bg-success/10 text-success border-success/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}>
-          {data.hasProduct ? "✓" : "✗"} Product
-        </Badge>
-        <Badge variant="outline" className={`text-xs ${data.hasOffer ? "bg-success/10 text-success border-success/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}>
-          {data.hasOffer ? "✓" : "✗"} Offer
-        </Badge>
-        <Badge variant="outline" className={`text-xs ${data.hasGtin ? "bg-success/10 text-success border-success/20" : "bg-warning/10 text-warning border-warning/20"}`}>
-          {data.hasGtin ? "✓" : "⚠"} GTIN/SKU
-        </Badge>
-      </div>
-    );
-  }
-
-  // Feed exists check (P3)
-  if (check.id === "P3" && data.feeds && data.feeds.length > 0) {
+  // Product Feed check (D7 — consolidated P3+P4+P5)
+  if (check.id === "D7" && data.feeds && data.feeds.length > 0) {
     return (
       <div className="mt-3 space-y-2">
         {data.feeds.slice(0, 3).map((feed, i) => (
@@ -206,40 +221,13 @@ const CheckDataDisplay = ({ check }: { check: Check }) => {
             )}
           </div>
         ))}
-      </div>
-    );
-  }
-
-  // Feed discoverable check (P4)
-  if (check.id === "P4" && data.source) {
-    return (
-      <div className="mt-3">
-        <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/20">
-          <Link className="h-3 w-3 mr-1" />
-          via {data.source}
-        </Badge>
-      </div>
-    );
-  }
-
-  // Feed accessible check (P5)
-  if (check.id === "P5" && data.format) {
-    return (
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/20">
-          {data.format.toUpperCase()} format
-        </Badge>
-        {data.url && (
-          <Badge variant="outline" className="text-xs">
-            {data.url}
-          </Badge>
-        )}
-        {data.missingFields && data.missingFields.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 w-full mt-1">
-            <span className="text-xs text-warning mr-1">Missing:</span>
-            {data.missingFields.map((field) => (
-              <Badge key={field} variant="outline" className="text-xs bg-warning/10 text-warning border-warning/20">
-                {field}
+        {data.discoverySources && data.discoverySources.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            <span className="text-xs text-muted-foreground mr-1">Discovered via:</span>
+            {data.discoverySources.map((src) => (
+              <Badge key={src} variant="outline" className="text-xs">
+                <Link className="h-3 w-3 mr-1" />
+                {src}
               </Badge>
             ))}
           </div>
@@ -248,8 +236,8 @@ const CheckDataDisplay = ({ check }: { check: Check }) => {
     );
   }
 
-  // Commerce API Indicators check (P6)
-  if (check.id === "P6" && (data.paymentRails || data.checkoutApis)) {
+  // Commerce API check (D9 — consolidated P6+P7)
+  if (check.id === "D9" && (data.protocolReadiness || data.paymentRails || data.checkoutApis)) {
     return (
       <div className="mt-3 space-y-2">
         {data.paymentRails && data.paymentRails.length > 0 && (
@@ -257,12 +245,7 @@ const CheckDataDisplay = ({ check }: { check: Check }) => {
             <span className="text-xs text-muted-foreground mr-1">Payment Rails:</span>
             {data.paymentRails.map((rail) => (
               <Badge key={rail} variant="outline" className="text-xs bg-success/10 text-success border-success/20">
-                {rail === 'stripe' ? '💳 Stripe' : 
-                 rail === 'shopifyCheckout' ? '🛒 Shopify' :
-                 rail === 'googlePay' ? '🔷 Google Pay' :
-                 rail === 'applePay' ? '🍎 Apple Pay' :
-                 rail === 'klarna' ? '🟣 Klarna' :
-                 rail === 'paypal' ? '💙 PayPal' : rail}
+                {formatPaymentRail(rail)}
               </Badge>
             ))}
           </div>
@@ -277,70 +260,43 @@ const CheckDataDisplay = ({ check }: { check: Check }) => {
             ))}
           </div>
         )}
+        {data.ucpReady !== undefined && (
+          <div className="flex flex-wrap gap-1.5">
+            <Badge variant="outline" className={`text-xs ${data.ucpReady ? "bg-success/10 text-success border-success/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}>
+              {data.ucpReady ? "UCP Ready" : "No UCP"}
+            </Badge>
+            <Badge variant="outline" className={`text-xs ${data.mcpReady ? "bg-success/10 text-success border-success/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}>
+              {data.mcpReady ? "MCP Ready" : "No MCP"}
+            </Badge>
+          </div>
+        )}
       </div>
     );
   }
 
-  // Protocol Manifest check (P7) - 3-layer display
-  if (check.id === "P7" && data.protocolReadiness) {
-    const getStatusBadge = (status: string, label: string, reason: string) => {
-      const statusClass = status === 'ready' 
-        ? "bg-success/10 text-success border-success/20"
-        : status === 'partial'
-        ? "bg-warning/10 text-warning border-warning/20"
-        : "bg-destructive/10 text-destructive border-destructive/20";
-      const icon = status === 'ready' ? '✓' : status === 'partial' ? '⚠️' : '✗';
-      
-      return (
-        <Badge 
-          key={label} 
-          variant="outline" 
-          className={`text-xs ${statusClass}`}
-          title={reason}
-        >
-          {icon} {label}
-        </Badge>
-      );
-    };
-
+  // Payment Methods check (X4)
+  if (check.id === "X4" && data.platform) {
     return (
-      <div className="mt-3 space-y-4">
-        {/* Discovery Layer */}
-        <div>
-          <p className="text-xs font-medium text-muted-foreground mb-2">Discovery Layer</p>
-          <div className="flex flex-wrap gap-2">
-            {getStatusBadge(data.protocolReadiness.discovery.googleShopping.status, 'Google Shopping', data.protocolReadiness.discovery.googleShopping.reason)}
-            {getStatusBadge(data.protocolReadiness.discovery.klarnaApp.status, 'Klarna APP', data.protocolReadiness.discovery.klarnaApp.reason)}
-            {getStatusBadge(data.protocolReadiness.discovery.answerEngines.status, 'Answer Engines', data.protocolReadiness.discovery.answerEngines.reason)}
-          </div>
+      <div className="mt-3 space-y-2">
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="outline" className={`text-xs ${check.status === "pass" ? "bg-success/10 text-success border-success/20" : ""}`}>
+            <Store className="h-3 w-3 mr-1" />
+            {data.platform}
+          </Badge>
+          {data.confidence && (
+            <Badge variant="outline" className="text-xs">
+              {data.confidence} confidence
+            </Badge>
+          )}
         </div>
-
-        {/* Commerce Layer */}
-        <div>
-          <p className="text-xs font-medium text-muted-foreground mb-2">Commerce Layer</p>
-          <div className="flex flex-wrap gap-2">
-            {getStatusBadge(data.protocolReadiness.commerce.ucp.status, 'UCP', data.protocolReadiness.commerce.ucp.reason)}
-            {getStatusBadge(data.protocolReadiness.commerce.acp.status, 'ACP (ChatGPT)', data.protocolReadiness.commerce.acp.reason)}
-            {getStatusBadge(data.protocolReadiness.commerce.mcp.status, 'MCP', data.protocolReadiness.commerce.mcp.reason)}
-          </div>
-        </div>
-
-        {/* Payment Rails */}
-        {data.protocolReadiness.payments.rails.length > 0 && (
-          <div>
-            <p className="text-xs font-medium text-muted-foreground mb-2">Payment Rails</p>
-            <div className="flex flex-wrap gap-2">
-              {data.protocolReadiness.payments.rails.map((rail) => (
-                <Badge key={rail} variant="outline" className="text-xs">
-                  {rail === 'stripe' ? '💳 Stripe' : 
-                   rail === 'shopifyCheckout' ? '🛒 Shopify' :
-                   rail === 'googlePay' ? '🔷 Google Pay' :
-                   rail === 'applePay' ? '🍎 Apple Pay' :
-                   rail === 'klarna' ? '🟣 Klarna' :
-                   rail === 'paypal' ? '💙 PayPal' : rail}
-                </Badge>
-              ))}
-            </div>
+        {data.paymentRails && data.paymentRails.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            <span className="text-xs text-muted-foreground mr-1">Payment Methods:</span>
+            {data.paymentRails.map((rail) => (
+              <Badge key={rail} variant="outline" className="text-xs bg-success/10 text-success border-success/20">
+                {formatPaymentRail(rail)}
+              </Badge>
+            ))}
           </div>
         )}
       </div>
@@ -387,68 +343,38 @@ const CheckDataDisplay = ({ check }: { check: Check }) => {
     );
   }
 
-  // Sitemap check
-  if (check.id === "D3" && data.urlCount) {
+  // UCP Compliance check (X1 — was T1 Offer)
+  if (check.id === "X1" && data.price) {
     return (
-      <div className="mt-3">
-        <Badge variant="outline" className="text-xs">
-          <Globe className="h-3 w-3 mr-1" />
-          {data.urlCount} URLs indexed
-        </Badge>
+      <div className="mt-3 space-y-2">
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/20">
+            <Tag className="h-3 w-3 mr-1" />
+            {data.currency} {data.price}
+          </Badge>
+          {data.availability && (
+            <Badge variant="outline" className="text-xs">
+              {(data.availability as string).replace("https://schema.org/", "")}
+            </Badge>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          <Badge variant="outline" className={`text-xs ${data.offerValid ? "bg-success/10 text-success border-success/20" : "bg-warning/10 text-warning border-warning/20"}`}>
+            {data.offerValid ? "Offer valid" : "Offer incomplete"} ({data.offerScore ?? 0}/6)
+          </Badge>
+          <Badge variant="outline" className={`text-xs ${data.shippingFound ? "bg-success/10 text-success border-success/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}>
+            {data.shippingFound ? "Shipping" : "No shipping"} ({data.shippingScore ?? 0}/2)
+          </Badge>
+          <Badge variant="outline" className={`text-xs ${data.hasApplicableCountry ? "bg-success/10 text-success border-success/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}>
+            {data.hasApplicableCountry ? `Country: ${data.applicableCountry}` : "No country"} ({data.countryScore ?? 0}/2)
+          </Badge>
+        </div>
       </div>
     );
   }
 
-  // PageSpeed check
-  if (check.id === "N1" && data.performanceScore !== undefined) {
-    return (
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Badge variant="outline" className={`text-xs ${
-          data.performanceScore >= 90 ? "bg-success/10 text-success border-success/20" :
-          data.performanceScore >= 50 ? "bg-warning/10 text-warning border-warning/20" :
-          "bg-destructive/10 text-destructive border-destructive/20"
-        }`}>
-          Score: {data.performanceScore}/100
-        </Badge>
-        {data.lcp && (
-          <Badge variant="outline" className="text-xs">
-            <Clock className="h-3 w-3 mr-1" />
-            LCP: {data.lcp}
-          </Badge>
-        )}
-        {data.cls && (
-          <Badge variant="outline" className="text-xs">
-            CLS: {data.cls}
-          </Badge>
-        )}
-        {data.tti && (
-          <Badge variant="outline" className="text-xs">
-            TTI: {data.tti}
-          </Badge>
-        )}
-      </div>
-    );
-  }
-
-  // Offer check
-  if (check.id === "T1" && data.price) {
-    return (
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/20">
-          <Tag className="h-3 w-3 mr-1" />
-          {data.currency} {data.price}
-        </Badge>
-        {data.availability && (
-          <Badge variant="outline" className="text-xs">
-            {data.availability.replace("https://schema.org/", "")}
-          </Badge>
-        )}
-      </div>
-    );
-  }
-
-  // Organization check
-  if (check.id === "R1" && data.name) {
+  // Organization check (T1 — was R1)
+  if (check.id === "T1" && data.name) {
     return (
       <div className="mt-3 flex flex-wrap gap-2">
         <Badge variant="outline" className="text-xs">
@@ -459,21 +385,38 @@ const CheckDataDisplay = ({ check }: { check: Check }) => {
             Contact info present
           </Badge>
         )}
+        {data.source && (
+          <Badge variant="outline" className="text-xs">
+            Found on {data.source}
+          </Badge>
+        )}
       </div>
     );
   }
 
-  // Return policy check
-  if (check.id === "R2" && data.returnDays) {
+  // Trust Signals check (T2 — merged HTTPS + Return Policy)
+  if (check.id === "T2") {
     return (
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Badge variant="outline" className="text-xs">
-          {data.returnDays} day returns
-        </Badge>
-        {data.returnMethod && (
-          <Badge variant="outline" className="text-xs">
-            {data.returnMethod.replace("https://schema.org/", "")}
+      <div className="mt-3 space-y-2">
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="outline" className={`text-xs ${data.isHttps ? "bg-success/10 text-success border-success/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}>
+            {data.isHttps ? "HTTPS enabled" : "No HTTPS"} ({data.httpsScore ?? 0}/3)
           </Badge>
+          <Badge variant="outline" className={`text-xs ${data.returnPolicyFound ? "bg-success/10 text-success border-success/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}>
+            {data.returnPolicyFound ? "Return policy" : "No return policy"} ({data.returnPolicyScore ?? 0}/4)
+          </Badge>
+        </div>
+        {data.returnDays && (
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="outline" className="text-xs">
+              {data.returnDays} day returns
+            </Badge>
+            {data.returnMethod && (
+              <Badge variant="outline" className="text-xs">
+                {(data.returnMethod as string).replace("https://schema.org/", "")}
+              </Badge>
+            )}
+          </div>
         )}
       </div>
     );
@@ -502,8 +445,8 @@ const ChecksAccordion = ({ checks }: ChecksAccordionProps) => {
     return { category, score, max, checks: categoryChecks, passCount, partialCount, failCount };
   });
 
-  // Sort categories in order: discovery, performance, transaction, distribution, trust
-  const categoryOrder = ["discovery", "performance", "transaction", "distribution", "trust"];
+  // Sort categories in order: discovery, trust, transaction
+  const categoryOrder = ["discovery", "trust", "transaction"];
   categoryScores.sort((a, b) => categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category));
 
   return (

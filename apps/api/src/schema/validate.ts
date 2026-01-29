@@ -3,6 +3,70 @@ import { createLogger } from '../lib/logger';
 
 const log = createLogger('schema:validate');
 
+/**
+ * Validate GTIN format (check digit using modulo-10 algorithm).
+ * Supports GTIN-8, GTIN-12 (UPC), GTIN-13 (EAN), and GTIN-14.
+ */
+export function validateGtinFormat(gtin: string): { valid: boolean; type: string | null; error?: string } {
+  if (!gtin || typeof gtin !== 'string') {
+    return { valid: false, type: null, error: 'GTIN is empty or not a string' };
+  }
+
+  // Remove any spaces or dashes
+  const cleanGtin = gtin.replace(/[\s-]/g, '');
+
+  // Check if all digits
+  if (!/^\d+$/.test(cleanGtin)) {
+    return { valid: false, type: null, error: 'GTIN contains non-numeric characters' };
+  }
+
+  // Determine GTIN type by length
+  const length = cleanGtin.length;
+  let type: string | null = null;
+
+  switch (length) {
+    case 8:
+      type = 'GTIN-8';
+      break;
+    case 12:
+      type = 'UPC-A (GTIN-12)';
+      break;
+    case 13:
+      type = 'EAN-13 (GTIN-13)';
+      break;
+    case 14:
+      type = 'GTIN-14';
+      break;
+    default:
+      return { valid: false, type: null, error: `Invalid GTIN length: ${length} (expected 8, 12, 13, or 14)` };
+  }
+
+  // Validate check digit using modulo-10 algorithm
+  const digits = cleanGtin.split('').map(Number);
+  const checkDigit = digits[digits.length - 1];
+  let sum = 0;
+
+  for (let i = 0; i < digits.length - 1; i++) {
+    // For GTIN-13/GTIN-8, odd positions (from right, excluding check) multiply by 3
+    // For GTIN-14/UPC, even positions multiply by 3
+    const positionFromRight = digits.length - 1 - i;
+    const multiplier = positionFromRight % 2 === 0 ? 3 : 1;
+    sum += digits[i] * multiplier;
+  }
+
+  const calculatedCheckDigit = (10 - (sum % 10)) % 10;
+
+  if (checkDigit !== calculatedCheckDigit) {
+    return {
+      valid: false,
+      type,
+      error: `Invalid check digit: expected ${calculatedCheckDigit}, got ${checkDigit}`,
+    };
+  }
+
+  return { valid: true, type };
+}
+
 export interface ValidationResult {
   found: boolean;
   valid: boolean;
@@ -10,6 +74,7 @@ export interface ValidationResult {
   missingFields: string[];
   invalidFields: string[];
   warnings: string[];
+  identifierType?: string; // Type of product identifier found (e.g., "EAN-13", "SKU")
 }
 
 // Validate Product schema
@@ -79,10 +144,23 @@ export function validateProductSchema(schema: Record<string, any> | null): Valid
     }
   }
 
-  // Check for product identifiers
-  const hasIdentifier = schema.gtin || schema.gtin13 || schema.gtin14 ||
-    schema.gtin8 || schema.sku || schema.mpn || schema.isbn;
-  if (!hasIdentifier) {
+  // Check for product identifiers and validate GTIN format
+  const gtinValue = schema.gtin || schema.gtin13 || schema.gtin14 || schema.gtin8;
+  const hasOtherIdentifier = schema.sku || schema.mpn || schema.isbn;
+
+  if (gtinValue) {
+    const gtinValidation = validateGtinFormat(gtinValue);
+    if (gtinValidation.valid) {
+      result.identifierType = gtinValidation.type || 'GTIN';
+    } else {
+      result.invalidFields.push(`gtin (${gtinValidation.error})`);
+    }
+  } else if (hasOtherIdentifier) {
+    // Track which identifier type is present
+    if (schema.sku) result.identifierType = 'SKU';
+    else if (schema.mpn) result.identifierType = 'MPN';
+    else if (schema.isbn) result.identifierType = 'ISBN';
+  } else {
     result.warnings.push('No product identifier (GTIN/SKU/MPN)');
   }
 
@@ -199,6 +277,95 @@ export function validateOrganizationSchema(schema: Record<string, any> | null): 
 
   result.valid = result.missingFields.length === 0 && result.invalidFields.length === 0;
 
+  return result;
+}
+
+// Validate WebSite schema
+export function validateWebSiteSchema(schema: Record<string, any> | null): ValidationResult & { hasSearchAction: boolean } {
+  const result: ValidationResult & { hasSearchAction: boolean } = {
+    found: !!schema,
+    valid: false,
+    schema,
+    missingFields: [],
+    invalidFields: [],
+    warnings: [],
+    hasSearchAction: false,
+  };
+
+  if (!schema) {
+    return result;
+  }
+
+  // Required fields
+  if (!schema.name) {
+    result.missingFields.push('name');
+  }
+
+  if (!schema.url) {
+    result.warnings.push('Missing url');
+  }
+
+  // Check for SearchAction (potentialAction)
+  const potentialAction = schema.potentialAction;
+  if (potentialAction) {
+    const actions = Array.isArray(potentialAction) ? potentialAction : [potentialAction];
+    const searchAction = actions.find(
+      (a: any) => a['@type'] === 'SearchAction' || a.type === 'SearchAction'
+    );
+
+    if (searchAction) {
+      result.hasSearchAction = true;
+
+      // Validate SearchAction has required fields
+      if (!searchAction.target && !searchAction['target']) {
+        result.warnings.push('SearchAction missing target URL template');
+      }
+      if (!searchAction['query-input'] && !searchAction.queryInput) {
+        result.warnings.push('SearchAction missing query-input');
+      }
+    }
+  }
+
+  if (!result.hasSearchAction) {
+    result.warnings.push('No SearchAction defined (enables site search in Google)');
+  }
+
+  result.valid = result.missingFields.length === 0 && result.invalidFields.length === 0;
+
+  return result;
+}
+
+// Validate OfferShippingDetails schema (UCP 2026 requirement)
+export function validateShippingSchema(schema: Record<string, any> | null): ValidationResult {
+  const result: ValidationResult = {
+    found: !!schema,
+    valid: false,
+    schema,
+    missingFields: [],
+    invalidFields: [],
+    warnings: [],
+  };
+
+  if (!schema) return result;
+
+  if (!schema.shippingDestination) {
+    result.missingFields.push('shippingDestination');
+  }
+
+  if (!schema.deliveryTime) {
+    result.missingFields.push('deliveryTime');
+  } else {
+    const dt = schema.deliveryTime;
+    if (!dt.transitTime && !dt.handlingTime) {
+      result.warnings.push('deliveryTime missing transitTime/handlingTime detail');
+    }
+  }
+
+  if (!schema.shippingRate) {
+    result.warnings.push('Missing shippingRate');
+  }
+
+  result.valid = result.missingFields.length === 0 && result.invalidFields.length === 0;
   return result;
 }
 

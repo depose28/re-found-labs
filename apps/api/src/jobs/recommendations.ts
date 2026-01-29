@@ -1,7 +1,7 @@
 import { Check, Recommendation } from '@agent-pulse/shared';
 import { ValidationResult } from '../schema/validate';
 
-// Recommendation templates for each check
+// Recommendation templates for each check (v2 3-layer model)
 const recTemplates: Record<string, Omit<Recommendation, 'checkId' | 'checkName'>> = {
   D1: {
     priority: 'critical',
@@ -34,6 +34,33 @@ User-agent: Amazonbot
 Allow: /`,
   },
   D2: {
+    priority: 'medium',
+    title: 'Create an XML sitemap',
+    description: 'A sitemap helps AI agents efficiently discover all your products.',
+    howToFix: `Create a sitemap.xml at your root domain:
+
+1. For Shopify: Settings → Files → Create sitemap (automatic)
+2. For WordPress: Install Yoast SEO or RankMath
+3. For custom sites: Generate using tools like screaming frog or xml-sitemaps.com
+
+Submit to Google Search Console for faster indexing.`,
+  },
+  D3: {
+    priority: 'high',
+    title: 'Improve server response time (TTFB)',
+    description: 'Sites with <400ms TTFB get 3x more AI agent citations. Slow servers cause agents to skip your site entirely.',
+    howToFix: `Key optimizations to reduce TTFB:
+
+1. Use a CDN (Cloudflare, Fastly, Vercel Edge)
+2. Enable server-side caching (Redis, Memcached)
+3. Optimize database queries
+4. Use HTTP/2 or HTTP/3
+5. Ensure your hosting is geographically close to users
+6. Consider edge computing for dynamic content
+
+Target: Under 400ms for optimal AI agent crawling.`,
+  },
+  D4: {
     priority: 'high',
     title: 'Add complete Product schema markup',
     description: 'AI agents need structured product data to understand and recommend your products.',
@@ -64,72 +91,75 @@ Allow: /`,
 }
 </script>`,
   },
-  D3: {
-    priority: 'medium',
-    title: 'Create an XML sitemap',
-    description: 'A sitemap helps AI agents efficiently discover all your products.',
-    howToFix: `Create a sitemap.xml at your root domain:
+  D5: {
+    priority: 'low',
+    title: 'Add WebSite schema with SearchAction',
+    description: 'WebSite schema helps search engines understand your site structure and enables sitelinks search box.',
+    howToFix: `Add to your homepage:
 
-1. For Shopify: Settings → Files → Create sitemap (automatic)
-2. For WordPress: Install Yoast SEO or RankMath
-3. For custom sites: Generate using tools like screaming frog or xml-sitemaps.com
-
-Submit to Google Search Console for faster indexing.`,
-  },
-  N1: {
-    priority: 'high',
-    title: 'Improve page load speed',
-    description: 'Slow pages cause AI agents to timeout before completing analysis.',
-    howToFix: `Key optimizations:
-
-1. Compress images (use WebP format, <100KB for thumbnails)
-2. Enable browser caching
-3. Minify CSS and JavaScript
-4. Use a CDN (Cloudflare, Fastly)
-5. Lazy load images below the fold
-6. Reduce third-party scripts
-
-Test with: pagespeed.web.dev`,
-  },
-  T1: {
-    priority: 'high',
-    title: 'Add complete Offer schema with pricing',
-    description: 'AI agents need structured pricing data to make purchase recommendations.',
-    howToFix: `Ensure your Offer schema includes:
-
+<script type="application/ld+json">
 {
-  "@type": "Offer",
-  "price": "29.99",
-  "priceCurrency": "USD",
-  "availability": "https://schema.org/InStock",
-  "priceValidUntil": "2025-12-31",
-  "seller": {
-    "@type": "Organization",
-    "name": "Your Store Name"
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Your Store Name",
+  "url": "https://yoursite.com",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "https://yoursite.com/search?q={search_term_string}"
+    },
+    "query-input": "required name=search_term_string"
   }
 }
+</script>
 
-Valid availability values:
-- https://schema.org/InStock
-- https://schema.org/OutOfStock
-- https://schema.org/PreOrder`,
+This enables Google's sitelinks search box in search results.`,
   },
-  T2: {
+  D7: {
     priority: 'critical',
-    title: 'Enable HTTPS',
-    description: 'AI agents will not complete transactions on insecure sites.',
-    howToFix: `Install an SSL certificate:
+    title: 'Create a product feed for AI shopping protocols',
+    description: 'Your products are invisible to AI shopping protocols without a feed.',
+    howToFix: `Create a product feed:
 
-1. Many hosts offer free SSL (Let's Encrypt)
-2. Shopify/Squarespace include SSL by default
-3. Use Cloudflare for free SSL on any site
+For Shopify:
+- Native feed at /products.json (already available)
+- Ensure it's not blocked in robots.txt
 
-After installing, redirect all HTTP to HTTPS.`,
+For WooCommerce:
+- Install "Product Feed PRO for WooCommerce" plugin
+- Configure Google Merchant Center feed
+
+For Custom Sites:
+- Create a JSON or XML feed at /products.json or /feed.xml
+- Include: title, price, currency, availability, SKU/GTIN, images
+
+Link your feed in robots.txt or sitemap.xml for agent discovery.`,
   },
-  R1: {
+  D9: {
+    priority: 'high',
+    title: 'Add commerce API for agent transactions',
+    description: 'AI agents need programmatic access to complete purchases via UCP or MCP protocols.',
+    howToFix: `Options to enable agent commerce:
+
+1. UCP Manifest: Create /.well-known/ucp.json:
+{
+  "version": "1.0",
+  "name": "Your Store",
+  "capabilities": ["product-catalog", "checkout", "inventory"],
+  "endpoints": { "products": "/api/products", "checkout": "/api/checkout" }
+}
+
+2. MCP Server: Expose product data via MCP protocol
+
+3. Shopify Storefront API: Enable headless commerce access
+
+4. For ChatGPT Shopping (ACP): Create /.well-known/ai-plugin.json`,
+  },
+  T1: {
     priority: 'medium',
     title: 'Add Organization schema',
-    description: 'Helps AI agents verify your business identity and build trust.',
+    description: 'Helps AI agents verify your business identity and build trust for purchase recommendations.',
     howToFix: `Add to your homepage:
 
 <script type="application/ld+json">
@@ -147,11 +177,18 @@ After installing, redirect all HTTP to HTTPS.`,
 }
 </script>`,
   },
-  R2: {
+  T2: {
     priority: 'high',
-    title: 'Add MerchantReturnPolicy schema',
-    description: 'AI agents verify return policies before recommending purchases.',
-    howToFix: `Add to your product or policy pages:
+    title: 'Enable HTTPS and add return policy schema',
+    description: "AI agents verify HTTPS and return policies before recommending purchases. Sites without both lose significant trust.",
+    howToFix: `Two actions needed:
+
+1. HTTPS: Install an SSL certificate
+   - Many hosts offer free SSL (Let's Encrypt)
+   - Shopify/Squarespace include SSL by default
+   - Use Cloudflare for free SSL on any site
+
+2. Return Policy: Add MerchantReturnPolicy schema:
 
 <script type="application/ld+json">
 {
@@ -163,61 +200,50 @@ After installing, redirect all HTTP to HTTPS.`,
   "returnMethod": "https://schema.org/ReturnByMail",
   "returnFees": "https://schema.org/FreeReturn"
 }
-</script>`,
+</script>
+
+Note: UCP 2026 requires "applicableCountry" on return policies.`,
   },
-  P3: {
-    priority: 'critical',
-    title: 'Create a product feed for AI shopping protocols',
-    description: 'Your products are invisible to AI shopping protocols without a feed.',
-    howToFix: `Create a product feed:
-
-For Shopify:
-- Native feed at /products.json (already available)
-- Ensure it's not blocked in robots.txt
-
-For WooCommerce:
-- Install "Product Feed PRO for WooCommerce" plugin
-- Configure Google Merchant Center feed
-
-For Custom Sites:
-- Create a JSON or XML feed at /products.json or /feed.xml
-- Include: title, price, currency, availability, SKU/GTIN, images`,
-  },
-  P6: {
+  X1: {
     priority: 'high',
-    title: 'Add checkout infrastructure for AI commerce',
-    description: 'AI agents need programmatic checkout access to complete purchases.',
-    howToFix: `Integrate a checkout API:
+    title: 'Achieve UCP compliance with offer and shipping schemas',
+    description: 'UCP 2026 requires complete Offer, shipping details, and country-specific return policies for agent transactions.',
+    howToFix: `Ensure your product pages include:
+
+1. Offer schema with pricing:
+{
+  "@type": "Offer",
+  "price": "29.99",
+  "priceCurrency": "USD",
+  "availability": "https://schema.org/InStock"
+}
+
+2. Shipping details (UCP 2026 requirement):
+{
+  "@type": "OfferShippingDetails",
+  "shippingDestination": { "@type": "DefinedRegion", "addressCountry": "US" },
+  "deliveryTime": {
+    "@type": "ShippingDeliveryTime",
+    "transitTime": { "@type": "QuantitativeValue", "minValue": 3, "maxValue": 7 }
+  },
+  "shippingRate": { "@type": "MonetaryAmount", "value": "5.99", "currency": "USD" }
+}
+
+3. Add "applicableCountry" to your MerchantReturnPolicy schema.`,
+  },
+  X4: {
+    priority: 'medium',
+    title: 'Add payment method integrations',
+    description: 'Multiple payment methods (Stripe, PayPal, Apple Pay, Google Pay) increase agent transaction success rates.',
+    howToFix: `Integrate checkout infrastructure:
 
 Recommended options:
 1. Stripe - Powers ChatGPT Shopping (ACP protocol)
 2. Shopify Checkout - Native for Shopify stores
 3. PayPal Checkout
+4. Apple Pay / Google Pay for mobile agents
 
-For headless commerce:
-- Expose checkout APIs via REST or GraphQL
-- Document endpoints for agent discovery`,
-  },
-  P7: {
-    priority: 'high',
-    title: 'Add protocol manifest for agent commerce',
-    description: 'UCP and MCP manifests allow AI agents to discover your commerce capabilities.',
-    howToFix: `Add a commerce protocol manifest:
-
-UCP (Universal Commerce Protocol):
-Create /.well-known/ucp.json:
-{
-  "version": "1.0",
-  "name": "Your Store",
-  "capabilities": ["product-catalog", "checkout", "inventory"],
-  "endpoints": {
-    "products": "/api/products",
-    "checkout": "/api/checkout"
-  }
-}
-
-For ChatGPT Shopping (ACP):
-Create /.well-known/ai-plugin.json following OpenAI plugin spec`,
+Sites with 3+ payment methods score highest. Ensure payment scripts are present in page HTML for agent detection.`,
   },
 };
 

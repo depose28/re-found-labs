@@ -8,12 +8,14 @@ import { validateProductSchema } from '../schema/validate';
 import { checkBotAccess } from '../checks/discovery/botAccess';
 import { checkProductSchema } from '../checks/discovery/productSchema';
 import { checkSitemap } from '../checks/discovery/sitemap';
-import { getPageSpeedMetrics, checkPageSpeed } from '../checks/performance/pageSpeed';
-import { checkOfferSchema } from '../checks/transaction/offerSchema';
-import { checkHttps } from '../checks/transaction/https';
+import { checkWebSiteSchema } from '../checks/discovery/websiteSchema';
+import { checkServerResponseTime } from '../checks/discovery/serverResponseTime';
+import { checkProductFeed } from '../checks/discovery/productFeed';
+import { checkCommerceApi } from '../checks/discovery/commerceApi';
 import { checkOrganizationSchema, OrganizationCheckOptions } from '../checks/trust/organization';
-import { checkReturnPolicySchema } from '../checks/trust/returnPolicy';
-import { performDistributionChecks } from '../checks/distribution';
+import { checkTrustSignals } from '../checks/trust/trustSignals';
+import { checkUcpCompliance } from '../checks/transaction/ucpCompliance';
+import { checkPaymentMethods } from '../checks/transaction/paymentMethods';
 import { generateRecommendations } from './recommendations';
 
 const log = createLogger('job:analyze');
@@ -62,7 +64,6 @@ async function fetchHomepageOrgSchema(
     }
 
     // If basic fetch didn't find Organization schema, try Firecrawl
-    // (some sites render Organization schema via JS)
     try {
       const firecrawlResult = await scrapeWithFirecrawl(homepageUrl, undefined, 10000);
 
@@ -120,13 +121,15 @@ export async function runAnalysis(payload: AnalyzeJobPayload): Promise<AnalyzeJo
   const { jobId, url } = payload;
   const startTime = Date.now();
 
-  log.info({ jobId, url }, 'Starting analysis job');
+  log.info({ jobId, url }, 'Starting analysis job (v2 3-layer model)');
 
   try {
-    // Step 1: Scraping
+    // Step 1: Scraping (measure TTFB)
     await updateJobProgress(jobId, 'scraping', 1, 'Fetching page content...');
 
+    const scrapeStart = Date.now();
     const { html, metadata, firecrawlUsed } = await smartScrape(url);
+    const ttfbMs = Date.now() - scrapeStart;
 
     if (!html || html.length < 100) {
       throw new Error('Failed to fetch page content');
@@ -137,7 +140,6 @@ export async function runAnalysis(payload: AnalyzeJobPayload): Promise<AnalyzeJo
     // Step 2: Smart schema extraction (follows product links if needed)
     await updateJobProgress(jobId, 'analyzing', 2, 'Extracting schemas...');
 
-    // Scraper function to pass to smart extraction for category page handling
     const scrapeProductPage = async (productUrl: string) => {
       try {
         const result = await scrapeWithFirecrawl(productUrl);
@@ -160,38 +162,36 @@ export async function runAnalysis(payload: AnalyzeJobPayload): Promise<AnalyzeJo
       message: smartSchemaResult.message,
     }, 'Smart schema extraction complete');
 
-    // Step 3: Run checks in parallel where possible
+    // Step 3: Run checks
     await updateJobProgress(jobId, 'analyzing', 3, 'Running checks...');
 
-    // Parallel: Bot access + Sitemap + PageSpeed
-    const [botAccessResult, sitemapResult, pageSpeedMetrics] = await Promise.all([
+    // Parallel: Bot access + Sitemap
+    const [botAccessResult, sitemapResult] = await Promise.all([
       checkBotAccess(domain),
       checkSitemap(domain),
-      getPageSpeedMetrics(url),
     ]);
+
+    // TTFB check (uses measurement from Step 1)
+    const ttfbResult = checkServerResponseTime(ttfbMs);
 
     // Schema-based checks (sync, fast)
     const productSchema = smartSchemaResult.productValidation.schema;
     const productSchemaResult = checkProductSchema(schemas);
-    const offerSchemaResult = checkOfferSchema(schemas, productSchema);
-    const returnPolicyResult = checkReturnPolicySchema(schemas);
-    const pageSpeedResult = checkPageSpeed(pageSpeedMetrics);
-    const httpsResult = checkHttps(url);
+    const websiteSchemaResult = checkWebSiteSchema(schemas);
+    const ucpResult = checkUcpCompliance(schemas, productSchema);
+    const trustSignalsResult = checkTrustSignals(url, schemas);
+    const paymentMethodsResult = checkPaymentMethods(html, domain);
 
-    // R1 Organization check with homepage fallback
+    // T1 Organization check with homepage fallback
     let orgSchemaResult = checkOrganizationSchema(schemas, { source: 'product_page' });
     let homepageFetched = false;
-    let homepageHtml: string | null = null;
 
-    // If Organization not found on product page, try homepage
     if (!orgSchemaResult.validation.found && !isHomepage(url)) {
       log.info({ url, domain }, 'Organization schema not found on product page, checking homepage...');
 
       const homepageResult = await fetchHomepageOrgSchema(domain);
       homepageFetched = true;
-      homepageHtml = homepageResult.html;
 
-      // Check if homepage has Organization schema
       const homepageOrgSchema = findOrganizationSchema(homepageResult.schemas);
       if (homepageOrgSchema) {
         log.info({ domain, orgName: homepageOrgSchema.name }, 'Found Organization schema on homepage');
@@ -201,56 +201,62 @@ export async function runAnalysis(payload: AnalyzeJobPayload): Promise<AnalyzeJo
       }
     }
 
-    // Distribution checks (async, can be slow)
-    await updateJobProgress(jobId, 'analyzing', 4, 'Checking distribution...');
+    // Distribution signal checks (async)
+    await updateJobProgress(jobId, 'analyzing', 4, 'Checking distribution signals...');
 
-    const distributionResult = await performDistributionChecks(
-      domain,
-      html,
-      botAccessResult.rawRobotsTxt,
-      productValidation,
-      schemaQuality
+    const productFeedResult = await checkProductFeed(
+      domain, html, botAccessResult.rawRobotsTxt, paymentMethodsResult.platformDetection
+    );
+    const commerceApiResult = await checkCommerceApi(
+      domain, html, productValidation, schemaQuality
     );
 
-    // Step 4: Calculate scores
+    // Step 4: Calculate scores (3-layer model)
     await updateJobProgress(jobId, 'scoring', 5, 'Calculating score...');
 
     const checks: Check[] = [
-      botAccessResult.check,      // D1
-      productSchemaResult.check,  // D2
-      sitemapResult.check,        // D3
-      pageSpeedResult.check,      // N1
-      offerSchemaResult.check,    // T1
-      httpsResult.check,          // T2
-      ...distributionResult.checks, // P1-P7
-      orgSchemaResult.check,      // R1
-      returnPolicyResult.check,   // R2
+      botAccessResult.check,        // D1 (7 pts)
+      sitemapResult.check,          // D2 (5 pts)
+      ttfbResult.check,             // D3 (3 pts)
+      productSchemaResult.check,    // D4 (10 pts)
+      websiteSchemaResult.check,    // D5 (5 pts)
+      productFeedResult.check,      // D7 (4 pts)
+      commerceApiResult.check,      // D9 (3 pts)
+      orgSchemaResult.check,        // T1 (8 pts)
+      trustSignalsResult.check,     // T2 (7 pts)
+      ucpResult.check,              // X1 (10 pts)
+      paymentMethodsResult.check,   // X4 (5 pts)
     ];
 
-    // Calculate scores
-    // Note: performanceMax is dynamic - if PageSpeed API fails, maxScore=0 (check excluded)
-    const discoveryScore = botAccessResult.check.score + productSchemaResult.check.score + sitemapResult.check.score;
-    const performanceScore = pageSpeedResult.check.score;
-    const performanceMax = pageSpeedResult.check.maxScore; // Dynamic: 0 if skipped, 15 if measured
-    const transactionScore = offerSchemaResult.check.score + httpsResult.check.score;
-    const distributionScore = distributionResult.totalScore;
-    const trustScore = orgSchemaResult.check.score + returnPolicyResult.check.score;
-    const totalScore = discoveryScore + performanceScore + transactionScore + distributionScore + trustScore;
+    // Layer scores
+    const discoveryScore = botAccessResult.check.score
+      + sitemapResult.check.score
+      + ttfbResult.check.score
+      + productSchemaResult.check.score
+      + websiteSchemaResult.check.score
+      + productFeedResult.check.score
+      + commerceApiResult.check.score;
 
-    // Calculate max possible score (accounts for skipped checks)
-    const maxPossibleScore = SCORING.discovery.max + performanceMax + SCORING.transaction.max + SCORING.distribution.max + SCORING.trust.max;
+    const trustScore = orgSchemaResult.check.score
+      + trustSignalsResult.check.score;
 
-    // Calculate grade based on percentage of max possible score
-    // This ensures fair grading even when some checks are skipped
+    const transactionScore = ucpResult.check.score
+      + paymentMethodsResult.check.score;
+
+    const totalScore = discoveryScore + trustScore + transactionScore;
+
+    // Max possible = sum of all active check maxScores (67 in Phase 1)
+    const maxPossibleScore = checks.reduce((sum, c) => sum + c.maxScore, 0);
+
     const normalizedScore = maxPossibleScore > 0 ? Math.round((totalScore / maxPossibleScore) * 100) : 0;
     const grade = getGrade(normalizedScore);
 
     // Generate recommendations
     const recommendations = generateRecommendations(checks, {
-      D2: productValidation,
-      T1: offerSchemaResult.validation,
-      R1: orgSchemaResult.validation,
-      R2: returnPolicyResult.validation,
+      D4: productValidation,
+      X1: ucpResult.validation,
+      T1: orgSchemaResult.validation,
+      T2: trustSignalsResult.validation,
     });
 
     const analysisDuration = Date.now() - startTime;
@@ -261,14 +267,11 @@ export async function runAnalysis(payload: AnalyzeJobPayload): Promise<AnalyzeJo
       normalizedScore,
       grade,
       discoveryScore,
-      performanceScore,
-      performanceMax,
-      transactionScore,
-      distributionScore,
       trustScore,
-      pageSpeedSkipped: pageSpeedResult.check.status === 'skipped',
+      transactionScore,
+      ttfbMs,
       durationMs: analysisDuration,
-    }, 'Analysis scoring complete');
+    }, 'Analysis scoring complete (v2 3-layer)');
 
     // Save to database
     const { data: analysis, error: insertError } = await supabase
@@ -278,26 +281,31 @@ export async function runAnalysis(payload: AnalyzeJobPayload): Promise<AnalyzeJo
         domain: new URL(url).hostname,
         total_score: totalScore,
         grade,
+        scoring_model: 'v2_3layer',
+        // 3-layer scores
         discovery_score: discoveryScore,
-        discovery_max: SCORING.discovery.max,
-        performance_score: performanceScore,
-        performance_max: performanceMax, // Dynamic: 0 if skipped, 15 if measured
-        transaction_score: transactionScore,
-        transaction_max: SCORING.transaction.max,
-        distribution_score: distributionScore,
-        distribution_max: SCORING.distribution.max,
+        discovery_max: SCORING.discovery.max, // 45
         trust_score: trustScore,
-        trust_max: SCORING.trust.max,
-        platform_detected: distributionResult.platformDetection.platform,
-        platform_name: distributionResult.platformDetection.platform,
-        feeds_found: distributionResult.feeds,
-        protocol_compatibility: distributionResult.protocolReadiness,
+        trust_max: SCORING.trust.max,         // 25
+        transaction_score: transactionScore,
+        transaction_max: SCORING.transaction.max, // 30
+        // Deprecated (v1 compat)
+        performance_score: 0,
+        performance_max: 0,
+        distribution_score: 0,
+        distribution_max: 0,
+        // Metadata
+        platform_detected: paymentMethodsResult.platformDetection.platform,
+        platform_name: paymentMethodsResult.platformDetection.platform,
+        feeds_found: productFeedResult.feeds,
+        protocol_compatibility: commerceApiResult.protocolReadiness,
         checks,
         recommendations,
         analysis_duration_ms: analysisDuration,
         job_id: jobId,
         scrape_metadata: {
           firecrawlUsed,
+          ttfbMs,
           smartExtraction: {
             checkedProductPage: smartSchemaResult.checkedProductPage,
             productPageUrl: smartSchemaResult.productPageUrl,

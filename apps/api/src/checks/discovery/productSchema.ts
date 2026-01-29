@@ -12,7 +12,7 @@ export interface ProductSchemaResult {
 }
 
 export function checkProductSchema(schemas: ExtractedSchema[]): ProductSchemaResult {
-  const { id, name, category, maxScore } = CHECKS.D2;
+  const { id, name, category, maxScore } = CHECKS.D4;
 
   log.debug({ schemaCount: schemas.length }, 'Checking product schema');
 
@@ -69,6 +69,7 @@ export function checkProductSchema(schemas: ExtractedSchema[]): ProductSchemaRes
         invalidFields: validation.invalidFields,
         warnings: validation.warnings,
         schemaQuality: schemaQuality.level,
+        identifierType: validation.identifierType || null,
       },
     },
     validation,

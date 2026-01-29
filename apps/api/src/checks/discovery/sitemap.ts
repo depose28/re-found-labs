@@ -10,7 +10,7 @@ export interface SitemapResult {
 }
 
 export async function checkSitemap(domain: string): Promise<SitemapResult> {
-  const { id, name, category, maxScore } = CHECKS.D3;
+  const { id, name, category, maxScore } = CHECKS.D2;
 
   log.info({ domain }, 'Checking sitemap availability');
 

@@ -129,15 +129,21 @@ Database types and migrations:
 - `src/types.ts` - TypeScript types matching Supabase schema
 - `migrations/` - SQL migration files
 
-## The 5-Pillar Analysis Framework
+## The 3-Layer Scoring Model (v2)
 
-| Pillar | Points | Checks |
-|--------|--------|--------|
-| Discovery | 35 | D1 (Bot Access), D2 (Product Schema), D3 (Sitemap) |
-| Performance | 15 | N1 (PageSpeed) |
-| Transaction | 20 | T1 (Offer Schema), T2 (HTTPS) |
-| Distribution | 15 | P1-P7 (Platform, Feeds, Protocols) |
-| Trust | 15 | R1 (Organization), R2 (Return Policy) |
+Phase 1 implements 11 automated checks (67 points). Scores are normalized: `totalScore / maxPossibleScore * 100`.
+
+| Layer | Max | Subcategory | Phase 1 Checks |
+|-------|-----|-------------|----------------|
+| Discovery | 45 | Crawl Architecture | D1 AI Bot Access (7), D2 Sitemap (5), D3 Server Response Time (3) |
+| | | Semantic Data | D4 Product Schema (10), D5 WebSite Schema (5) |
+| | | Distribution Signals | D7 Product Feed (4), D9 Commerce API (3) |
+| Trust | 25 | Brand Identity | T1 Organization Schema (8), T2 Trust Signals (7) |
+| | | Community Signals | T3 Social Proof (manual), T4 Platform Presence (manual) |
+| Transaction | 30 | Protocol Support | X1 UCP Compliance (10) |
+| | | Payment Infrastructure | X4 Payment Methods (5) |
+
+**Phase 2 Stubs**: D6 Attribute Completeness, D8 Channel Detection, D10 SSR Detection, X2 MCP/ACP Detection, X3 Payment Protocol, X5 Checkout API
 
 **Grading Scale:**
 - 85-100: Agent-Native (MARKET LEADER)
@@ -155,9 +161,8 @@ Database types and migrations:
 ## External APIs
 
 1. **Firecrawl** - JS-rendered page scraping
-2. **Google PageSpeed Insights** - Core Web Vitals
-3. **Resend** - Transactional email
-4. **Trigger.dev** - Job queue (coming soon)
+2. **Resend** - Transactional email
+3. **Trigger.dev** - Background job queue
 
 ## Migration Status
 
