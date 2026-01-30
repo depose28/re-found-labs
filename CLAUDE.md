@@ -131,11 +131,11 @@ Database types and migrations:
 
 ## The 3-Layer Scoring Model (v2)
 
-Phase 1 implements 12 automated checks (100 points). Normalized score = raw score (since active checks sum to 100).
+Phase 1 implements 13 automated checks (102 points, normalized to 0-100).
 
 | Layer | Max | Subcategory | Phase 1 Checks |
 |-------|-----|-------------|----------------|
-| Find | 35 | Crawl Architecture | D1 AI Bot Access (7), D2 Sitemap (5), D3 Server Response Time (3) |
+| Find | 37 | Crawl Architecture | D1 AI Bot Access (7), D2 Sitemap (5), D3 Server Response Time (3), D11 LLMs.txt (2) |
 | | | Semantic Data | D4 Product Schema (10), D5 WebSite Schema (3), D6 FAQ Content (3) |
 | | | Distribution Signals | D7 Product Feed (4) |
 | Trust | 20 | Brand Identity | T1 Organization Schema (12), T2 Trust Signals (8) |

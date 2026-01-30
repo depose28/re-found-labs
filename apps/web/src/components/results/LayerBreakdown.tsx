@@ -29,6 +29,7 @@ const layers = [
     description: "Crawl architecture, semantic data & content signals",
     tips: [
       "robots.txt allows AI bots",
+      "LLMs.txt present",
       "Structured product data",
       "FAQ structured data",
       "XML sitemap available",

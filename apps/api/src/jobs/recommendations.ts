@@ -35,6 +35,35 @@ Allow: /
 User-agent: Amazonbot
 Allow: /`,
   },
+  D11: {
+    priority: 'low',
+    effort: 'quick',
+    affects: ['ChatGPT', 'Claude', 'Perplexity', 'Google AI Mode'],
+    title: 'Add an llms.txt file',
+    description: 'llms.txt is an emerging standard that tells AI agents how to interact with your site content. Adding one signals AI-readiness.',
+    howToFix: `Create a file called llms.txt at your site root (e.g., yourstore.com/llms.txt).
+
+Include:
+- A brief description of your business
+- Key product categories
+- Links to important pages (products, policies, FAQ)
+- Any usage guidelines for AI agents
+
+Example:
+# YourStore
+> Online store for premium outdoor gear
+
+## Key Pages
+- /products - Full product catalog
+- /faq - Frequently asked questions
+- /policies/returns - Return policy
+- /policies/shipping - Shipping information
+
+## Usage Guidelines
+AI agents may reference our product information and pricing.
+
+Learn more: https://llmstxt.org`,
+  },
   D2: {
     priority: 'medium',
     effort: 'quick',

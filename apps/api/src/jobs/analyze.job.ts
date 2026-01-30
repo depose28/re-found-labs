@@ -12,6 +12,7 @@ import { checkFaqSchema } from '../checks/discovery/faqSchema';
 import { checkServerResponseTime } from '../checks/discovery/serverResponseTime';
 import { checkProductFeed } from '../checks/discovery/productFeed';
 import { checkCommerceApi } from '../checks/discovery/commerceApi';
+import { checkLlmsTxt } from '../checks/discovery/llmsTxt';
 import { checkOrganizationSchema } from '../checks/trust/organization';
 import { checkTrustSignals } from '../checks/trust/trustSignals';
 import { checkUcpCompliance } from '../checks/transaction/ucpCompliance';
@@ -213,9 +214,10 @@ export async function runAnalysis(payload: AnalyzeJobPayload): Promise<AnalyzeJo
     await updateJobProgress(jobId, 'analyzing', 3, 'Running checks...');
 
     // Infrastructure checks (parallel)
-    const [botAccessResult, sitemapResult] = await Promise.all([
+    const [botAccessResult, sitemapResult, llmsTxtResult] = await Promise.all([
       checkBotAccess(domain),
       checkSitemap(domain),
+      checkLlmsTxt(domain),
     ]);
 
     // TTFB check
@@ -254,6 +256,7 @@ export async function runAnalysis(payload: AnalyzeJobPayload): Promise<AnalyzeJo
       botAccessResult.check,        // D1 (7 pts)
       sitemapResult.check,          // D2 (5 pts)
       ttfbResult.check,             // D3 (3 pts)
+      llmsTxtResult.check,          // D11 (2 pts)
       productSchemaResult.check,    // D4 (10 pts)
       websiteSchemaResult.check,    // D5 (3 pts)
       productFeedResult.check,      // D7 (4 pts)
@@ -269,6 +272,7 @@ export async function runAnalysis(payload: AnalyzeJobPayload): Promise<AnalyzeJo
     const discoveryScore = botAccessResult.check.score
       + sitemapResult.check.score
       + ttfbResult.check.score
+      + llmsTxtResult.check.score
       + productSchemaResult.check.score
       + websiteSchemaResult.check.score
       + productFeedResult.check.score
@@ -283,7 +287,7 @@ export async function runAnalysis(payload: AnalyzeJobPayload): Promise<AnalyzeJo
 
     const totalScore = discoveryScore + trustScore + transactionScore;
 
-    // Max possible = sum of all active check maxScores (100 in Phase 1)
+    // Max possible = sum of all active check maxScores (102 in Phase 1)
     const maxPossibleScore = checks.reduce((sum, c) => sum + c.maxScore, 0);
 
     const normalizedScore = maxPossibleScore > 0 ? Math.round((totalScore / maxPossibleScore) * 100) : 0;

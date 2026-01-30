@@ -12,7 +12,7 @@ const steps = [
     icon: BarChart3,
     number: "02",
     title: "Get your AI Commerce Score",
-    description: "12 checks across 3 layers. Results in under 60 seconds.",
+    description: "13 checks across 3 layers. Results in under 60 seconds.",
   },
   {
     icon: Wrench,

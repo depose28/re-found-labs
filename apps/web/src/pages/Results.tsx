@@ -154,14 +154,14 @@ const Results = () => {
           {/* 2. What We Checked (3 section cards) */}
           {(analysis.scoring_model === 'v2_3layer' || analysis.performance_max === 0) ? (
             <LayerBreakdown
-              discovery={{ score: analysis.discovery_score, max: analysis.discovery_max ?? 35 }}
+              discovery={{ score: analysis.discovery_score, max: analysis.discovery_max ?? 37 }}
               trust={{ score: analysis.trust_score, max: analysis.trust_max ?? 20 }}
               transaction={{ score: analysis.transaction_score, max: analysis.transaction_max ?? 45 }}
               checks={analysis.checks}
             />
           ) : (
             <CategoryBreakdown
-              discovery={{ score: analysis.discovery_score, max: analysis.discovery_max ?? 35 }}
+              discovery={{ score: analysis.discovery_score, max: analysis.discovery_max ?? 37 }}
               performance={{ score: analysis.performance_score, max: analysis.performance_max ?? 15 }}
               transaction={{ score: analysis.transaction_score, max: analysis.transaction_max ?? 20 }}
               distribution={{ score: analysis.distribution_score, max: analysis.distribution_max ?? 15 }}

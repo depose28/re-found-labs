@@ -9,7 +9,7 @@ const categories = [
     points: "35 points",
     question: "Can AI agents discover your products?",
     description:
-      "AI agents need permission to access your site and structured data to interpret what you sell. We check bot access, product schemas, FAQ data, sitemaps, and server speed.",
+      "AI agents need permission to access your site and structured data to interpret what you sell. We check bot access, llms.txt, product schemas, FAQ data, sitemaps, and server speed.",
     whatBreaks: "Blocked crawlers. Missing product data. No FAQ schema. Slow servers.",
     whatAgentsDo: "Skip you entirely. Recommend competitors who are visible.",
   },

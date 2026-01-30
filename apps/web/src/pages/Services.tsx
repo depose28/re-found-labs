@@ -53,7 +53,7 @@ const Services = () => {
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span>12 checks across 3 layers</span>
+                      <span>13 checks across 3 layers</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
@@ -509,10 +509,10 @@ const Services = () => {
 
                 <AccordionItem value="item-6" className="bg-card border border-border px-6">
                   <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
-                    What's the difference between 12 checks and 40+ checks?
+                    What's the difference between 13 checks and 40+ checks?
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground">
-                    <p className="mb-4">The Pulse Check covers the 12 most critical signals across 3 layers. The Deep Scan adds:</p>
+                    <p className="mb-4">The Pulse Check covers the 13 most critical signals across 3 layers. The Deep Scan adds:</p>
                     <ul className="list-disc list-inside space-y-2">
                       <li>Protocol readiness (MCP, UCP, ACP endpoint detection)</li>
                       <li>Price consistency (schema vs. visible price matching)</li>

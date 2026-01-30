@@ -1,10 +1,10 @@
 // Scoring configuration — 3-Layer Model (v2)
-// Layer 1: Find (35pts) — "Can AI agents discover you?"
+// Layer 1: Find (37pts) — "Can AI agents discover you?"
 // Layer 2: Trust (20pts) — "Will AI confidently recommend you?"
 // Layer 3: Buy (45pts) — "Can AI complete a purchase?"
 export const SCORING = {
-  // Layer scores (total = 100)
-  discovery: { max: 35, weight: 0.35 },
+  // Layer scores (total = 102, normalized to 0-100)
+  discovery: { max: 37, weight: 0.35 },
   trust: { max: 20, weight: 0.20 },
   transaction: { max: 45, weight: 0.45 },
 
@@ -23,12 +23,13 @@ export const SCORING = {
 
 // Check definitions — 3-Layer Model
 export const CHECKS = {
-  // === Layer 1: Find (35 pts) ===
+  // === Layer 1: Find (37 pts) ===
 
-  // Crawl Architecture (15 pts)
+  // Crawl Architecture (17 pts)
   D1: { id: 'D1', name: 'AI Bot Access', category: 'discovery', maxScore: 7, subcategory: 'crawl' },
   D2: { id: 'D2', name: 'Sitemap Available', category: 'discovery', maxScore: 5, subcategory: 'crawl' },
   D3: { id: 'D3', name: 'Server Response Time', category: 'discovery', maxScore: 3, subcategory: 'crawl' },
+  D11: { id: 'D11', name: 'LLMs.txt', category: 'discovery', maxScore: 2, subcategory: 'crawl' },
 
   // Semantic Data (16 pts)
   D4: { id: 'D4', name: 'Product Information', category: 'discovery', maxScore: 10, subcategory: 'semantic' },

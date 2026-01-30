@@ -218,7 +218,7 @@ const ConversionHeroSection = () => {
             value: "6",
             label: "Protocols tested"
           }, {
-            value: "12",
+            value: "13",
             label: "Checks per scan"
           }, {
             value: "73%",
