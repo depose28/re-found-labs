@@ -23,10 +23,10 @@ interface LayerBreakdownProps {
 const layers = [
   {
     key: "discovery",
-    label: "Can AI Agents Find You?",
-    shortLabel: "Discovery",
+    label: "Can AI Agents Discover You?",
+    shortLabel: "Find",
     icon: Search,
-    description: "Crawl architecture, semantic data & distribution signals",
+    description: "Crawl architecture, semantic data & content signals",
     tips: [
       "robots.txt allows AI bots",
       "Structured product data",
@@ -38,10 +38,10 @@ const layers = [
   },
   {
     key: "trust",
-    label: "Will Agents Recommend You?",
+    label: "Will AI Confidently Recommend You?",
     shortLabel: "Trust",
     icon: Shield,
-    description: "Brand identity and community signals",
+    description: "Brand identity, security & policy signals",
     tips: [
       "Business identity data",
       "HTTPS enabled",
@@ -51,10 +51,10 @@ const layers = [
   },
   {
     key: "transaction",
-    label: "Can Agents Complete Purchases?",
-    shortLabel: "Checkout",
+    label: "Can AI Complete a Purchase?",
+    shortLabel: "Buy",
     icon: CreditCard,
-    description: "Protocol support and payment infrastructure",
+    description: "Checkout data, payment infrastructure & protocol support",
     tips: [
       "Checkout data completeness",
       "Shipping information",

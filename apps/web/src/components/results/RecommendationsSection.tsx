@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 interface Recommendation {
   priority: "critical" | "high" | "medium" | "low";
   effort?: "quick" | "technical";
+  affects?: string[];
   checkId: string;
   checkName: string;
   title: string;
@@ -145,6 +146,20 @@ function RecommendationCard({
             <p className="text-sm text-muted-foreground leading-relaxed">
               {rec.description}
             </p>
+
+            {rec.affects && rec.affects.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                <span className="text-xs text-muted-foreground">Affects:</span>
+                {rec.affects.map((platform) => (
+                  <span
+                    key={platform}
+                    className="text-xs px-1.5 py-0.5 bg-secondary text-muted-foreground rounded"
+                  >
+                    {platform}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <button
               onClick={() => toggleExpanded(rec.checkId)}

@@ -65,20 +65,19 @@ Most SEO tools optimize for search engine rankings. Agent Pulse optimizes for **
 
 ## What We Test and Why
 
-### Layer 1: Discovery — "Can AI Agents Find You?"
+### Layer 1: Find — "Can AI Agents Discover You?"
 
 AI agents need to crawl your site, understand your products, and find you through distribution channels. If they can't discover you, nothing else matters.
 
 | Check | What We Test | Why It Matters |
 |-------|-------------|----------------|
-| **AI Bot Access** | Whether your robots.txt allows 10 major AI crawlers (GPTBot, ClaudeBot, PerplexityBot, etc.) | Many sites accidentally block AI bots, making them invisible to agents |
-| **Sitemap** | Whether an XML sitemap exists and is valid | Sitemaps help agents efficiently discover all your pages |
-| **Server Response Time** | Time-to-first-byte (TTFB) | AI agents have strict timeouts (5-10s). Slow pages get skipped |
-| **Product Information** | Completeness of structured product data (name, price, images, identifiers) | Agents parse structured data to understand products — without it, they can't recommend you |
-| **Site Structure** | Whether your site publishes a WebSite schema with search capability | Enables direct search integration (e.g., Google sitelinks search box) |
-| **FAQ Content** | Whether FAQPage structured data exists with substantive Q&As | AI agents match user questions directly to FAQ answers when deciding what to cite — sites with FAQ markup get cited more often |
-| **Product Feed** | Whether product feeds (JSON, XML) are discoverable and accessible | Feeds are how shopping platforms and agents bulk-import your catalog |
-| **Checkout Integration** | Whether commerce APIs or protocols (UCP, MCP, Shopify Storefront) are detected | Agents need programmatic access to facilitate purchases |
+| **AI Bot Access** (7pts) | Whether your robots.txt allows 10 major AI crawlers (GPTBot, ClaudeBot, PerplexityBot, etc.) | Many sites accidentally block AI bots, making them invisible to agents |
+| **Sitemap** (5pts) | Whether an XML sitemap exists and is valid | Sitemaps help agents efficiently discover all your pages |
+| **Server Response Time** (3pts) | Time-to-first-byte (TTFB) | AI agents have strict timeouts (5-10s). Slow pages get skipped |
+| **Product Information** (10pts) | Completeness of structured product data (name, price, images, identifiers) | Agents parse structured data to understand products — without it, they can't recommend you |
+| **Site Structure** (3pts) | Whether your site publishes a WebSite schema with search capability | Enables direct search integration (e.g., Google sitelinks search box) |
+| **FAQ Content** (3pts) | Whether FAQPage structured data exists with substantive Q&As | AI agents match user questions directly to FAQ answers when deciding what to cite — sites with FAQ markup get cited more often |
+| **Product Feed** (4pts) | Whether product feeds (JSON, XML) are discoverable and accessible | Feeds are how shopping platforms and agents bulk-import your catalog |
 
 ### Layer 2: Trust — "Will AI Agents Recommend You?"
 
@@ -86,17 +85,18 @@ Even if agents can find you, they need signals that you're a legitimate, trustwo
 
 | Check | What We Test | Why It Matters |
 |-------|-------------|----------------|
-| **Business Identity** | Organization data: legal name, logo, contact info, social profiles | Agents verify business legitimacy before making recommendations |
-| **Trust Indicators** | HTTPS encryption + return policy information | Secure connections and clear policies are baseline trust requirements |
+| **Business Identity** (12pts) | Organization data: legal name, logo, contact info, social profiles | Agents verify business legitimacy before making recommendations |
+| **Trust Indicators** (8pts) | HTTPS encryption + return policy information | Secure connections and clear policies are baseline trust requirements |
 
-### Layer 3: Transaction — "Can Agents Complete Purchases?"
+### Layer 3: Buy — "Can Agents Complete Purchases?"
 
 The ultimate goal: can an AI agent help a customer actually buy from you?
 
 | Check | What We Test | Why It Matters |
 |-------|-------------|----------------|
-| **Checkout Data** | Product pricing, shipping details, and return policy coverage | AI checkout protocols require complete pricing and fulfillment data |
-| **Payment Methods** | Detection of payment providers (Stripe, PayPal, Klarna, Apple Pay, etc.) | More payment options = more ways agents can facilitate transactions |
+| **Checkout Data** (20pts) | Product pricing, shipping details, and return policy coverage | AI checkout protocols require complete pricing and fulfillment data |
+| **Checkout Integration** (10pts) | Whether commerce APIs or protocols (UCP, MCP, Shopify Storefront) are detected | Agents need programmatic access to facilitate purchases |
+| **Payment Methods** (15pts) | Detection of payment providers (Stripe, PayPal, Klarna, Apple Pay, etc.) | More payment options = more ways agents can facilitate transactions |
 
 ### Manual Verification Checklist
 
@@ -112,40 +112,40 @@ Some signals can't be automated. After your scan, we provide a checklist for man
 
 ## The 3-Layer Scoring Model
 
-Phase 1 implements **12 automated checks** worth 72 raw points, normalized to a 0-100 scale.
+Phase 1 implements **12 automated checks** worth 100 points. Since active checks sum to 100, normalized score = raw score.
 
 ```
-Discovery (45 pts)
+Find (35 pts)
 ├── Crawl Architecture
 │   ├── D1  AI Bot Access ............... 7 pts
 │   ├── D2  Sitemap Available ........... 5 pts
 │   └── D3  Server Response Time ........ 3 pts
 ├── Semantic Data
 │   ├── D4  Product Information ......... 10 pts
-│   ├── D5  Site Structure .............. 5 pts
-│   └── D6  FAQ Content ................. 5 pts
+│   ├── D5  Site Structure .............. 3 pts
+│   └── D6  FAQ Content ................. 3 pts
 └── Distribution Signals
-    ├── D7  Product Feed ................ 4 pts
-    └── D9  Checkout Integration ........ 3 pts
+    └── D7  Product Feed ................ 4 pts
 
-Trust (25 pts)
+Trust (20 pts)
 ├── Brand Identity
-│   ├── T1  Business Identity ........... 8 pts
-│   └── T2  Trust Indicators ............ 7 pts
+│   ├── T1  Business Identity ........... 12 pts
+│   └── T2  Trust Indicators ............ 8 pts
 └── Community Signals
     ├── T3  Social Proof ................ (manual)
     └── T4  Platform Presence ........... (manual)
 
-Transaction (30 pts)
+Buy (45 pts)
 ├── Protocol Support
-│   └── X1  Checkout Data Completeness .. 10 pts
+│   ├── X1  Checkout Data Completeness .. 20 pts
+│   └── D9  Checkout Integration ........ 10 pts
 └── Payment Infrastructure
-    └── X4  Payment Methods ............. 5 pts
+    └── X4  Payment Methods ............. 15 pts
 ```
 
 **Normalization formula**: `(rawScore / maxPossibleScore) * 100`
 
-Phase 1 max possible = 72 points. A site scoring 72/72 raw = 100 normalized.
+Phase 1 max possible = 100 points.
 
 ### Phase 2 (Planned)
 
@@ -363,9 +363,9 @@ Poll job status and retrieve results.
     "totalScore": 72.5,
     "grade": "Optimized",
     "layers": {
-      "discovery": { "score": 32, "max": 45 },
-      "trust": { "score": 15, "max": 25 },
-      "transaction": { "score": 10, "max": 30 }
+      "discovery": { "score": 25, "max": 35 },
+      "trust": { "score": 16, "max": 20 },
+      "transaction": { "score": 32, "max": 45 }
     },
     "checks": [...],
     "recommendations": [...]
@@ -410,9 +410,9 @@ Step 2: Schema Extraction
 └── Assess schema quality (full / partial / none)
 
 Step 3: Run Checks (12 checks in parallel)
-├── Discovery: D1 bot access, D2 sitemap, D3 TTFB, D4 product data, D5 site structure, D6 FAQ content
+├── Find: D1 bot access, D2 sitemap, D3 TTFB, D4 product data, D5 site structure, D6 FAQ content
 ├── Trust: T1 business identity, T2 trust indicators (HTTPS + return policy)
-└── Transaction: X1 checkout data completeness, X4 payment methods
+└── Buy: X1 checkout data completeness, X4 payment methods, D9 checkout integration
 
 Step 4: Distribution Signals
 ├── D7: Discover product feeds (robots.txt, sitemap, /products.json, HTML links)
@@ -464,11 +464,11 @@ Stores completed analysis results.
 | `total_score` | FLOAT | Normalized 0-100 score |
 | `grade` | TEXT | Agent-Native / Optimized / Needs Work / Invisible |
 | `discovery_score` | INTEGER | Discovery layer raw score |
-| `discovery_max` | INTEGER | Discovery layer max (45) |
+| `discovery_max` | INTEGER | Find layer max (35) |
 | `trust_score` | INTEGER | Trust layer raw score |
-| `trust_max` | INTEGER | Trust layer max (25) |
-| `transaction_score` | INTEGER | Transaction layer raw score |
-| `transaction_max` | INTEGER | Transaction layer max (30) |
+| `trust_max` | INTEGER | Trust layer max (20) |
+| `transaction_score` | INTEGER | Buy layer raw score |
+| `transaction_max` | INTEGER | Buy layer max (45) |
 | `checks` | JSONB | All individual check results with data |
 | `recommendations` | JSONB | Generated recommendations |
 | `analysis_duration_ms` | INTEGER | Total processing time |

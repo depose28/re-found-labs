@@ -111,9 +111,9 @@ interface ChecksAccordionProps {
 }
 
 const categoryConfig = {
-  discovery: { icon: Search, label: "Discovery", description: "Can agents find you?" },
+  discovery: { icon: Search, label: "Find", description: "Can agents discover you?" },
   trust: { icon: Shield, label: "Trust", description: "Will agents recommend you?" },
-  transaction: { icon: CreditCard, label: "Checkout", description: "Can agents buy?" },
+  transaction: { icon: CreditCard, label: "Buy", description: "Can agents buy?" },
 };
 
 const statusConfig = {

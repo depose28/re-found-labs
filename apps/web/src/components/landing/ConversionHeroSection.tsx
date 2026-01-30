@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Shield, Clock, Zap, CheckCircle2, Search, CreditCard, Radio } from "lucide-react";
+import { ArrowRight, Shield, Clock, Zap, CheckCircle2, Search, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { endpoints } from "@/config/api";
@@ -150,34 +150,22 @@ const ConversionHeroSection = () => {
                 
                 {[{
                 icon: Search,
-                label: "Discovery",
-                score: 28,
+                label: "Find",
+                score: 25,
                 max: 35,
-                color: "bg-success"
-              }, {
-                icon: Zap,
-                label: "Performance",
-                score: 11,
-                max: 15,
-                color: "bg-warning"
-              }, {
-                icon: CreditCard,
-                label: "Transaction",
-                score: 14,
-                max: 20,
-                color: "bg-warning"
-              }, {
-                icon: Radio,
-                label: "Distribution",
-                score: 8,
-                max: 15,
                 color: "bg-warning"
               }, {
                 icon: Shield,
                 label: "Trust",
-                score: 12,
-                max: 15,
+                score: 16,
+                max: 20,
                 color: "bg-success"
+              }, {
+                icon: CreditCard,
+                label: "Buy",
+                score: 32,
+                max: 45,
+                color: "bg-warning"
               }].map((cat, i) => <div key={i} className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
@@ -224,13 +212,13 @@ const ConversionHeroSection = () => {
             value: "10",
             label: "AI bots checked"
           }, {
-            value: "5",
-            label: "Pillars analyzed"
+            value: "3",
+            label: "Layers analyzed"
           }, {
             value: "4",
             label: "Protocols tested"
           }, {
-            value: "20+",
+            value: "12",
             label: "Checks per scan"
           }, {
             value: "73%",

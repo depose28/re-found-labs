@@ -6,6 +6,7 @@ const recTemplates: Record<string, Omit<Recommendation, 'checkId' | 'checkName'>
   D1: {
     priority: 'critical',
     effort: 'quick',
+    affects: ['ChatGPT Shopping', 'Google AI Mode', 'Perplexity', 'Claude', 'Amazon Rufus'],
     title: 'Allow AI shopping bots in robots.txt',
     description: 'Your robots.txt is blocking critical AI shopping agents like GPTBot and ClaudeBot.',
     howToFix: `Add these rules to your robots.txt file:
@@ -37,6 +38,7 @@ Allow: /`,
   D2: {
     priority: 'medium',
     effort: 'quick',
+    affects: ['Google AI Mode', 'Perplexity'],
     title: 'Create an XML sitemap',
     description: 'A sitemap helps AI agents efficiently discover all your products.',
     howToFix: `Create a sitemap.xml at your root domain:
@@ -50,6 +52,7 @@ Submit to Google Search Console for faster indexing.`,
   D3: {
     priority: 'high',
     effort: 'technical',
+    affects: ['All AI platforms'],
     title: 'Improve server response time (TTFB)',
     description: 'Sites with <400ms TTFB get 3x more AI agent citations. Slow servers cause agents to skip your site entirely.',
     howToFix: `Key optimizations to reduce TTFB:
@@ -66,6 +69,7 @@ Target: Under 400ms for optimal AI agent crawling.`,
   D4: {
     priority: 'high',
     effort: 'quick',
+    affects: ['ChatGPT Shopping', 'Google AI Mode', 'Perplexity', 'Klarna APP'],
     title: 'Add structured product data',
     description: 'AI agents need structured product data to understand and recommend your products.',
     howToFix: `Add this JSON-LD to your product pages:
@@ -98,6 +102,7 @@ Target: Under 400ms for optimal AI agent crawling.`,
   D6: {
     priority: 'medium',
     effort: 'quick',
+    affects: ['ChatGPT', 'Google AI Mode', 'Perplexity'],
     title: 'Add FAQ structured data',
     description: 'AI agents match user questions directly to FAQ answers when deciding what to cite. Sites with FAQ structured data get cited more often in AI-generated responses.',
     howToFix: `Add FAQPage JSON-LD to pages where you answer common questions:
@@ -136,6 +141,7 @@ Tips:
   D5: {
     priority: 'low',
     effort: 'quick',
+    affects: ['Google AI Mode'],
     title: 'Add site structure data',
     description: 'Site structure data helps search engines and AI agents understand your site layout and enables sitelinks search box.',
     howToFix: `Add this JSON-LD to your homepage:
@@ -162,6 +168,7 @@ This enables Google's sitelinks search box in search results.`,
   D7: {
     priority: 'critical',
     effort: 'technical',
+    affects: ['Google AI Mode', 'Klarna APP', 'ChatGPT Shopping'],
     title: 'Create a product feed for AI shopping protocols',
     description: 'Your products are invisible to AI shopping protocols without a feed.',
     howToFix: `Create a product feed:
@@ -183,6 +190,7 @@ Link your feed in robots.txt or sitemap.xml for agent discovery.`,
   D9: {
     priority: 'high',
     effort: 'technical',
+    affects: ['ChatGPT Shopping', 'Klarna APP'],
     title: 'Enable AI checkout integration',
     description: 'AI agents need a way to complete purchases on your site.',
     howToFix: `Options to enable agent commerce:
@@ -204,6 +212,7 @@ Link your feed in robots.txt or sitemap.xml for agent discovery.`,
   T1: {
     priority: 'medium',
     effort: 'quick',
+    affects: ['All AI platforms'],
     title: 'Add business identity data',
     description: 'Helps AI agents verify your business identity and build trust for purchase recommendations.',
     howToFix: `Add this JSON-LD to your homepage:
@@ -227,6 +236,7 @@ Link your feed in robots.txt or sitemap.xml for agent discovery.`,
   X1: {
     priority: 'high',
     effort: 'technical',
+    affects: ['ChatGPT Shopping', 'Google AI Mode', 'Klarna APP'],
     title: 'Complete your product checkout data (shipping & returns)',
     description: 'AI checkout protocols require complete product pricing, shipping details, and country-specific return policies.',
     howToFix: `Ensure your product pages include:
@@ -255,6 +265,7 @@ Link your feed in robots.txt or sitemap.xml for agent discovery.`,
   X4: {
     priority: 'medium',
     effort: 'technical',
+    affects: ['ChatGPT Shopping', 'Klarna APP'],
     title: 'Add payment method integrations',
     description: 'Multiple payment methods (Stripe, PayPal, Apple Pay, Google Pay) increase agent transaction success rates.',
     howToFix: `Integrate checkout infrastructure:
@@ -297,6 +308,7 @@ function getT2Template(check: Check): Omit<Recommendation, 'checkId' | 'checkNam
     return {
       priority: 'high',
       effort: 'quick',
+      affects: ['ChatGPT Shopping', 'Google AI Mode', 'Klarna APP'],
       title: 'Add HTTPS and return policy information',
       description: 'AI agents verify HTTPS and return policies before recommending purchases. Sites without both lose significant trust.',
       howToFix: `Two actions needed:\n\n1. HTTPS:\n${httpsHowToFix}\n\n2. Return Policy:\n${returnPolicyHowToFix}`,
@@ -307,6 +319,7 @@ function getT2Template(check: Check): Omit<Recommendation, 'checkId' | 'checkNam
     return {
       priority: 'high',
       effort: 'quick',
+      affects: ['ChatGPT Shopping', 'Google AI Mode', 'Klarna APP'],
       title: 'Enable HTTPS for your site',
       description: 'AI agents require HTTPS before recommending purchases. Your site is not using a secure connection.',
       howToFix: httpsHowToFix,
@@ -317,6 +330,7 @@ function getT2Template(check: Check): Omit<Recommendation, 'checkId' | 'checkNam
   return {
     priority: 'high',
     effort: 'quick',
+    affects: ['ChatGPT Shopping', 'Google AI Mode', 'Klarna APP'],
     title: 'Add return policy information',
     description: 'AI agents check return policies before recommending purchases. Adding this data increases trust significantly.',
     howToFix: returnPolicyHowToFix,

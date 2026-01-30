@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Agent Pulse is an AI shopping bot readiness analyzer for e-commerce. It's a free diagnostic tool that evaluates how well e-commerce stores are optimized for AI shopping agents (ChatGPT, Claude, Perplexity, etc.). The app analyzes stores across 5 pillars and provides a 0-100 score with detailed recommendations.
+Agent Pulse is an AI shopping bot readiness analyzer for e-commerce. It's a free diagnostic tool that evaluates how well e-commerce stores are optimized for AI shopping agents (ChatGPT, Claude, Perplexity, etc.). The app analyzes stores across 3 layers (Find / Trust / Buy) and provides a 0-100 score with detailed recommendations.
 
 **Live URL**: https://ai-commerce-audit.lovable.app
 **Contact**: hello@refoundlabs.com
@@ -131,19 +131,19 @@ Database types and migrations:
 
 ## The 3-Layer Scoring Model (v2)
 
-Phase 1 implements 11 automated checks (67 points). Scores are normalized: `totalScore / maxPossibleScore * 100`.
+Phase 1 implements 12 automated checks (100 points). Normalized score = raw score (since active checks sum to 100).
 
 | Layer | Max | Subcategory | Phase 1 Checks |
 |-------|-----|-------------|----------------|
-| Discovery | 45 | Crawl Architecture | D1 AI Bot Access (7), D2 Sitemap (5), D3 Server Response Time (3) |
-| | | Semantic Data | D4 Product Schema (10), D5 WebSite Schema (5) |
-| | | Distribution Signals | D7 Product Feed (4), D9 Commerce API (3) |
-| Trust | 25 | Brand Identity | T1 Organization Schema (8), T2 Trust Signals (7) |
+| Find | 35 | Crawl Architecture | D1 AI Bot Access (7), D2 Sitemap (5), D3 Server Response Time (3) |
+| | | Semantic Data | D4 Product Schema (10), D5 WebSite Schema (3), D6 FAQ Content (3) |
+| | | Distribution Signals | D7 Product Feed (4) |
+| Trust | 20 | Brand Identity | T1 Organization Schema (12), T2 Trust Signals (8) |
 | | | Community Signals | T3 Social Proof (manual), T4 Platform Presence (manual) |
-| Transaction | 30 | Protocol Support | X1 UCP Compliance (10) |
-| | | Payment Infrastructure | X4 Payment Methods (5) |
+| Buy | 45 | Protocol Support | X1 Checkout Data Completeness (20), D9 Checkout Integration (10) |
+| | | Payment Infrastructure | X4 Payment Methods (15) |
 
-**Phase 2 Stubs**: D6 Attribute Completeness, D8 Channel Detection, D10 SSR Detection, X2 MCP/ACP Detection, X3 Payment Protocol, X5 Checkout API
+**Phase 2 Stubs**: D8 Channel Detection, D10 SSR Detection, X2 MCP/ACP Detection, X3 Payment Protocol, X5 Checkout API
 
 **Grading Scale:**
 - 85-100: Agent-Native (MARKET LEADER)

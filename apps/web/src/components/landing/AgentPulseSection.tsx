@@ -198,10 +198,9 @@ const SampleReportPreview = () => {
 
         {/* Category Breakdown */}
         <div className="p-5 space-y-3">
-              <CategoryBar label="Discovery" score={30} max={40} percentage={75} />
-              <CategoryBar label="Performance" score={8} max={15} percentage={55} />
-              <CategoryBar label="Transaction" score={9} max={20} percentage={45} />
-              <CategoryBar label="Trust" score={9} max={25} percentage={35} />
+              <CategoryBar label="Find" score={20} max={35} percentage={57} />
+              <CategoryBar label="Trust" score={14} max={20} percentage={70} />
+              <CategoryBar label="Buy" score={22} max={45} percentage={49} />
         </div>
 
         {/* Top Issue */}

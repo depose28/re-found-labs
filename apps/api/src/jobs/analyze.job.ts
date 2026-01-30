@@ -255,14 +255,14 @@ export async function runAnalysis(payload: AnalyzeJobPayload): Promise<AnalyzeJo
       sitemapResult.check,          // D2 (5 pts)
       ttfbResult.check,             // D3 (3 pts)
       productSchemaResult.check,    // D4 (10 pts)
-      websiteSchemaResult.check,    // D5 (5 pts)
+      websiteSchemaResult.check,    // D5 (3 pts)
       productFeedResult.check,      // D7 (4 pts)
-      commerceApiResult.check,      // D9 (3 pts)
-      faqSchemaResult.check,        // D6 (5 pts)
-      orgSchemaResult.check,        // T1 (8 pts)
-      trustSignalsResult.check,     // T2 (7 pts)
-      ucpResult.check,              // X1 (10 pts)
-      paymentMethodsResult.check,   // X4 (5 pts)
+      commerceApiResult.check,      // D9 (10 pts)
+      faqSchemaResult.check,        // D6 (3 pts)
+      orgSchemaResult.check,        // T1 (12 pts)
+      trustSignalsResult.check,     // T2 (8 pts)
+      ucpResult.check,              // X1 (20 pts)
+      paymentMethodsResult.check,   // X4 (15 pts)
     ];
 
     // Layer scores
@@ -272,18 +272,18 @@ export async function runAnalysis(payload: AnalyzeJobPayload): Promise<AnalyzeJo
       + productSchemaResult.check.score
       + websiteSchemaResult.check.score
       + productFeedResult.check.score
-      + commerceApiResult.check.score
       + faqSchemaResult.check.score;
 
     const trustScore = orgSchemaResult.check.score
       + trustSignalsResult.check.score;
 
     const transactionScore = ucpResult.check.score
-      + paymentMethodsResult.check.score;
+      + paymentMethodsResult.check.score
+      + commerceApiResult.check.score;
 
     const totalScore = discoveryScore + trustScore + transactionScore;
 
-    // Max possible = sum of all active check maxScores (67 in Phase 1)
+    // Max possible = sum of all active check maxScores (100 in Phase 1)
     const maxPossibleScore = checks.reduce((sum, c) => sum + c.maxScore, 0);
 
     const normalizedScore = maxPossibleScore > 0 ? Math.round((totalScore / maxPossibleScore) * 100) : 0;

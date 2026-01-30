@@ -1,12 +1,12 @@
 // Scoring configuration — 3-Layer Model (v2)
-// Layer 1: Discovery (45pts) — "Can agents FIND you?"
-// Layer 2: Trust (25pts) — "Can agents RECOMMEND you?"
-// Layer 3: Transaction (30pts) — "Can agents BUY?"
+// Layer 1: Find (35pts) — "Can AI agents discover you?"
+// Layer 2: Trust (20pts) — "Will AI confidently recommend you?"
+// Layer 3: Buy (45pts) — "Can AI complete a purchase?"
 export const SCORING = {
   // Layer scores (total = 100)
-  discovery: { max: 45, weight: 0.45 },
-  trust: { max: 25, weight: 0.25 },
-  transaction: { max: 30, weight: 0.30 },
+  discovery: { max: 35, weight: 0.35 },
+  trust: { max: 20, weight: 0.20 },
+  transaction: { max: 45, weight: 0.45 },
 
   // Deprecated: kept for backward compat with v1 analyses
   performance: { max: 0, weight: 0 },
@@ -23,44 +23,46 @@ export const SCORING = {
 
 // Check definitions — 3-Layer Model
 export const CHECKS = {
-  // === Layer 1: Discovery (45 pts) ===
+  // === Layer 1: Find (35 pts) ===
 
   // Crawl Architecture (15 pts)
   D1: { id: 'D1', name: 'AI Bot Access', category: 'discovery', maxScore: 7, subcategory: 'crawl' },
   D2: { id: 'D2', name: 'Sitemap Available', category: 'discovery', maxScore: 5, subcategory: 'crawl' },
   D3: { id: 'D3', name: 'Server Response Time', category: 'discovery', maxScore: 3, subcategory: 'crawl' },
 
-  // Semantic Data (20 pts)
+  // Semantic Data (16 pts)
   D4: { id: 'D4', name: 'Product Information', category: 'discovery', maxScore: 10, subcategory: 'semantic' },
-  D5: { id: 'D5', name: 'Site Structure', category: 'discovery', maxScore: 5, subcategory: 'semantic' },
-  D6: { id: 'D6', name: 'FAQ Content', category: 'discovery', maxScore: 5, subcategory: 'semantic' },
+  D5: { id: 'D5', name: 'Site Structure', category: 'discovery', maxScore: 3, subcategory: 'semantic' },
+  D6: { id: 'D6', name: 'FAQ Content', category: 'discovery', maxScore: 3, subcategory: 'semantic' },
 
-  // Distribution Signals (10 pts)
+  // Distribution Signals (4 pts)
   D7: { id: 'D7', name: 'Product Feed', category: 'discovery', maxScore: 4, subcategory: 'distribution' },
   D8: { id: 'D8', name: 'Channel Detection', category: 'discovery', maxScore: 3, subcategory: 'distribution', phase: 2 },
-  D9: { id: 'D9', name: 'Checkout Integration', category: 'discovery', maxScore: 3, subcategory: 'distribution' },
   D10: { id: 'D10', name: 'SSR Detection', category: 'discovery', maxScore: 3, subcategory: 'crawl', phase: 2 },
 
-  // === Layer 2: Trust (25 pts) ===
+  // === Layer 2: Trust (20 pts) ===
 
-  // Brand Identity (15 pts)
-  T1: { id: 'T1', name: 'Business Identity', category: 'trust', maxScore: 8, subcategory: 'brand' },
-  T2: { id: 'T2', name: 'Trust Indicators', category: 'trust', maxScore: 7, subcategory: 'brand' },
+  // Brand Identity (20 pts)
+  T1: { id: 'T1', name: 'Business Identity', category: 'trust', maxScore: 12, subcategory: 'brand' },
+  T2: { id: 'T2', name: 'Trust Indicators', category: 'trust', maxScore: 8, subcategory: 'brand' },
 
-  // Community Signals (10 pts) — manual verification
+  // Community Signals — manual verification
   T3: { id: 'T3', name: 'Social Proof', category: 'trust', maxScore: 0, subcategory: 'community', manual: true },
   T4: { id: 'T4', name: 'Platform Presence', category: 'trust', maxScore: 0, subcategory: 'community', manual: true },
 
-  // === Layer 3: Transaction (30 pts) ===
+  // === Layer 3: Buy (45 pts) ===
 
-  // Protocol Support (20 pts)
-  X1: { id: 'X1', name: 'Checkout Data Completeness', category: 'transaction', maxScore: 10, subcategory: 'protocol' },
+  // Protocol Support (30 pts)
+  X1: { id: 'X1', name: 'Checkout Data Completeness', category: 'transaction', maxScore: 20, subcategory: 'protocol' },
   X2: { id: 'X2', name: 'MCP/ACP Detection', category: 'transaction', maxScore: 5, subcategory: 'protocol', phase: 2 },
   X3: { id: 'X3', name: 'Payment Protocol', category: 'transaction', maxScore: 5, subcategory: 'protocol', phase: 2 },
 
-  // Payment Infrastructure (10 pts)
-  X4: { id: 'X4', name: 'Payment Methods', category: 'transaction', maxScore: 5, subcategory: 'payment' },
+  // Payment Infrastructure (15 pts)
+  X4: { id: 'X4', name: 'Payment Methods', category: 'transaction', maxScore: 15, subcategory: 'payment' },
   X5: { id: 'X5', name: 'Checkout API', category: 'transaction', maxScore: 5, subcategory: 'payment', phase: 2 },
+
+  // Checkout Integration (moved from Find → Buy)
+  D9: { id: 'D9', name: 'Checkout Integration', category: 'transaction', maxScore: 10, subcategory: 'protocol' },
 } as const;
 
 // AI bots to check
@@ -122,6 +124,7 @@ export interface Recommendation {
   checkName: string;
   priority: 'critical' | 'high' | 'medium' | 'low';
   effort?: 'quick' | 'technical';
+  affects?: string[];
   title: string;
   description: string;
   howToFix: string;

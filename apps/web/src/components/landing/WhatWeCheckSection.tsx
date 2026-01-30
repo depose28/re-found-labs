@@ -1,61 +1,39 @@
-import { Search, Zap, CreditCard, Radio, Shield } from "lucide-react";
+import { Search, CreditCard, Shield } from "lucide-react";
 import PulseDot from "@/components/ui/PulseDot";
 
 const categories = [
   {
     icon: Search,
     number: "01",
-    title: "Discovery",
+    title: "Find",
     points: "35 points",
-    question: "Can agents find and understand your products?",
+    question: "Can AI agents discover your products?",
     description:
-      "AI agents need permission to access your site and structured data to interpret what you sell. We check whether your store speaks the language agents understand—and whether you've accidentally locked them out.",
-    whatBreaks: "Blocked crawlers. Missing product data. Incomplete catalogs.",
+      "AI agents need permission to access your site and structured data to interpret what you sell. We check bot access, product schemas, FAQ data, sitemaps, and server speed.",
+    whatBreaks: "Blocked crawlers. Missing product data. No FAQ schema. Slow servers.",
     whatAgentsDo: "Skip you entirely. Recommend competitors who are visible.",
   },
   {
-    icon: Zap,
+    icon: Shield,
     number: "02",
-    title: "Performance",
-    points: "15 points",
-    question: "Is your site fast enough for agents?",
+    title: "Trust",
+    points: "20 points",
+    question: "Will AI confidently recommend you?",
     description:
-      "Agents operate on tight timeouts. If your pages load slowly, they move on. We measure the metrics that determine whether agents wait—or walk.",
-    whatBreaks: "Slow page loads. Heavy scripts. Server delays.",
-    whatAgentsDo: "Abandon the request. Return \"I couldn't find information about that.\"",
+      "AI agents are cautious—they won't recommend a store they can't verify. We check whether your brand has the identity data, security, and policies that make agents confident enough to recommend you.",
+    whatBreaks: "No business information. Missing return policies. No HTTPS.",
+    whatAgentsDo: "Recommend established competitors instead. Or say nothing at all.",
   },
   {
     icon: CreditCard,
     number: "03",
-    title: "Transaction",
-    points: "20 points",
-    question: "Can agents help users buy from you?",
+    title: "Buy",
+    points: "45 points",
+    question: "Can AI complete a purchase?",
     description:
-      "When an agent recommends a product, it needs to confirm it's available, priced, and purchasable. We check whether your store provides the signals that let agents close the loop.",
-    whatBreaks: "Missing availability. Unclear pricing. No secure checkout.",
+      "When an agent recommends a product, it needs to verify pricing, availability, shipping, and payment options. We check whether your store provides the checkout data and payment infrastructure that let agents close the deal.",
+    whatBreaks: "Missing pricing. No shipping data. Limited payment methods. No checkout integration.",
     whatAgentsDo: "Hedge recommendations. Suggest \"check the website directly.\"",
-  },
-  {
-    icon: Radio,
-    number: "04",
-    title: "Distribution",
-    points: "15 points",
-    question: "Can agents discover, transact, and pay?",
-    description:
-      "AI agents use emerging protocols to discover products, complete transactions, and process payments. We check your readiness across three layers: Discovery (Google Shopping, Klarna APP), Commerce (UCP, ACP, MCP), and Payment rails (Stripe, Google Pay, Apple Pay).",
-    whatBreaks: "No product feed. Missing GTIN/SKU. No checkout APIs. No protocol manifests.",
-    whatAgentsDo: "Can't complete purchases. Route users to competitors with proper protocol integration.",
-  },
-  {
-    icon: Shield,
-    number: "05",
-    title: "Trust",
-    points: "15 points",
-    question: "Will agents stake their reputation on you?",
-    description:
-      "AI agents are cautious—they won't recommend a store they can't verify. We check whether your brand has the signals that make agents confident enough to recommend you by name.",
-    whatBreaks: "No business information. Missing return policies. Inconsistent data.",
-    whatAgentsDo: "Recommend established competitors instead. Or say nothing at all.",
   },
 ];
 
@@ -73,10 +51,10 @@ const WhatWeCheckSection = () => {
 
         {/* Section Title */}
         <h2 className="font-display text-4xl md:text-5xl text-foreground mb-4 max-w-3xl">
-          Five pillars that determine whether AI agents recommend you—or your competitors.
+          Three layers that determine whether AI agents recommend you—or your competitors.
         </h2>
         <p className="text-lg text-muted-foreground mb-16 max-w-2xl">
-          AI agents don't browse like humans. They scan structured data, check access permissions, verify trust signals, and make split-second decisions. Miss one signal, and you're filtered out before the conversation even starts.
+          AI agents don't browse like humans. They scan structured data, check access permissions, verify trust signals, and make split-second decisions. Miss one signal, and you're filtered out.
         </p>
 
         {/* Categories Grid */}
