@@ -30,6 +30,7 @@ const layers = [
     tips: [
       "robots.txt allows AI bots",
       "Structured product data",
+      "FAQ structured data",
       "XML sitemap available",
       "Server response time",
       "Product feed accessible",

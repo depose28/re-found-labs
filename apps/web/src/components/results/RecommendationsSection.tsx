@@ -30,6 +30,7 @@ const effortFallback: Record<string, "quick" | "technical"> = {
   D2: "quick",
   D4: "quick",
   D5: "quick",
+  D6: "quick",
   T1: "quick",
   T2: "quick",
   D3: "technical",
@@ -50,6 +51,10 @@ const quickLinks: Record<string, Array<{ label: string; href: string }>> = {
   ],
   D4: [
     { label: "Product data reference", href: "https://schema.org/Product" },
+    { label: "Rich Results Test", href: "https://search.google.com/test/rich-results" },
+  ],
+  D6: [
+    { label: "FAQPage reference", href: "https://schema.org/FAQPage" },
     { label: "Rich Results Test", href: "https://search.google.com/test/rich-results" },
   ],
   D7: [

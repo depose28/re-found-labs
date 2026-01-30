@@ -171,6 +171,15 @@ export function findWebSiteSchema(schemas: ExtractedSchema[]): Record<string, an
   return null;
 }
 
+// Find FAQPage schema
+export function findFAQPageSchema(schemas: ExtractedSchema[]): Record<string, any> | null {
+  const faqPages = findSchemasByType(schemas, 'FAQPage');
+  if (faqPages.length > 0) {
+    return faqPages[0].data;
+  }
+  return null;
+}
+
 // Find OfferShippingDetails schema (nested in Product > Offer or standalone)
 export function findShippingSchema(schemas: ExtractedSchema[]): Record<string, any> | null {
   // Direct OfferShippingDetails

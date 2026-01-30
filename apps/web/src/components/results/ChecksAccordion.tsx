@@ -69,6 +69,9 @@ interface CheckData {
   discoverySources?: string[];
   platformHint?: string;
 
+  // FAQ Schema data (D6)
+  questionCount?: number;
+
   // Commerce API data (D9)
   hasCheckoutInfra?: boolean;
   hasProtocolManifest?: boolean;
@@ -300,6 +303,22 @@ const CheckDataDisplay = ({ check }: { check: Check }) => {
             ))}
           </div>
         )}
+      </div>
+    );
+  }
+
+  // FAQ Schema check (D6)
+  if (check.id === "D6" && data.questionCount !== undefined) {
+    const color = data.questionCount >= 5
+      ? "bg-success/10 text-success border-success/20"
+      : data.questionCount >= 1
+      ? "bg-warning/10 text-warning border-warning/20"
+      : "bg-destructive/10 text-destructive border-destructive/20";
+    return (
+      <div className="mt-3">
+        <Badge variant="outline" className={`text-xs ${color}`}>
+          {data.questionCount} FAQ question{data.questionCount !== 1 ? "s" : ""} found
+        </Badge>
       </div>
     );
   }

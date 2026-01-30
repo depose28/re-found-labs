@@ -335,6 +335,76 @@ export function validateWebSiteSchema(schema: Record<string, any> | null): Valid
   return result;
 }
 
+// Validate FAQPage schema
+export function validateFAQPageSchema(schema: Record<string, any> | null): ValidationResult & { questionCount: number } {
+  const result: ValidationResult & { questionCount: number } = {
+    found: !!schema,
+    valid: false,
+    schema,
+    missingFields: [],
+    invalidFields: [],
+    warnings: [],
+    questionCount: 0,
+  };
+
+  if (!schema) {
+    return result;
+  }
+
+  // Check for mainEntity array
+  const mainEntity = schema.mainEntity;
+  if (!mainEntity || !Array.isArray(mainEntity) || mainEntity.length === 0) {
+    result.missingFields.push('mainEntity');
+    return result;
+  }
+
+  // Validate each Question
+  let validCount = 0;
+
+  for (let i = 0; i < mainEntity.length; i++) {
+    const item = mainEntity[i];
+    const itemType = item['@type'];
+
+    // Must be a Question type
+    if (!itemType || (itemType !== 'Question' && itemType !== 'https://schema.org/Question')) {
+      result.invalidFields.push(`mainEntity[${i}] (not a Question)`);
+      continue;
+    }
+
+    const questionText = item.name;
+    const answer = item.acceptedAnswer;
+    const answerText = typeof answer === 'string' ? answer : answer?.text;
+
+    if (!questionText) {
+      result.invalidFields.push(`mainEntity[${i}].name (missing question text)`);
+      continue;
+    }
+
+    if (!answerText) {
+      result.invalidFields.push(`mainEntity[${i}].acceptedAnswer (missing answer)`);
+      continue;
+    }
+
+    // Answer must be substantive (at least 10 chars)
+    if (typeof answerText === 'string' && answerText.length < 10) {
+      result.warnings.push(`Q${i + 1} answer is very short (${answerText.length} chars)`);
+      continue;
+    }
+
+    // Warn about thin answers
+    if (typeof answerText === 'string' && answerText.length < 50) {
+      result.warnings.push(`Q${i + 1} answer could be more detailed (${answerText.length} chars)`);
+    }
+
+    validCount++;
+  }
+
+  result.questionCount = validCount;
+  result.valid = validCount >= 2 && result.missingFields.length === 0;
+
+  return result;
+}
+
 // Validate OfferShippingDetails schema (UCP 2026 requirement)
 export function validateShippingSchema(schema: Record<string, any> | null): ValidationResult {
   const result: ValidationResult = {

@@ -8,6 +8,7 @@ import { checkBotAccess } from '../checks/discovery/botAccess';
 import { checkProductSchema } from '../checks/discovery/productSchema';
 import { checkSitemap } from '../checks/discovery/sitemap';
 import { checkWebSiteSchema } from '../checks/discovery/websiteSchema';
+import { checkFaqSchema } from '../checks/discovery/faqSchema';
 import { checkServerResponseTime } from '../checks/discovery/serverResponseTime';
 import { checkProductFeed } from '../checks/discovery/productFeed';
 import { checkCommerceApi } from '../checks/discovery/commerceApi';
@@ -229,6 +230,10 @@ export async function runAnalysis(payload: AnalyzeJobPayload): Promise<AnalyzeJo
     const ucpResult = checkUcpCompliance(productSchemas, productSchema);
     const trustSignalsResult = checkTrustSignals(url, productSchemas);
 
+    // FAQ schema can appear on either homepage or product pages — check both
+    const allSchemas = [...homepageSchemas, ...productSchemas];
+    const faqSchemaResult = checkFaqSchema(allSchemas);
+
     // Submitted URL-based checks (X4 Payment Methods)
     const paymentMethodsResult = checkPaymentMethods(submittedHtml, domain);
 
@@ -253,6 +258,7 @@ export async function runAnalysis(payload: AnalyzeJobPayload): Promise<AnalyzeJo
       websiteSchemaResult.check,    // D5 (5 pts)
       productFeedResult.check,      // D7 (4 pts)
       commerceApiResult.check,      // D9 (3 pts)
+      faqSchemaResult.check,        // D6 (5 pts)
       orgSchemaResult.check,        // T1 (8 pts)
       trustSignalsResult.check,     // T2 (7 pts)
       ucpResult.check,              // X1 (10 pts)
@@ -266,7 +272,8 @@ export async function runAnalysis(payload: AnalyzeJobPayload): Promise<AnalyzeJo
       + productSchemaResult.check.score
       + websiteSchemaResult.check.score
       + productFeedResult.check.score
-      + commerceApiResult.check.score;
+      + commerceApiResult.check.score
+      + faqSchemaResult.check.score;
 
     const trustScore = orgSchemaResult.check.score
       + trustSignalsResult.check.score;
@@ -285,6 +292,7 @@ export async function runAnalysis(payload: AnalyzeJobPayload): Promise<AnalyzeJo
     // Generate recommendations
     const recommendations = generateRecommendations(checks, {
       D4: productValidation,
+      D6: faqSchemaResult.validation,
       X1: ucpResult.validation,
       T1: orgSchemaResult.validation,
       T2: trustSignalsResult.validation,

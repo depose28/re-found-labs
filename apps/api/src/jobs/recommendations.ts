@@ -95,6 +95,44 @@ Target: Under 400ms for optimal AI agent crawling.`,
 }
 </script>`,
   },
+  D6: {
+    priority: 'medium',
+    effort: 'quick',
+    title: 'Add FAQ structured data',
+    description: 'AI agents match user questions directly to FAQ answers when deciding what to cite. Sites with FAQ structured data get cited more often in AI-generated responses.',
+    howToFix: `Add FAQPage JSON-LD to pages where you answer common questions:
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is your return policy?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "We accept returns within 30 days of purchase. Items must be unused and in original packaging. Free return shipping is included."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How long does shipping take?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Standard shipping takes 3-5 business days. Express shipping is available for next-day delivery."
+      }
+    }
+  ]
+}
+</script>
+
+Tips:
+- Include 5+ questions for full score
+- Cover return policy, shipping, product care, sizing
+- Use real questions your customers actually ask
+- Place on product pages, FAQ pages, or homepage`,
+  },
   D5: {
     priority: 'low',
     effort: 'quick',
