@@ -76,6 +76,7 @@ AI agents need to crawl your site, understand your products, and find you throug
 | **Server Response Time** | Time-to-first-byte (TTFB) | AI agents have strict timeouts (5-10s). Slow pages get skipped |
 | **Product Information** | Completeness of structured product data (name, price, images, identifiers) | Agents parse structured data to understand products — without it, they can't recommend you |
 | **Site Structure** | Whether your site publishes a WebSite schema with search capability | Enables direct search integration (e.g., Google sitelinks search box) |
+| **FAQ Content** | Whether FAQPage structured data exists with substantive Q&As | AI agents match user questions directly to FAQ answers when deciding what to cite — sites with FAQ markup get cited more often |
 | **Product Feed** | Whether product feeds (JSON, XML) are discoverable and accessible | Feeds are how shopping platforms and agents bulk-import your catalog |
 | **Checkout Integration** | Whether commerce APIs or protocols (UCP, MCP, Shopify Storefront) are detected | Agents need programmatic access to facilitate purchases |
 
@@ -111,7 +112,7 @@ Some signals can't be automated. After your scan, we provide a checklist for man
 
 ## The 3-Layer Scoring Model
 
-Phase 1 implements **11 automated checks** worth 67 raw points, normalized to a 0-100 scale.
+Phase 1 implements **12 automated checks** worth 72 raw points, normalized to a 0-100 scale.
 
 ```
 Discovery (45 pts)
@@ -121,7 +122,8 @@ Discovery (45 pts)
 │   └── D3  Server Response Time ........ 3 pts
 ├── Semantic Data
 │   ├── D4  Product Information ......... 10 pts
-│   └── D5  Site Structure .............. 5 pts
+│   ├── D5  Site Structure .............. 5 pts
+│   └── D6  FAQ Content ................. 5 pts
 └── Distribution Signals
     ├── D7  Product Feed ................ 4 pts
     └── D9  Checkout Integration ........ 3 pts
@@ -143,13 +145,12 @@ Transaction (30 pts)
 
 **Normalization formula**: `(rawScore / maxPossibleScore) * 100`
 
-Phase 1 max possible = 67 points. A site scoring 67/67 raw = 100 normalized.
+Phase 1 max possible = 72 points. A site scoring 72/72 raw = 100 normalized.
 
 ### Phase 2 (Planned)
 
 | ID | Check | Points | Layer |
 |----|-------|--------|-------|
-| D6 | Attribute Completeness | 5 | Discovery |
 | D8 | Channel Detection | 3 | Discovery |
 | D10 | SSR Detection | 3 | Discovery |
 | X2 | MCP/ACP Detection | 5 | Transaction |
@@ -263,6 +264,7 @@ re-found-labs/
 │           ├── checks/
 │           │   ├── discovery/        # D1-D9 check implementations
 │           │   │   ├── botAccess.ts
+│           │   │   ├── faqSchema.ts
 │           │   │   ├── sitemap.ts
 │           │   │   ├── serverResponseTime.ts
 │           │   │   ├── productSchema.ts
@@ -407,8 +409,8 @@ Step 2: Schema Extraction
 ├── Find: Product, Organization, WebSite, Offer, ShippingDetails, ReturnPolicy
 └── Assess schema quality (full / partial / none)
 
-Step 3: Run Checks (11 checks in parallel)
-├── Discovery: D1 bot access, D2 sitemap, D3 TTFB, D4 product data, D5 site structure
+Step 3: Run Checks (12 checks in parallel)
+├── Discovery: D1 bot access, D2 sitemap, D3 TTFB, D4 product data, D5 site structure, D6 FAQ content
 ├── Trust: T1 business identity, T2 trust indicators (HTTPS + return policy)
 └── Transaction: X1 checkout data completeness, X4 payment methods
 
