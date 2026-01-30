@@ -61,25 +61,21 @@ export function checkUcpCompliance(
   if (totalScore >= maxScore * 0.8) {
     status = 'pass';
     const parts: string[] = [];
-    if (offerScore === 6) {
-      const price = offerSchema?.price || offerSchema?.lowPrice;
-      const currency = offerSchema?.priceCurrency;
-      parts.push(`valid offer (${currency} ${price})`);
-    }
+    if (offerScore === 6) parts.push('pricing & availability');
     if (shippingScore > 0) parts.push('shipping details');
-    if (hasApplicableCountry) parts.push(`country: ${returnPolicy?.applicableCountry}`);
-    details = `UCP compliant: ${parts.join(', ')}`;
+    if (hasApplicableCountry) parts.push('return policy region');
+    details = `Complete checkout data for AI agents: ${parts.join(', ')}`;
   } else if (totalScore > 0) {
     status = 'partial';
     const missing: string[] = [];
-    if (offerScore === 0) missing.push('offer schema');
-    else if (offerScore < 6) missing.push('incomplete offer');
+    if (offerScore === 0) missing.push('product pricing');
+    else if (offerScore < 6) missing.push('incomplete pricing data');
     if (shippingScore === 0) missing.push('shipping details');
-    if (!hasApplicableCountry) missing.push('applicableCountry');
-    details = `Partial UCP compliance. Missing: ${missing.join(', ')}`;
+    if (!hasApplicableCountry) missing.push('return policy region');
+    details = `Missing ${missing.join(' and ')} for AI checkout`;
   } else {
     status = 'fail';
-    details = 'No offer or shipping schema — not UCP compliant';
+    details = 'No product pricing data found for AI checkout';
   }
 
   log.info({

@@ -4,8 +4,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { CheckCircle2, AlertTriangle, XCircle, Search, CreditCard, Shield, Bot, Globe, Tag, Clock, Store, Rss, Link } from "lucide-react";
+import { CheckCircle2, AlertTriangle, XCircle, Search, CreditCard, Shield, Bot, Globe, Clock, Store, Rss, Link, ChevronDown, ChevronUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
 
 interface CheckData {
   // Bot access data (D1)
@@ -114,8 +115,8 @@ const categoryConfig = {
 
 const statusConfig = {
   pass: { icon: CheckCircle2, color: "text-success", bg: "bg-success/10", label: "Passed" },
-  partial: { icon: AlertTriangle, color: "text-warning", bg: "bg-warning/10", label: "Partial" },
-  fail: { icon: XCircle, color: "text-destructive", bg: "bg-destructive/10", label: "Failed" },
+  partial: { icon: AlertTriangle, color: "text-warning", bg: "bg-warning/10", label: "Needs Work" },
+  fail: { icon: XCircle, color: "text-destructive", bg: "bg-destructive/10", label: "Missing" },
 };
 
 const formatPaymentRail = (rail: string): string => {
@@ -263,7 +264,7 @@ const CheckDataDisplay = ({ check }: { check: Check }) => {
         {data.ucpReady !== undefined && (
           <div className="flex flex-wrap gap-1.5">
             <Badge variant="outline" className={`text-xs ${data.ucpReady ? "bg-success/10 text-success border-success/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}>
-              {data.ucpReady ? "UCP Ready" : "No UCP"}
+              {data.ucpReady ? "AI Checkout" : "No AI Checkout"}
             </Badge>
             <Badge variant="outline" className={`text-xs ${data.mcpReady ? "bg-success/10 text-success border-success/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}>
               {data.mcpReady ? "MCP Ready" : "No MCP"}
@@ -343,32 +344,29 @@ const CheckDataDisplay = ({ check }: { check: Check }) => {
     );
   }
 
-  // UCP Compliance check (X1 — was T1 Offer)
-  if (check.id === "X1" && data.price) {
+  // Checkout Data Completeness (X1)
+  if (check.id === "X1") {
+    const pricingOk = data.offerFound && data.offerValid;
+    const pricingPartial = data.offerFound && !data.offerValid;
     return (
-      <div className="mt-3 space-y-2">
-        <div className="flex flex-wrap gap-2">
-          <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/20">
-            <Tag className="h-3 w-3 mr-1" />
-            {data.currency} {data.price}
-          </Badge>
-          {data.availability && (
-            <Badge variant="outline" className="text-xs">
-              {(data.availability as string).replace("https://schema.org/", "")}
-            </Badge>
-          )}
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          <Badge variant="outline" className={`text-xs ${data.offerValid ? "bg-success/10 text-success border-success/20" : "bg-warning/10 text-warning border-warning/20"}`}>
-            {data.offerValid ? "Offer valid" : "Offer incomplete"} ({data.offerScore ?? 0}/6)
-          </Badge>
-          <Badge variant="outline" className={`text-xs ${data.shippingFound ? "bg-success/10 text-success border-success/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}>
-            {data.shippingFound ? "Shipping" : "No shipping"} ({data.shippingScore ?? 0}/2)
-          </Badge>
-          <Badge variant="outline" className={`text-xs ${data.hasApplicableCountry ? "bg-success/10 text-success border-success/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}>
-            {data.hasApplicableCountry ? `Country: ${data.applicableCountry}` : "No country"} ({data.countryScore ?? 0}/2)
-          </Badge>
-        </div>
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        <Badge variant="outline" className={`text-xs ${
+          pricingOk ? "bg-success/10 text-success border-success/20" :
+          pricingPartial ? "bg-warning/10 text-warning border-warning/20" :
+          "bg-destructive/10 text-destructive border-destructive/20"
+        }`}>
+          {pricingOk ? "✓" : pricingPartial ? "⚠" : "✗"} Pricing & availability
+        </Badge>
+        <Badge variant="outline" className={`text-xs ${
+          data.shippingFound ? "bg-success/10 text-success border-success/20" : "bg-destructive/10 text-destructive border-destructive/20"
+        }`}>
+          {data.shippingFound ? "✓" : "✗"} Shipping details
+        </Badge>
+        <Badge variant="outline" className={`text-xs ${
+          data.hasApplicableCountry ? "bg-success/10 text-success border-success/20" : "bg-destructive/10 text-destructive border-destructive/20"
+        }`}>
+          {data.hasApplicableCountry ? "✓" : "✗"} Return policy region
+        </Badge>
       </div>
     );
   }
@@ -426,6 +424,8 @@ const CheckDataDisplay = ({ check }: { check: Check }) => {
 };
 
 const ChecksAccordion = ({ checks }: ChecksAccordionProps) => {
+  const [showChecks, setShowChecks] = useState(false);
+
   // Group checks by category
   const groupedChecks = checks.reduce((acc, check) => {
     if (!acc[check.category]) {
@@ -449,6 +449,8 @@ const ChecksAccordion = ({ checks }: ChecksAccordionProps) => {
   const categoryOrder = ["discovery", "trust", "transaction"];
   categoryScores.sort((a, b) => categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category));
 
+  const issueCount = checks.filter(c => c.status !== "pass").length;
+
   return (
     <section>
       <div className="mb-8">
@@ -457,11 +459,29 @@ const ChecksAccordion = ({ checks }: ChecksAccordionProps) => {
           Individual Checks
         </h2>
         <p className="text-sm text-muted-foreground mt-2">
-          {checks.length} checks across {categoryScores.length} categories
+          {checks.length} checks in {categoryScores.length} areas
+          {issueCount > 0 && ` · ${issueCount} need${issueCount === 1 ? "s" : ""} attention`}
         </p>
       </div>
 
-      <Accordion type="multiple" defaultValue={categoryScores.filter(c => c.failCount > 0 || c.partialCount > 0).map(c => c.category)} className="border border-border divide-y divide-border">
+      <button
+        onClick={() => setShowChecks(!showChecks)}
+        className="w-full py-3 border border-border bg-secondary/30 hover:bg-secondary/50 transition-colors flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground mb-4"
+      >
+        {showChecks ? (
+          <>
+            <ChevronUp className="h-4 w-4" />
+            Hide detailed checks
+          </>
+        ) : (
+          <>
+            <ChevronDown className="h-4 w-4" />
+            View detailed checks ({checks.length})
+          </>
+        )}
+      </button>
+
+      {showChecks && <Accordion type="multiple" defaultValue={categoryScores.filter(c => c.failCount > 0 || c.partialCount > 0).map(c => c.category)} className="border border-border divide-y divide-border">
         {categoryScores.map(({ category, score, max, checks: categoryChecks, passCount, partialCount, failCount }) => {
           const config = categoryConfig[category as keyof typeof categoryConfig];
           if (!config) return null;
@@ -495,13 +515,13 @@ const ChecksAccordion = ({ checks }: ChecksAccordionProps) => {
                       {partialCount > 0 && (
                         <>
                           {passCount > 0 && <span className="text-muted-foreground">·</span>}
-                          <span className="text-warning">{partialCount} partial</span>
+                          <span className="text-warning">{partialCount} needs work</span>
                         </>
                       )}
                       {failCount > 0 && (
                         <>
                           {(passCount > 0 || partialCount > 0) && <span className="text-muted-foreground">·</span>}
-                          <span className="text-destructive">{failCount} failed</span>
+                          <span className="text-destructive">{failCount} missing</span>
                         </>
                       )}
                     </div>
@@ -567,7 +587,7 @@ const ChecksAccordion = ({ checks }: ChecksAccordionProps) => {
             </AccordionItem>
           );
         })}
-      </Accordion>
+      </Accordion>}
     </section>
   );
 };

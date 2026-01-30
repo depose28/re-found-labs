@@ -49,19 +49,19 @@ const quickLinks: Record<string, Array<{ label: string; href: string }>> = {
     { label: "Core Web Vitals Guide", href: "https://web.dev/vitals/" },
   ],
   D4: [
-    { label: "Schema.org Product", href: "https://schema.org/Product" },
+    { label: "Product data reference", href: "https://schema.org/Product" },
     { label: "Rich Results Test", href: "https://search.google.com/test/rich-results" },
   ],
   D7: [
     { label: "Google Merchant Feed Specs", href: "https://support.google.com/merchants/answer/7052112" },
-    { label: "Schema.org DataFeed", href: "https://schema.org/DataFeed" },
+    { label: "Data feed reference", href: "https://schema.org/DataFeed" },
   ],
   D9: [
     { label: "Model Context Protocol (MCP)", href: "https://modelcontextprotocol.io/" },
     { label: "OpenAI Plugin Docs (ACP)", href: "https://platform.openai.com/docs/plugins" },
   ],
   X1: [
-    { label: "Schema.org Offer", href: "https://schema.org/Offer" },
+    { label: "Offer data reference", href: "https://schema.org/Offer" },
     { label: "Klarna Agentic Commerce", href: "https://docs.klarna.com/agentic-commerce/" },
   ],
   X4: [

@@ -1,4 +1,4 @@
-import { ExternalLink, ClipboardCheck } from "lucide-react";
+import { ExternalLink, ClipboardCheck, CreditCard, Shield } from "lucide-react";
 
 interface ManualChecklistItem {
   id: string;
@@ -77,9 +77,11 @@ const ManualVerificationChecklist = () => {
                   {item.description}
                 </p>
               </div>
-              <span className="text-xs text-muted-foreground bg-secondary/50 px-2 py-0.5 border border-border shrink-0">
-                {item.category}
-              </span>
+              {item.category === "transaction" ? (
+                <CreditCard className="h-3.5 w-3.5 text-muted-foreground shrink-0" title="Checkout" />
+              ) : (
+                <Shield className="h-3.5 w-3.5 text-muted-foreground shrink-0" title="Trust" />
+              )}
             </div>
             {item.checkUrl && (
               <a

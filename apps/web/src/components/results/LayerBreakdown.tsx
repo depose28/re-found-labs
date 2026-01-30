@@ -29,7 +29,7 @@ const layers = [
     description: "Crawl architecture, semantic data & distribution signals",
     tips: [
       "robots.txt allows AI bots",
-      "Product schema markup",
+      "Structured product data",
       "XML sitemap available",
       "Server response time",
       "Product feed accessible",
@@ -42,9 +42,9 @@ const layers = [
     icon: Shield,
     description: "Brand identity and community signals",
     tips: [
-      "Business identity schema",
+      "Business identity data",
       "HTTPS enabled",
-      "Return policy schema",
+      "Return policy details",
       "Social proof (manual check)",
     ],
   },
@@ -56,7 +56,7 @@ const layers = [
     description: "Protocol support and payment infrastructure",
     tips: [
       "Checkout data completeness",
-      "Shipping details schema",
+      "Shipping information",
       "Payment methods detected",
       "Checkout integration",
     ],

@@ -66,7 +66,7 @@ Target: Under 400ms for optimal AI agent crawling.`,
   D4: {
     priority: 'high',
     effort: 'quick',
-    title: 'Add complete Product schema markup',
+    title: 'Add structured product data',
     description: 'AI agents need structured product data to understand and recommend your products.',
     howToFix: `Add this JSON-LD to your product pages:
 
@@ -98,9 +98,9 @@ Target: Under 400ms for optimal AI agent crawling.`,
   D5: {
     priority: 'low',
     effort: 'quick',
-    title: 'Add WebSite schema with SearchAction',
-    description: 'WebSite schema helps search engines understand your site structure and enables sitelinks search box.',
-    howToFix: `Add to your homepage:
+    title: 'Add site structure data',
+    description: 'Site structure data helps search engines and AI agents understand your site layout and enables sitelinks search box.',
+    howToFix: `Add this JSON-LD to your homepage:
 
 <script type="application/ld+json">
 {
@@ -145,11 +145,11 @@ Link your feed in robots.txt or sitemap.xml for agent discovery.`,
   D9: {
     priority: 'high',
     effort: 'technical',
-    title: 'Add commerce API for agent transactions',
-    description: 'AI agents need programmatic access to complete purchases via UCP or MCP protocols.',
+    title: 'Enable AI checkout integration',
+    description: 'AI agents need a way to complete purchases on your site.',
     howToFix: `Options to enable agent commerce:
 
-1. UCP Manifest: Create /.well-known/ucp.json:
+1. Create /.well-known/ucp.json:
 {
   "version": "1.0",
   "name": "Your Store",
@@ -166,9 +166,9 @@ Link your feed in robots.txt or sitemap.xml for agent discovery.`,
   T1: {
     priority: 'medium',
     effort: 'quick',
-    title: 'Add Organization schema',
+    title: 'Add business identity data',
     description: 'Helps AI agents verify your business identity and build trust for purchase recommendations.',
-    howToFix: `Add to your homepage:
+    howToFix: `Add this JSON-LD to your homepage:
 
 <script type="application/ld+json">
 {
@@ -185,42 +185,15 @@ Link your feed in robots.txt or sitemap.xml for agent discovery.`,
 }
 </script>`,
   },
-  T2: {
-    priority: 'high',
-    effort: 'quick',
-    title: 'Enable HTTPS and add return policy schema',
-    description: "AI agents verify HTTPS and return policies before recommending purchases. Sites without both lose significant trust.",
-    howToFix: `Two actions needed:
-
-1. HTTPS: Install an SSL certificate
-   - Many hosts offer free SSL (Let's Encrypt)
-   - Shopify/Squarespace include SSL by default
-   - Use Cloudflare for free SSL on any site
-
-2. Return Policy: Add MerchantReturnPolicy schema:
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "MerchantReturnPolicy",
-  "applicableCountry": "US",
-  "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
-  "merchantReturnDays": 30,
-  "returnMethod": "https://schema.org/ReturnByMail",
-  "returnFees": "https://schema.org/FreeReturn"
-}
-</script>
-
-Note: UCP 2026 requires "applicableCountry" on return policies.`,
-  },
+  // T2 is handled dynamically in generateRecommendations — see getT2Template()
   X1: {
     priority: 'high',
     effort: 'technical',
-    title: 'Achieve UCP compliance with offer and shipping schemas',
-    description: 'UCP 2026 requires complete Offer, shipping details, and country-specific return policies for agent transactions.',
+    title: 'Complete your product checkout data (shipping & returns)',
+    description: 'AI checkout protocols require complete product pricing, shipping details, and country-specific return policies.',
     howToFix: `Ensure your product pages include:
 
-1. Offer schema with pricing:
+1. Product pricing data:
 {
   "@type": "Offer",
   "price": "29.99",
@@ -228,7 +201,7 @@ Note: UCP 2026 requires "applicableCountry" on return policies.`,
   "availability": "https://schema.org/InStock"
 }
 
-2. Shipping details (UCP 2026 requirement):
+2. Shipping details:
 {
   "@type": "OfferShippingDetails",
   "shippingDestination": { "@type": "DefinedRegion", "addressCountry": "US" },
@@ -239,7 +212,7 @@ Note: UCP 2026 requires "applicableCountry" on return policies.`,
   "shippingRate": { "@type": "MonetaryAmount", "value": "5.99", "currency": "USD" }
 }
 
-3. Add "applicableCountry" to your MerchantReturnPolicy schema.`,
+3. Add "applicableCountry" to your return policy data.`,
   },
   X4: {
     priority: 'medium',
@@ -258,6 +231,60 @@ Sites with 3+ payment methods score highest. Ensure payment scripts are present 
   },
 };
 
+// T2 template varies based on what actually failed (HTTPS vs return policy vs both)
+function getT2Template(check: Check): Omit<Recommendation, 'checkId' | 'checkName'> {
+  const isHttps = check.data?.isHttps as boolean | undefined;
+  const returnPolicyFound = check.data?.returnPolicyFound as boolean | undefined;
+
+  const httpsHowToFix = `Install an SSL certificate:
+- Many hosts offer free SSL (Let's Encrypt)
+- Shopify/Squarespace include SSL by default
+- Use Cloudflare for free SSL on any site`;
+
+  const returnPolicyHowToFix = `Add return policy data to your site using JSON-LD:
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "MerchantReturnPolicy",
+  "applicableCountry": "US",
+  "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+  "merchantReturnDays": 30,
+  "returnMethod": "https://schema.org/ReturnByMail",
+  "returnFees": "https://schema.org/FreeReturn"
+}
+</script>`;
+
+  if (!isHttps && !returnPolicyFound) {
+    return {
+      priority: 'high',
+      effort: 'quick',
+      title: 'Add HTTPS and return policy information',
+      description: 'AI agents verify HTTPS and return policies before recommending purchases. Sites without both lose significant trust.',
+      howToFix: `Two actions needed:\n\n1. HTTPS:\n${httpsHowToFix}\n\n2. Return Policy:\n${returnPolicyHowToFix}`,
+    };
+  }
+
+  if (!isHttps) {
+    return {
+      priority: 'high',
+      effort: 'quick',
+      title: 'Enable HTTPS for your site',
+      description: 'AI agents require HTTPS before recommending purchases. Your site is not using a secure connection.',
+      howToFix: httpsHowToFix,
+    };
+  }
+
+  // HTTPS passes but return policy missing/incomplete
+  return {
+    priority: 'high',
+    effort: 'quick',
+    title: 'Add return policy information',
+    description: 'AI agents check return policies before recommending purchases. Adding this data increases trust significantly.',
+    howToFix: returnPolicyHowToFix,
+  };
+}
+
 export function generateRecommendations(
   checks: Check[],
   validations: Record<string, ValidationResult>
@@ -267,7 +294,10 @@ export function generateRecommendations(
   for (const check of checks) {
     if (check.status === 'pass') continue;
 
-    const template = recTemplates[check.id];
+    // T2 uses dynamic template based on what actually failed
+    const template = check.id === 'T2'
+      ? getT2Template(check)
+      : recTemplates[check.id];
     if (!template) continue;
 
     const rec: Recommendation = {

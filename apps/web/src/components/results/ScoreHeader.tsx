@@ -159,14 +159,14 @@ const ScoreHeader = ({
               </p>
             </div>
 
-            {/* Score Legend */}
-            <div className="space-y-3 pt-4">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Score Guide</p>
+            {/* Score Legend — single line */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-4">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">Score Guide</p>
               {scoreLegend.map((item) => (
-                <div key={item.range} className="flex items-center gap-3">
-                  <span className={`w-1.5 h-5 ${item.color}`} />
-                  <span className="text-sm text-muted-foreground font-mono w-12">{item.range}</span>
-                  <span className="text-sm text-foreground">{item.label}</span>
+                <div key={item.range} className="flex items-center gap-1.5">
+                  <span className={`w-1.5 h-3 ${item.color}`} />
+                  <span className="text-xs text-muted-foreground font-mono">{item.range}</span>
+                  <span className="text-xs text-foreground">{item.label}</span>
                 </div>
               ))}
             </div>

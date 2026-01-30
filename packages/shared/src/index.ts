@@ -32,7 +32,7 @@ export const CHECKS = {
 
   // Semantic Data (20 pts)
   D4: { id: 'D4', name: 'Product Information', category: 'discovery', maxScore: 10, subcategory: 'semantic' },
-  D5: { id: 'D5', name: 'WebSite Schema', category: 'discovery', maxScore: 5, subcategory: 'semantic' },
+  D5: { id: 'D5', name: 'Site Structure', category: 'discovery', maxScore: 5, subcategory: 'semantic' },
   D6: { id: 'D6', name: 'Attribute Completeness', category: 'discovery', maxScore: 5, subcategory: 'semantic', phase: 2 },
 
   // Distribution Signals (10 pts)
