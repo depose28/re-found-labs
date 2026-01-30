@@ -13,11 +13,7 @@ import EmailCapture from "@/components/results/EmailCapture";
 import CTASection from "@/components/results/CTASection";
 import RevenueAtRiskCard from "@/components/results/RevenueAtRiskCard";
 import IndustryComparisonBars from "@/components/results/IndustryComparisonBars";
-import TimelineGraphic from "@/components/results/TimelineGraphic";
-import PriorityFixSpotlight from "@/components/results/PriorityFixSpotlight";
 import WhatUnlocksSection from "@/components/results/WhatUnlocksSection";
-import MarketContextCard from "@/components/results/MarketContextCard";
-import SocialProofBanner from "@/components/results/SocialProofBanner";
 import StickyBottomCTA from "@/components/results/StickyBottomCTA";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -27,7 +23,7 @@ interface AnalysisResult {
   domain: string;
   total_score: number;
   grade: string;
-  scoring_model?: string;
+  scoring_model?: string; // Not in DB yet — detect v2 via performance_max === 0
   discovery_score: number;
   discovery_max: number | null;
   performance_score: number;
@@ -128,13 +124,24 @@ const Results = () => {
     );
   }
 
+  // Normalize raw score to 0-100 for display
+  // v2 (3-layer): total_score is raw points out of maxPossible (e.g. 48/67)
+  // v1 (5-pillar): total_score was already out of 100
+  const isV2 = analysis.scoring_model === 'v2_3layer' || analysis.performance_max === 0;
+  const maxPossible = isV2
+    ? analysis.checks?.reduce((sum: number, c: any) => sum + c.maxScore, 0) || 67
+    : 100;
+  const normalizedScore = maxPossible > 0
+    ? Math.round((analysis.total_score / maxPossible) * 100)
+    : analysis.total_score;
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       <main className="flex-1">
-        {/* SECTION 1: THE STAKES (Above the Fold) */}
+        {/* 1. Score + Badge + Verdict */}
         <ScoreHeader
-          score={analysis.total_score}
+          score={normalizedScore}
           grade={analysis.grade}
           url={analysis.url}
           createdAt={analysis.created_at}
@@ -143,29 +150,14 @@ const Results = () => {
           issuesCount={analysis.checks?.filter((c: any) => c.status !== "pass").length || 0}
         />
 
-        {/* Stakes Cards - Revenue at Risk, Industry Comparison, Timeline */}
         <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20 py-12">
-          {/* Social Proof Banner */}
-          <SocialProofBanner />
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-            <RevenueAtRiskCard score={analysis.total_score} />
-            <div className="p-6 border border-border bg-card">
-              <IndustryComparisonBars score={analysis.total_score} />
-            </div>
-            <div className="md:col-span-2 lg:col-span-1">
-              <TimelineGraphic />
-            </div>
-          </div>
-
-          {/* SECTION 2: THE DIAGNOSIS */}
-          <PriorityFixSpotlight recommendations={analysis.recommendations} />
-
-          {analysis.scoring_model === 'v2_3layer' ? (
+          {/* 2. What We Checked (3 section cards) */}
+          {(analysis.scoring_model === 'v2_3layer' || analysis.performance_max === 0) ? (
             <LayerBreakdown
               discovery={{ score: analysis.discovery_score, max: analysis.discovery_max ?? 45 }}
               trust={{ score: analysis.trust_score, max: analysis.trust_max ?? 25 }}
               transaction={{ score: analysis.transaction_score, max: analysis.transaction_max ?? 30 }}
+              checks={analysis.checks}
             />
           ) : (
             <CategoryBreakdown
@@ -177,29 +169,41 @@ const Results = () => {
             />
           )}
 
-          {/* SECTION 3: DETAILED RESULTS */}
-          <div className="mt-16 space-y-16" data-section="recommendations">
-            <ChecksAccordion checks={analysis.checks} />
-            <RecommendationsSection recommendations={analysis.recommendations} />
+          {/* 3. How You Compare + 4. Revenue at Risk */}
+          <div className="grid md:grid-cols-2 gap-6 mt-16">
+            <div className="p-6 border border-border bg-card">
+              <IndustryComparisonBars score={normalizedScore} />
+            </div>
+            <RevenueAtRiskCard score={normalizedScore} />
           </div>
 
-          {/* Manual Verification Checklist (v2 only) */}
-          {analysis.scoring_model === 'v2_3layer' && (
+          {/* 5. Recommended Fixes + 6. Individual Checks */}
+          <div className="mt-16 space-y-16" data-section="recommendations">
+            <RecommendationsSection recommendations={analysis.recommendations} />
+            <ChecksAccordion checks={analysis.checks} />
+          </div>
+
+          {/* 7. Manual Verification Checklist (v2 only) */}
+          {(analysis.scoring_model === 'v2_3layer' || analysis.performance_max === 0) && (
             <ManualVerificationChecklist />
           )}
 
-          {/* SECTION 4: THE PATH FORWARD */}
+          {/* 8. What 85+ Unlocks */}
           <div className="mt-16">
             <WhatUnlocksSection />
-            <MarketContextCard />
-            <EmailCapture analysisId={analysis.id} />
           </div>
         </div>
 
+        {/* 9. Book a Call CTA */}
         <CTASection />
 
+        {/* 10. Email Capture */}
+        <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20 pb-16">
+          <EmailCapture analysisId={analysis.id} />
+        </div>
+
         {/* Sticky Bottom CTA Bar */}
-        <StickyBottomCTA score={analysis.total_score} grade={analysis.grade} />
+        <StickyBottomCTA score={normalizedScore} grade={analysis.grade} />
       </main>
       <Footer />
     </div>

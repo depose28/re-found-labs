@@ -17,4 +17,7 @@ export default defineConfig({
     },
   },
   dirs: ["./src/trigger"],
+  build: {
+    external: ["pino-pretty"],
+  },
 });

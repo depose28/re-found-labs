@@ -5,6 +5,7 @@ import { ValidationResult } from '../schema/validate';
 const recTemplates: Record<string, Omit<Recommendation, 'checkId' | 'checkName'>> = {
   D1: {
     priority: 'critical',
+    effort: 'quick',
     title: 'Allow AI shopping bots in robots.txt',
     description: 'Your robots.txt is blocking critical AI shopping agents like GPTBot and ClaudeBot.',
     howToFix: `Add these rules to your robots.txt file:
@@ -35,6 +36,7 @@ Allow: /`,
   },
   D2: {
     priority: 'medium',
+    effort: 'quick',
     title: 'Create an XML sitemap',
     description: 'A sitemap helps AI agents efficiently discover all your products.',
     howToFix: `Create a sitemap.xml at your root domain:
@@ -47,6 +49,7 @@ Submit to Google Search Console for faster indexing.`,
   },
   D3: {
     priority: 'high',
+    effort: 'technical',
     title: 'Improve server response time (TTFB)',
     description: 'Sites with <400ms TTFB get 3x more AI agent citations. Slow servers cause agents to skip your site entirely.',
     howToFix: `Key optimizations to reduce TTFB:
@@ -62,6 +65,7 @@ Target: Under 400ms for optimal AI agent crawling.`,
   },
   D4: {
     priority: 'high',
+    effort: 'quick',
     title: 'Add complete Product schema markup',
     description: 'AI agents need structured product data to understand and recommend your products.',
     howToFix: `Add this JSON-LD to your product pages:
@@ -93,6 +97,7 @@ Target: Under 400ms for optimal AI agent crawling.`,
   },
   D5: {
     priority: 'low',
+    effort: 'quick',
     title: 'Add WebSite schema with SearchAction',
     description: 'WebSite schema helps search engines understand your site structure and enables sitelinks search box.',
     howToFix: `Add to your homepage:
@@ -118,6 +123,7 @@ This enables Google's sitelinks search box in search results.`,
   },
   D7: {
     priority: 'critical',
+    effort: 'technical',
     title: 'Create a product feed for AI shopping protocols',
     description: 'Your products are invisible to AI shopping protocols without a feed.',
     howToFix: `Create a product feed:
@@ -138,6 +144,7 @@ Link your feed in robots.txt or sitemap.xml for agent discovery.`,
   },
   D9: {
     priority: 'high',
+    effort: 'technical',
     title: 'Add commerce API for agent transactions',
     description: 'AI agents need programmatic access to complete purchases via UCP or MCP protocols.',
     howToFix: `Options to enable agent commerce:
@@ -158,6 +165,7 @@ Link your feed in robots.txt or sitemap.xml for agent discovery.`,
   },
   T1: {
     priority: 'medium',
+    effort: 'quick',
     title: 'Add Organization schema',
     description: 'Helps AI agents verify your business identity and build trust for purchase recommendations.',
     howToFix: `Add to your homepage:
@@ -179,6 +187,7 @@ Link your feed in robots.txt or sitemap.xml for agent discovery.`,
   },
   T2: {
     priority: 'high',
+    effort: 'quick',
     title: 'Enable HTTPS and add return policy schema',
     description: "AI agents verify HTTPS and return policies before recommending purchases. Sites without both lose significant trust.",
     howToFix: `Two actions needed:
@@ -206,6 +215,7 @@ Note: UCP 2026 requires "applicableCountry" on return policies.`,
   },
   X1: {
     priority: 'high',
+    effort: 'technical',
     title: 'Achieve UCP compliance with offer and shipping schemas',
     description: 'UCP 2026 requires complete Offer, shipping details, and country-specific return policies for agent transactions.',
     howToFix: `Ensure your product pages include:
@@ -233,6 +243,7 @@ Note: UCP 2026 requires "applicableCountry" on return policies.`,
   },
   X4: {
     priority: 'medium',
+    effort: 'technical',
     title: 'Add payment method integrations',
     description: 'Multiple payment methods (Stripe, PayPal, Apple Pay, Google Pay) increase agent transaction success rates.',
     howToFix: `Integrate checkout infrastructure:

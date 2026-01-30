@@ -2,7 +2,7 @@ import { useState } from "react";
 import { CheckCircle2, Loader2, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { supabase } from "@/integrations/supabase/client";
+import { endpoints } from "@/config/api";
 import { toast } from "sonner";
 
 interface EmailCaptureProps {
@@ -38,33 +38,30 @@ const EmailCapture = ({ analysisId }: EmailCaptureProps) => {
 
     try {
       const trimmedEmail = email.trim().toLowerCase();
-      
-      // First, save the email capture
-      const { error: insertError } = await supabase.from("email_captures").insert({
-        email: trimmedEmail,
-        analysis_id: analysisId,
-        source: "results_page",
+
+      // Save the email capture via API
+      const response = await fetch(endpoints.emailCapture, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: trimmedEmail,
+          analysisId,
+          source: 'results_page',
+        }),
       });
 
-      if (insertError) throw insertError;
-
-      // Then, trigger the report generation and email
-      const response = await supabase.functions.invoke("generate-report", {
-        body: { email: trimmedEmail, analysisId },
-      });
-
-      if (response.error) {
-        console.error("Report generation error:", response.error);
-        // Still show success since email was captured
-        toast.warning("Email saved! Report will be sent shortly.");
-      } else {
-        toast.success("Report sent! Check your inbox.");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to save email');
       }
 
+      toast.success("Email saved! We'll send you the detailed report shortly.");
       setSubmitted(true);
     } catch (err: any) {
       console.error("Failed to process request:", err);
-      setError("Failed to submit. Please try again.");
+      setError(err.message || "Failed to submit. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -79,10 +76,10 @@ const EmailCapture = ({ analysisId }: EmailCaptureProps) => {
           </div>
           <div>
             <h2 className="font-display text-xl text-foreground mb-1">
-              Report Sent!
+              Email Saved!
             </h2>
             <p className="text-muted-foreground text-sm">
-              Check your inbox for the detailed analysis report.
+              We'll send you the detailed analysis report shortly.
             </p>
           </div>
         </div>

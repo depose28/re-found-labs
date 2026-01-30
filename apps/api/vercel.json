@@ -1,14 +1,17 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/api" }
-  ],
-  "env": {
-    "SUPABASE_URL": "@supabase-url",
-    "SUPABASE_SERVICE_ROLE_KEY": "@supabase-service-role-key",
-    "FIRECRAWL_API_KEY": "@firecrawl-api-key",
-    "GOOGLE_PAGESPEED_API_KEY": "@google-pagespeed-api-key",
-    "TRIGGER_SECRET_KEY": "@trigger-secret-key"
-  }
+  "installCommand": "cd ../.. && pnpm install",
+  "buildCommand": "if [ ! -f ../../packages/shared/dist/index.js ]; then cd ../.. && pnpm --filter @agent-pulse/shared build; fi && echo 'Build complete'",
+  "functions": {
+    "api/index.ts": {
+      "maxDuration": 30,
+      "includeFiles": "../../packages/shared/dist/**"
+    }
+  },
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/api/index.ts"
+    }
+  ]
 }

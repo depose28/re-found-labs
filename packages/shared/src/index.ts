@@ -31,21 +31,21 @@ export const CHECKS = {
   D3: { id: 'D3', name: 'Server Response Time', category: 'discovery', maxScore: 3, subcategory: 'crawl' },
 
   // Semantic Data (20 pts)
-  D4: { id: 'D4', name: 'Product Schema', category: 'discovery', maxScore: 10, subcategory: 'semantic' },
+  D4: { id: 'D4', name: 'Product Information', category: 'discovery', maxScore: 10, subcategory: 'semantic' },
   D5: { id: 'D5', name: 'WebSite Schema', category: 'discovery', maxScore: 5, subcategory: 'semantic' },
   D6: { id: 'D6', name: 'Attribute Completeness', category: 'discovery', maxScore: 5, subcategory: 'semantic', phase: 2 },
 
   // Distribution Signals (10 pts)
   D7: { id: 'D7', name: 'Product Feed', category: 'discovery', maxScore: 4, subcategory: 'distribution' },
   D8: { id: 'D8', name: 'Channel Detection', category: 'discovery', maxScore: 3, subcategory: 'distribution', phase: 2 },
-  D9: { id: 'D9', name: 'Commerce API', category: 'discovery', maxScore: 3, subcategory: 'distribution' },
+  D9: { id: 'D9', name: 'Checkout Integration', category: 'discovery', maxScore: 3, subcategory: 'distribution' },
   D10: { id: 'D10', name: 'SSR Detection', category: 'discovery', maxScore: 3, subcategory: 'crawl', phase: 2 },
 
   // === Layer 2: Trust (25 pts) ===
 
   // Brand Identity (15 pts)
-  T1: { id: 'T1', name: 'Organization Schema', category: 'trust', maxScore: 8, subcategory: 'brand' },
-  T2: { id: 'T2', name: 'Trust Signals', category: 'trust', maxScore: 7, subcategory: 'brand' },
+  T1: { id: 'T1', name: 'Business Identity', category: 'trust', maxScore: 8, subcategory: 'brand' },
+  T2: { id: 'T2', name: 'Trust Indicators', category: 'trust', maxScore: 7, subcategory: 'brand' },
 
   // Community Signals (10 pts) — manual verification
   T3: { id: 'T3', name: 'Social Proof', category: 'trust', maxScore: 0, subcategory: 'community', manual: true },
@@ -54,7 +54,7 @@ export const CHECKS = {
   // === Layer 3: Transaction (30 pts) ===
 
   // Protocol Support (20 pts)
-  X1: { id: 'X1', name: 'UCP Compliance', category: 'transaction', maxScore: 10, subcategory: 'protocol' },
+  X1: { id: 'X1', name: 'Checkout Data Completeness', category: 'transaction', maxScore: 10, subcategory: 'protocol' },
   X2: { id: 'X2', name: 'MCP/ACP Detection', category: 'transaction', maxScore: 5, subcategory: 'protocol', phase: 2 },
   X3: { id: 'X3', name: 'Payment Protocol', category: 'transaction', maxScore: 5, subcategory: 'protocol', phase: 2 },
 
@@ -121,6 +121,7 @@ export interface Recommendation {
   checkId: string;
   checkName: string;
   priority: 'critical' | 'high' | 'medium' | 'low';
+  effort?: 'quick' | 'technical';
   title: string;
   description: string;
   howToFix: string;

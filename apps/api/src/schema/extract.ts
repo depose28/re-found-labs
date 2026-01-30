@@ -483,8 +483,8 @@ export async function extractSchemasSmartly(
     };
   }
 
-  // If it's a category page, be conservative about following to product pages
-  if (pageType.isCategory) {
+  // If it's a category page or homepage, try to find product schema on a product page
+  if (pageType.isCategory || pageType.isHomepage) {
     // If we have partial schema (ItemList, AggregateOffer, etc.), use it without following
     // This saves 1 Firecrawl credit per category page scan
     if (schemaQuality.level === 'partial') {
@@ -567,6 +567,76 @@ export async function extractSchemasSmartly(
         ? 'No structured product data found'
         : 'Partial schema found on page',
   };
+}
+
+// Discover a product URL from product feed or sitemap (lightweight probe)
+export async function discoverProductUrlFromFeed(domain: string): Promise<string | null> {
+  // 1. Try Shopify-style native feed (/products.json)
+  try {
+    const feedUrl = `${domain}/products.json`;
+    const response = await fetch(feedUrl, {
+      headers: { 'User-Agent': 'AgentPulseBot/1.0' },
+      signal: AbortSignal.timeout(5000),
+    });
+
+    if (response.ok) {
+      const data: any = await response.json();
+      const products = data.products || [];
+      if (products.length > 0 && products[0].handle) {
+        const productUrl = `${domain}/products/${products[0].handle}`;
+        log.info({ productUrl, source: 'products.json' }, 'Product URL discovered from feed');
+        return productUrl;
+      }
+    }
+  } catch {
+    // Continue to next method
+  }
+
+  // 2. Try sitemap for product URLs
+  try {
+    const sitemapUrl = `${domain}/sitemap.xml`;
+    const response = await fetch(sitemapUrl, {
+      headers: { 'User-Agent': 'AgentPulseBot/1.0' },
+      signal: AbortSignal.timeout(5000),
+    });
+
+    if (response.ok) {
+      const text = await response.text();
+
+      // Direct product URL in sitemap
+      const productUrlMatch = text.match(/<loc>([^<]*\/products\/[^<]+)<\/loc>/i);
+      if (productUrlMatch) {
+        log.info({ productUrl: productUrlMatch[1], source: 'sitemap' }, 'Product URL discovered from sitemap');
+        return productUrlMatch[1];
+      }
+
+      // Product sub-sitemap (Shopify pattern: sitemap_products_1.xml)
+      const productSitemapMatch = text.match(/<loc>([^<]*sitemap_products[^<]*\.xml[^<]*)<\/loc>/i);
+      if (productSitemapMatch) {
+        try {
+          const subResponse = await fetch(productSitemapMatch[1], {
+            headers: { 'User-Agent': 'AgentPulseBot/1.0' },
+            signal: AbortSignal.timeout(5000),
+          });
+          if (subResponse.ok) {
+            const subText = await subResponse.text();
+            const subMatch = subText.match(/<loc>([^<]*\/products\/[^<]+)<\/loc>/i);
+            if (subMatch) {
+              log.info({ productUrl: subMatch[1], source: 'product_sitemap' }, 'Product URL discovered from product sitemap');
+              return subMatch[1];
+            }
+          }
+        } catch {
+          // Sub-sitemap fetch failed
+        }
+      }
+    }
+  } catch {
+    // Sitemap failed
+  }
+
+  log.debug({ domain }, 'No product URL discovered from feeds or sitemap');
+  return null;
 }
 
 // Helper to create product validation from schemas

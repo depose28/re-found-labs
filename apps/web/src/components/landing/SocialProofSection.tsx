@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { endpoints } from "@/config/api";
 import PulseDot from "@/components/ui/PulseDot";
 
 const SocialProofSection = () => {
@@ -8,12 +8,12 @@ const SocialProofSection = () => {
   useEffect(() => {
     const fetchAuditCount = async () => {
       try {
-        const { count, error } = await supabase
-          .from("analyses")
-          .select("*", { count: "exact", head: true });
-        
-        if (!error && count !== null) {
-          setAuditCount(count);
+        const response = await fetch(endpoints.stats);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.totalAnalyses) {
+            setAuditCount(data.totalAnalyses);
+          }
         }
       } catch (err) {
         console.error("Failed to fetch audit count:", err);

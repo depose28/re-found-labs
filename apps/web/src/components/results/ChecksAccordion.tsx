@@ -109,7 +109,7 @@ interface ChecksAccordionProps {
 const categoryConfig = {
   discovery: { icon: Search, label: "Discovery", description: "Can agents find you?" },
   trust: { icon: Shield, label: "Trust", description: "Will agents recommend you?" },
-  transaction: { icon: CreditCard, label: "Transaction", description: "Can agents buy?" },
+  transaction: { icon: CreditCard, label: "Checkout", description: "Can agents buy?" },
 };
 
 const statusConfig = {
@@ -524,44 +524,45 @@ const ChecksAccordion = ({ checks }: ChecksAccordionProps) => {
                 </div>
               </AccordionTrigger>
               <AccordionContent className="px-5 pb-5">
-                <div className="space-y-3 mt-2 ml-14">
+                <Accordion type="multiple" defaultValue={[]} className="mt-2 ml-14 space-y-2">
                   {categoryChecks.map((check) => {
                     const status = statusConfig[check.status];
                     const StatusIcon = status.icon;
 
                     return (
-                      <div
+                      <AccordionItem
                         key={check.id}
-                        className="p-4 bg-secondary/30 border border-border"
+                        value={check.id}
+                        className="border border-border"
                       >
-                        <div className="flex items-start gap-4">
-                          <div className={`w-8 h-8 flex items-center justify-center ${status.bg} flex-shrink-0`}>
-                            <StatusIcon className={`h-4 w-4 ${status.color}`} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-2 mb-1">
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium text-foreground">
-                                  {check.name}
-                                </span>
-                                <Badge variant="outline" className={`text-xs ${status.bg} ${status.color} border-current/20`}>
-                                  {status.label}
-                                </Badge>
-                              </div>
-                              <span className="text-sm font-mono text-muted-foreground">
-                                {check.score}/{check.maxScore}
-                              </span>
+                        <AccordionTrigger className="hover:no-underline hover:bg-secondary/50 px-4 py-3">
+                          <div className="flex items-center gap-3 w-full">
+                            <div className={`w-7 h-7 flex items-center justify-center ${status.bg} flex-shrink-0`}>
+                              <StatusIcon className={`h-3.5 w-3.5 ${status.color}`} />
                             </div>
+                            <span className="font-medium text-foreground text-sm flex-1 text-left">
+                              {check.name}
+                            </span>
+                            <Badge variant="outline" className={`text-xs ${status.bg} ${status.color} border-current/20 mr-2`}>
+                              {status.label}
+                            </Badge>
+                            <span className="text-sm font-mono text-muted-foreground">
+                              {check.score}/{check.maxScore}
+                            </span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-4 pb-4">
+                          <div className="ml-10">
                             <p className="text-sm text-muted-foreground leading-relaxed">
                               {check.details}
                             </p>
                             <CheckDataDisplay check={check} />
                           </div>
-                        </div>
-                      </div>
+                        </AccordionContent>
+                      </AccordionItem>
                     );
                   })}
-                </div>
+                </Accordion>
               </AccordionContent>
             </AccordionItem>
           );

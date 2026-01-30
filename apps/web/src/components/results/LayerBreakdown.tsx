@@ -6,10 +6,18 @@ interface LayerProps {
   max: number;
 }
 
+interface CheckSummary {
+  id: string;
+  name: string;
+  status: "pass" | "partial" | "fail" | "skipped";
+  category: string;
+}
+
 interface LayerBreakdownProps {
   discovery: LayerProps;
   trust: LayerProps;
   transaction: LayerProps;
+  checks?: CheckSummary[];
 }
 
 const layers = [
@@ -23,7 +31,7 @@ const layers = [
       "robots.txt allows AI bots",
       "Product schema markup",
       "XML sitemap available",
-      "Server response time (TTFB)",
+      "Server response time",
       "Product feed accessible",
     ],
   },
@@ -34,7 +42,7 @@ const layers = [
     icon: Shield,
     description: "Brand identity and community signals",
     tips: [
-      "Organization schema present",
+      "Business identity schema",
       "HTTPS enabled",
       "Return policy schema",
       "Social proof (manual check)",
@@ -43,19 +51,19 @@ const layers = [
   {
     key: "transaction",
     label: "Can Agents Complete Purchases?",
-    shortLabel: "Transaction",
+    shortLabel: "Checkout",
     icon: CreditCard,
     description: "Protocol support and payment infrastructure",
     tips: [
-      "UCP-compliant offer schema",
+      "Checkout data completeness",
       "Shipping details schema",
       "Payment methods detected",
-      "Commerce API available",
+      "Checkout integration",
     ],
   },
 ];
 
-const LayerBreakdown = ({ discovery, trust, transaction }: LayerBreakdownProps) => {
+const LayerBreakdown = ({ discovery, trust, transaction, checks }: LayerBreakdownProps) => {
   const [animatedScores, setAnimatedScores] = useState<Record<string, number>>({
     discovery: 0,
     trust: 0,
@@ -115,24 +123,17 @@ const LayerBreakdown = ({ discovery, trust, transaction }: LayerBreakdownProps) 
     return "Needs Work";
   };
 
-  const totalScore = discovery.score + trust.score + transaction.score;
-  const totalMax = discovery.max + trust.max + transaction.max;
-  const overallPercentage = totalMax > 0 ? (totalScore / totalMax) * 100 : 0;
+  const getLayerChecks = (category: string) => {
+    if (!checks) return [];
+    return checks.filter((c) => c.category === category);
+  };
 
   return (
     <section>
       <div className="mb-8">
-        <p className="text-sm text-muted-foreground mb-2">3-Layer Scoring Model</p>
         <h2 className="font-display text-2xl text-foreground">
-          Layer Breakdown
+          What We Checked
         </h2>
-        <p className="text-sm text-muted-foreground mt-2">
-          Overall score:{" "}
-          <span className={`font-medium ${getScoreColor(overallPercentage)}`}>
-            {totalScore}
-          </span>{" "}
-          / {totalMax} ({Math.round(overallPercentage)}%)
-        </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -143,6 +144,7 @@ const LayerBreakdown = ({ discovery, trust, transaction }: LayerBreakdownProps) 
           const animatedPercentage = max > 0 ? (animatedScore / max) * 100 : 0;
           const Icon = layer.icon;
           const StatusIcon = getStatusIcon(percentage);
+          const layerChecks = getLayerChecks(layer.key);
 
           return (
             <div
@@ -155,11 +157,11 @@ const LayerBreakdown = ({ discovery, trust, transaction }: LayerBreakdownProps) 
                     <Icon className="h-5 w-5 text-foreground" strokeWidth={1.5} />
                   </div>
                   <div>
+                    <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-0.5">
+                      {layer.shortLabel}
+                    </p>
                     <p className="font-medium text-foreground text-sm">
                       {layer.label}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {layer.description}
                     </p>
                   </div>
                 </div>
@@ -189,17 +191,40 @@ const LayerBreakdown = ({ discovery, trust, transaction }: LayerBreakdownProps) 
                 <span className="text-muted-foreground font-mono text-sm">/ {max} pts</span>
               </div>
 
-              {/* Tips */}
+              {/* Check Summaries or Fallback Tips */}
               <div className="mt-4 pt-4 border-t border-border/50">
-                <p className="text-xs text-muted-foreground mb-2">Key factors:</p>
-                <ul className="text-xs text-muted-foreground space-y-1">
-                  {layer.tips.map((tip, i) => (
-                    <li key={i} className="flex items-center gap-1.5">
-                      <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />
-                      {tip}
-                    </li>
-                  ))}
-                </ul>
+                {layerChecks.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {layerChecks.map((check) => (
+                      <span
+                        key={check.id}
+                        className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded ${
+                          check.status === "pass"
+                            ? "bg-success/10 text-success"
+                            : check.status === "partial"
+                            ? "bg-warning/10 text-warning"
+                            : "bg-destructive/10 text-destructive"
+                        }`}
+                      >
+                        {check.status === "pass"
+                          ? "✓"
+                          : check.status === "partial"
+                          ? "⚠"
+                          : "✗"}
+                        {check.name}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <ul className="text-xs text-muted-foreground space-y-1">
+                    {layer.tips.map((tip, i) => (
+                      <li key={i} className="flex items-center gap-1.5">
+                        <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />
+                        {tip}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </div>
           );

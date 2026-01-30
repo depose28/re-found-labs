@@ -3,23 +3,27 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRight, Shield, Clock, Zap, CheckCircle2, Search, CreditCard, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { supabase } from "@/integrations/supabase/client";
+import { endpoints } from "@/config/api";
+
 const ConversionHeroSection = () => {
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
-  const [auditCount, setAuditCount] = useState(0);
+  const [auditCount, setAuditCount] = useState(500); // Default fallback
   const navigate = useNavigate();
 
   // Fetch audit count for social proof
   useEffect(() => {
     const fetchCount = async () => {
-      const {
-        count
-      } = await supabase.from("analyses").select("*", {
-        count: "exact",
-        head: true
-      });
-      if (count) setAuditCount(count);
+      try {
+        const response = await fetch(endpoints.stats);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.totalAnalyses) setAuditCount(data.totalAnalyses);
+        }
+      } catch (err) {
+        // Keep default fallback on error
+        console.log("Failed to fetch stats, using fallback");
+      }
     };
     fetchCount();
   }, []);

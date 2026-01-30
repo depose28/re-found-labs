@@ -1,10 +1,11 @@
-import { AlertCircle, AlertTriangle, Info, ChevronDown, Wrench, Copy, Check, ExternalLink, ChevronUp } from "lucide-react";
+import { AlertCircle, AlertTriangle, Info, ChevronDown, Wrench, Zap, Copy, Check, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 interface Recommendation {
-  priority: "critical" | "high" | "medium";
+  priority: "critical" | "high" | "medium" | "low";
+  effort?: "quick" | "technical";
   checkId: string;
   checkName: string;
   title: string;
@@ -17,14 +18,192 @@ interface RecommendationsSectionProps {
 }
 
 const priorityConfig = {
-  critical: { icon: AlertCircle, color: "destructive", label: "Critical", order: 1, description: "Blocking AI agent access" },
-  high: { icon: AlertTriangle, color: "warning", label: "High", order: 2, description: "Significantly impacts score" },
-  medium: { icon: Info, color: "accent", label: "Medium", order: 3, description: "Recommended improvement" },
+  critical: { icon: AlertCircle, color: "destructive", label: "Critical", order: 1 },
+  high: { icon: AlertTriangle, color: "warning", label: "High", order: 2 },
+  medium: { icon: Info, color: "accent", label: "Medium", order: 3 },
+  low: { icon: Info, color: "muted", label: "Low", order: 4 },
 };
+
+// Fallback for old analyses that don't have effort field
+const effortFallback: Record<string, "quick" | "technical"> = {
+  D1: "quick",
+  D2: "quick",
+  D4: "quick",
+  D5: "quick",
+  T1: "quick",
+  T2: "quick",
+  D3: "technical",
+  D7: "technical",
+  D9: "technical",
+  X1: "technical",
+  X4: "technical",
+};
+
+// Quick links per check ID
+const quickLinks: Record<string, Array<{ label: string; href: string }>> = {
+  D1: [
+    { label: "Google robots.txt docs", href: "https://developers.google.com/search/docs/crawling-indexing/robots/intro" },
+  ],
+  D3: [
+    { label: "PageSpeed Insights", href: "https://pagespeed.web.dev/" },
+    { label: "Core Web Vitals Guide", href: "https://web.dev/vitals/" },
+  ],
+  D4: [
+    { label: "Schema.org Product", href: "https://schema.org/Product" },
+    { label: "Rich Results Test", href: "https://search.google.com/test/rich-results" },
+  ],
+  D7: [
+    { label: "Google Merchant Feed Specs", href: "https://support.google.com/merchants/answer/7052112" },
+    { label: "Schema.org DataFeed", href: "https://schema.org/DataFeed" },
+  ],
+  D9: [
+    { label: "Model Context Protocol (MCP)", href: "https://modelcontextprotocol.io/" },
+    { label: "OpenAI Plugin Docs (ACP)", href: "https://platform.openai.com/docs/plugins" },
+  ],
+  X1: [
+    { label: "Schema.org Offer", href: "https://schema.org/Offer" },
+    { label: "Klarna Agentic Commerce", href: "https://docs.klarna.com/agentic-commerce/" },
+  ],
+  X4: [
+    { label: "Stripe Checkout Docs", href: "https://stripe.com/docs/payments/checkout" },
+    { label: "Shopify Checkout API", href: "https://shopify.dev/docs/api/checkout-extensions" },
+  ],
+};
+
+function getEffort(rec: Recommendation): "quick" | "technical" {
+  return rec.effort || effortFallback[rec.checkId] || "technical";
+}
+
+function RecommendationCard({
+  rec,
+  index,
+  expandedIds,
+  toggleExpanded,
+  copiedId,
+  handleCopy,
+}: {
+  rec: Recommendation;
+  index: number;
+  expandedIds: Set<string>;
+  toggleExpanded: (id: string) => void;
+  copiedId: string | null;
+  handleCopy: (text: string, checkId: string) => void;
+}) {
+  const config = priorityConfig[rec.priority as keyof typeof priorityConfig] || priorityConfig.medium;
+  const isExpanded = expandedIds.has(rec.checkId);
+  const PriorityIcon = config.icon;
+  const isCopied = copiedId === rec.checkId;
+  const links = quickLinks[rec.checkId];
+
+  return (
+    <div className="bg-card">
+      <div className="p-5">
+        <div className="flex items-start gap-4">
+          <div
+            className={`w-10 h-10 flex items-center justify-center flex-shrink-0 ${
+              config.color === "destructive"
+                ? "bg-destructive/10"
+                : config.color === "warning"
+                ? "bg-warning/10"
+                : "bg-accent/10"
+            }`}
+          >
+            <PriorityIcon
+              className={`h-5 w-5 ${
+                config.color === "destructive"
+                  ? "text-destructive"
+                  : config.color === "warning"
+                  ? "text-warning"
+                  : "text-accent"
+              }`}
+            />
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <span
+                className={`text-xs font-mono uppercase tracking-wide px-2 py-0.5 ${
+                  config.color === "destructive"
+                    ? "bg-destructive/10 text-destructive"
+                    : config.color === "warning"
+                    ? "bg-warning/10 text-warning"
+                    : "bg-accent/10 text-accent"
+                }`}
+              >
+                {config.label}
+              </span>
+              <span className="text-xs text-muted-foreground font-mono">
+                #{String(index + 1).padStart(2, "0")}
+              </span>
+            </div>
+            <h3 className="font-medium text-lg text-foreground mb-2">{rec.title}</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {rec.description}
+            </p>
+
+            <button
+              onClick={() => toggleExpanded(rec.checkId)}
+              className="flex items-center gap-2 text-sm font-medium text-accent mt-4 hover:opacity-80 transition-opacity"
+            >
+              <Wrench className="h-4 w-4" />
+              How to fix
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {isExpanded && (
+        <div className="px-5 pb-5">
+          <div className="ml-14">
+            <div className="relative p-4 bg-secondary/50 border border-border">
+              <div className="absolute top-2 right-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleCopy(rec.howToFix, rec.checkId)}
+                  className="h-8 px-2"
+                >
+                  {isCopied ? (
+                    <Check className="h-4 w-4 text-success" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                  <span className="ml-1.5 text-xs">{isCopied ? "Copied!" : "Copy"}</span>
+                </Button>
+              </div>
+              <pre className="text-sm text-foreground whitespace-pre-wrap font-mono leading-relaxed pr-20 overflow-x-auto">
+                {rec.howToFix}
+              </pre>
+            </div>
+
+            {links && links.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {links.map((link) => (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const RecommendationsSection = ({ recommendations }: RecommendationsSectionProps) => {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-  const [showAll, setShowAll] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const handleCopy = async (text: string, checkId: string) => {
@@ -38,7 +217,7 @@ const RecommendationsSection = ({ recommendations }: RecommendationsSectionProps
   };
 
   const toggleExpanded = (id: string) => {
-    setExpandedIds(prev => {
+    setExpandedIds((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(id)) {
         newSet.delete(id);
@@ -53,342 +232,103 @@ const RecommendationsSection = ({ recommendations }: RecommendationsSectionProps
     return (
       <section>
         <div className="mb-8">
-          <p className="text-sm text-muted-foreground mb-2">Recommendations</p>
           <h2 className="font-display text-2xl text-foreground">
-            Priority Fixes
+            Recommended Fixes
           </h2>
         </div>
 
         <div className="bg-success/10 border border-success/20 p-8 text-center">
-          <span className="text-4xl mb-4 block">🎉</span>
           <h3 className="font-display text-xl text-foreground mb-2">
-            No Issues Found!
+            No Issues Found
           </h3>
           <p className="text-muted-foreground text-sm max-w-md mx-auto">
-            Your store is fully optimized for AI shopping agents. All critical checks passed!
+            Your store is fully optimized for AI shopping agents. All critical checks passed.
           </p>
         </div>
       </section>
     );
   }
 
-  // Sort by priority
-  const sortedRecs = [...recommendations].sort((a, b) => {
-    const orderA = priorityConfig[a.priority as keyof typeof priorityConfig]?.order || 99;
-    const orderB = priorityConfig[b.priority as keyof typeof priorityConfig]?.order || 99;
-    return orderA - orderB;
-  });
+  // Sort by priority within each group
+  const sortByPriority = (recs: Recommendation[]) =>
+    [...recs].sort((a, b) => {
+      const orderA = priorityConfig[a.priority as keyof typeof priorityConfig]?.order || 99;
+      const orderB = priorityConfig[b.priority as keyof typeof priorityConfig]?.order || 99;
+      return orderA - orderB;
+    });
 
-  const criticalCount = recommendations.filter(r => r.priority === "critical").length;
-  const highCount = recommendations.filter(r => r.priority === "high").length;
-  const mediumCount = recommendations.filter(r => r.priority === "medium").length;
-
-  // Estimate score improvement
-  const estimatedImprovement = criticalCount * 15 + highCount * 10 + mediumCount * 5;
-
-  // Show top 3 by default, rest collapsed
-  const visibleRecs = showAll ? sortedRecs : sortedRecs.slice(0, 3);
-  const hiddenCount = sortedRecs.length - 3;
+  const quickWins = sortByPriority(recommendations.filter((r) => getEffort(r) === "quick"));
+  const technicalFixes = sortByPriority(recommendations.filter((r) => getEffort(r) === "technical"));
 
   return (
     <section>
       <div className="mb-8">
-        <p className="text-sm text-muted-foreground mb-2">Recommendations</p>
         <h2 className="font-display text-2xl text-foreground mb-2">
-          Priority Fixes
+          Recommended Fixes
         </h2>
         <div className="flex flex-wrap items-center gap-3 text-sm">
-          {criticalCount > 0 && (
-            <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">
-              {criticalCount} Critical
+          {quickWins.length > 0 && (
+            <Badge variant="outline" className="bg-success/10 text-success border-success/20">
+              {quickWins.length} Quick Win{quickWins.length > 1 ? "s" : ""}
             </Badge>
           )}
-          {highCount > 0 && (
-            <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20">
-              {highCount} High
-            </Badge>
-          )}
-          {mediumCount > 0 && (
+          {technicalFixes.length > 0 && (
             <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20">
-              {mediumCount} Medium
+              {technicalFixes.length} Technical
             </Badge>
           )}
-          <span className="text-muted-foreground">
-            Potential improvement: <span className="font-medium text-success">+{estimatedImprovement} pts</span>
-          </span>
         </div>
       </div>
 
-      <div className="border border-border divide-y divide-border">
-        {visibleRecs.map((rec, index) => {
-          const config = priorityConfig[rec.priority as keyof typeof priorityConfig] || priorityConfig.medium;
-          const isExpanded = expandedIds.has(rec.checkId);
-          const PriorityIcon = config.icon;
-          const isCopied = copiedId === rec.checkId;
-
-          return (
-            <div key={rec.checkId} className="bg-card">
-              <div className="p-5">
-                <div className="flex items-start gap-4">
-                  {/* Priority Badge */}
-                  <div 
-                    className={`w-10 h-10 flex items-center justify-center flex-shrink-0 ${
-                      config.color === "destructive"
-                        ? "bg-destructive/10"
-                        : config.color === "warning"
-                        ? "bg-warning/10"
-                        : "bg-accent/10"
-                    }`}
-                  >
-                    <PriorityIcon 
-                      className={`h-5 w-5 ${
-                        config.color === "destructive"
-                          ? "text-destructive"
-                          : config.color === "warning"
-                          ? "text-warning"
-                          : "text-accent"
-                      }`} 
-                    />
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <span
-                        className={`text-xs font-mono uppercase tracking-wide px-2 py-0.5 ${
-                          config.color === "destructive"
-                            ? "bg-destructive/10 text-destructive"
-                            : config.color === "warning"
-                            ? "bg-warning/10 text-warning"
-                            : "bg-accent/10 text-accent"
-                        }`}
-                      >
-                        {config.label}
-                      </span>
-                      <span className="text-xs text-muted-foreground font-mono">
-                        #{String(index + 1).padStart(2, "0")}
-                      </span>
-                      <span className="text-xs text-muted-foreground hidden sm:inline">
-                        • {config.description}
-                      </span>
-                    </div>
-                    <h3 className="font-medium text-lg text-foreground mb-2">{rec.title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {rec.description}
-                    </p>
-
-                    <button
-                      onClick={() => toggleExpanded(rec.checkId)}
-                      className="flex items-center gap-2 text-sm font-medium text-accent mt-4 hover:opacity-80 transition-opacity"
-                    >
-                      <Wrench className="h-4 w-4" />
-                      How to fix
-                      <ChevronDown
-                        className={`h-4 w-4 transition-transform ${
-                          isExpanded ? "rotate-180" : ""
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {isExpanded && (
-                <div className="px-5 pb-5">
-                  <div className="ml-14">
-                    <div className="relative p-4 bg-secondary/50 border border-border">
-                      <div className="absolute top-2 right-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleCopy(rec.howToFix, rec.checkId)}
-                          className="h-8 px-2"
-                        >
-                          {isCopied ? (
-                            <Check className="h-4 w-4 text-success" />
-                          ) : (
-                            <Copy className="h-4 w-4" />
-                          )}
-                          <span className="ml-1.5 text-xs">{isCopied ? "Copied!" : "Copy"}</span>
-                        </Button>
-                      </div>
-                      <pre className="text-sm text-foreground whitespace-pre-wrap font-mono leading-relaxed pr-20 overflow-x-auto">
-                        {rec.howToFix}
-                      </pre>
-                    </div>
-                    
-                    {/* Quick links for common fixes */}
-                    {rec.checkId === "D1" && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <a
-                          href="https://developers.google.com/search/docs/crawling-indexing/robots/intro"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          Google robots.txt docs
-                        </a>
-                      </div>
-                    )}
-                    {rec.checkId === "D2" && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <a
-                          href="https://schema.org/Product"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          Schema.org Product
-                        </a>
-                        <a
-                          href="https://search.google.com/test/rich-results"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          Rich Results Test
-                        </a>
-                      </div>
-                    )}
-                    {rec.checkId === "N1" && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <a
-                          href="https://pagespeed.web.dev/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          PageSpeed Insights
-                        </a>
-                        <a
-                          href="https://web.dev/vitals/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          Core Web Vitals Guide
-                        </a>
-                      </div>
-                    )}
-                    {(rec.checkId === "P2" || rec.checkId === "P3" || rec.checkId === "P5") && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <a
-                          href="https://support.google.com/merchants/answer/7052112"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          Google Merchant Feed Specs
-                        </a>
-                        <a
-                          href="https://docs.klarna.com/agentic-commerce/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          Klarna Agentic Commerce
-                        </a>
-                      </div>
-                    )}
-                    {rec.checkId === "P4" && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <a
-                          href="https://schema.org/DataFeed"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          Schema.org DataFeed
-                        </a>
-                      </div>
-                    )}
-                    {rec.checkId === "P6" && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <a
-                          href="https://stripe.com/docs/payments/checkout"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          Stripe Checkout Docs
-                        </a>
-                        <a
-                          href="https://shopify.dev/docs/api/checkout-extensions"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          Shopify Checkout API
-                        </a>
-                      </div>
-                    )}
-                    {rec.checkId === "P7" && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <a
-                          href="https://developers.google.com/commerce"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          Google Commerce Platform
-                        </a>
-                        <a
-                          href="https://platform.openai.com/docs/plugins"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          OpenAI Plugin Docs (ACP)
-                        </a>
-                        <a
-                          href="https://modelcontextprotocol.io/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          Model Context Protocol (MCP)
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+      <div className="space-y-10">
+        {/* Quick Wins */}
+        {quickWins.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <Zap className="h-5 w-5 text-success" />
+              <h3 className="font-display text-lg text-foreground">Quick Wins</h3>
+              <span className="text-xs text-muted-foreground">No developer needed</span>
             </div>
-          );
-        })}
-      </div>
+            <div className="border border-border divide-y divide-border">
+              {quickWins.map((rec, i) => (
+                <RecommendationCard
+                  key={rec.checkId}
+                  rec={rec}
+                  index={i}
+                  expandedIds={expandedIds}
+                  toggleExpanded={toggleExpanded}
+                  copiedId={copiedId}
+                  handleCopy={handleCopy}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
-      {/* Show more/less toggle */}
-      {hiddenCount > 0 && (
-        <button
-          onClick={() => setShowAll(!showAll)}
-          className="w-full mt-4 py-3 border border-border bg-secondary/30 hover:bg-secondary/50 transition-colors flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground"
-        >
-          {showAll ? (
-            <>
-              <ChevronUp className="h-4 w-4" />
-              Show less
-            </>
-          ) : (
-            <>
-              <ChevronDown className="h-4 w-4" />
-              Show {hiddenCount} more recommendation{hiddenCount > 1 ? "s" : ""}
-            </>
-          )}
-        </button>
-      )}
+        {/* Technical Fixes */}
+        {technicalFixes.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <Wrench className="h-5 w-5 text-accent" />
+              <h3 className="font-display text-lg text-foreground">Technical Fixes</h3>
+              <span className="text-xs text-muted-foreground">Requires developer or server config</span>
+            </div>
+            <div className="border border-border divide-y divide-border">
+              {technicalFixes.map((rec, i) => (
+                <RecommendationCard
+                  key={rec.checkId}
+                  rec={rec}
+                  index={i}
+                  expandedIds={expandedIds}
+                  toggleExpanded={toggleExpanded}
+                  copiedId={copiedId}
+                  handleCopy={handleCopy}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </section>
   );
 };

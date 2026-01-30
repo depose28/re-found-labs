@@ -17,7 +17,7 @@ app.use('*', cors({
     'http://localhost:8080',
     'http://localhost:5173',
     'https://ai-commerce-audit.lovable.app',
-    // Add your Vercel frontend URL here once deployed
+    'https://agent-pulse-web.vercel.app',
   ],
   allowMethods: ['GET', 'POST', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],

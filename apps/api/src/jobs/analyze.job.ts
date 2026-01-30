@@ -1,9 +1,8 @@
 import { Check, getGrade, Recommendation, SCORING } from '@agent-pulse/shared';
 import { createLogger } from '../lib/logger';
 import { supabase } from '../lib/supabase';
-import { smartScrape, scrapeWithFirecrawl } from '../scrapers/firecrawl';
-import { basicFetch } from '../scrapers/basic';
-import { extractSchemasSmartly, extractJsonLdSchemas, findOrganizationSchema, ExtractedSchema } from '../schema/extract';
+import { scrapeWithFirecrawl } from '../scrapers/firecrawl';
+import { extractJsonLdSchemas, findProductSchema, findProductLinkOnPage, assessSchemaQuality, discoverProductUrlFromFeed, ExtractedSchema } from '../schema/extract';
 import { validateProductSchema } from '../schema/validate';
 import { checkBotAccess } from '../checks/discovery/botAccess';
 import { checkProductSchema } from '../checks/discovery/productSchema';
@@ -12,7 +11,7 @@ import { checkWebSiteSchema } from '../checks/discovery/websiteSchema';
 import { checkServerResponseTime } from '../checks/discovery/serverResponseTime';
 import { checkProductFeed } from '../checks/discovery/productFeed';
 import { checkCommerceApi } from '../checks/discovery/commerceApi';
-import { checkOrganizationSchema, OrganizationCheckOptions } from '../checks/trust/organization';
+import { checkOrganizationSchema } from '../checks/trust/organization';
 import { checkTrustSignals } from '../checks/trust/trustSignals';
 import { checkUcpCompliance } from '../checks/transaction/ucpCompliance';
 import { checkPaymentMethods } from '../checks/transaction/paymentMethods';
@@ -38,55 +37,6 @@ function isHomepage(url: string): boolean {
     return parsed.pathname === '/' || parsed.pathname === '';
   } catch {
     return false;
-  }
-}
-
-// Fetch homepage and extract Organization schema
-async function fetchHomepageOrgSchema(
-  domain: string
-): Promise<{ schemas: ExtractedSchema[]; html: string | null }> {
-  const homepageUrl = domain; // domain already includes protocol (e.g., https://example.com)
-
-  log.debug({ homepageUrl }, 'Fetching homepage for Organization schema fallback');
-
-  try {
-    // Try basic fetch first (Organization schema is usually in initial HTML)
-    const basicResult = await basicFetch(homepageUrl, 8000);
-
-    if (basicResult.html && basicResult.html.length > 500) {
-      const schemas = extractJsonLdSchemas(basicResult.html);
-      const hasOrg = findOrganizationSchema(schemas);
-
-      if (hasOrg) {
-        log.info({ homepageUrl, schemaCount: schemas.length }, 'Found Organization schema on homepage via basic fetch');
-        return { schemas, html: basicResult.html };
-      }
-    }
-
-    // If basic fetch didn't find Organization schema, try Firecrawl
-    try {
-      const firecrawlResult = await scrapeWithFirecrawl(homepageUrl, undefined, 10000);
-
-      if (firecrawlResult.html && firecrawlResult.html.length > 500) {
-        const schemas = extractJsonLdSchemas(firecrawlResult.html);
-        const hasOrg = findOrganizationSchema(schemas);
-
-        if (hasOrg) {
-          log.info({ homepageUrl, schemaCount: schemas.length }, 'Found Organization schema on homepage via Firecrawl');
-          return { schemas, html: firecrawlResult.html };
-        }
-      }
-    } catch (firecrawlError) {
-      log.debug({ error: firecrawlError }, 'Firecrawl homepage fetch failed, using basic result');
-    }
-
-    // Return whatever we got from basic fetch
-    const schemas = basicResult.html ? extractJsonLdSchemas(basicResult.html) : [];
-    return { schemas, html: basicResult.html };
-
-  } catch (error) {
-    log.warn({ homepageUrl, error }, 'Failed to fetch homepage for Organization schema');
-    return { schemas: [], html: null };
   }
 }
 
@@ -124,91 +74,172 @@ export async function runAnalysis(payload: AnalyzeJobPayload): Promise<AnalyzeJo
   log.info({ jobId, url }, 'Starting analysis job (v2 3-layer model)');
 
   try {
-    // Step 1: Scraping (measure TTFB)
+    // ==========================================
+    // Step 1: Fetch content & measure TTFB
+    // ==========================================
     await updateJobProgress(jobId, 'scraping', 1, 'Fetching page content...');
 
-    const scrapeStart = Date.now();
-    const { html, metadata, firecrawlUsed } = await smartScrape(url);
-    const ttfbMs = Date.now() - scrapeStart;
-
-    if (!html || html.length < 100) {
-      throw new Error('Failed to fetch page content');
+    // TTFB: lightweight HEAD request for server response time measurement
+    let ttfbMs: number;
+    try {
+      const ttfbStart = Date.now();
+      await fetch(url, {
+        method: 'HEAD',
+        headers: { 'User-Agent': 'AgentPulseBot/1.0' },
+        signal: AbortSignal.timeout(10000),
+        redirect: 'follow',
+      });
+      ttfbMs = Date.now() - ttfbStart;
+    } catch {
+      ttfbMs = 9999; // Server unreachable
     }
 
     const domain = new URL(url).origin;
+    const urlIsHomepage = isHomepage(url);
 
-    // Step 2: Smart schema extraction (follows product links if needed)
+    // Always fetch submitted URL via Firecrawl (needed for payment/platform detection)
+    const firecrawlResult = await scrapeWithFirecrawl(url);
+    const submittedHtml = firecrawlResult.html;
+    const metadata = firecrawlResult.metadata;
+
+    if (!submittedHtml || submittedHtml.length < 100) {
+      throw new Error('Failed to fetch page content');
+    }
+
+    // Extract schemas from submitted URL (used for initial assessment)
+    const submittedSchemas = extractJsonLdSchemas(submittedHtml);
+
+    // ==========================================
+    // Step 2: Explicit page separation
+    //   Homepage  → D5 WebSite Schema, T1 Organization Schema
+    //   Product   → D4 Product Schema, X1 UCP Compliance, T2 Return Policy
+    // ==========================================
     await updateJobProgress(jobId, 'analyzing', 2, 'Extracting schemas...');
 
-    const scrapeProductPage = async (productUrl: string) => {
+    // 2a: Homepage schemas (for D5, T1) — always fetched deterministically
+    let homepageSchemas: ExtractedSchema[];
+    if (urlIsHomepage) {
+      homepageSchemas = submittedSchemas;
+      log.info({ schemaCount: homepageSchemas.length }, 'Homepage schemas from submitted URL');
+    } else {
       try {
-        const result = await scrapeWithFirecrawl(productUrl);
-        return result.html ? { html: result.html } : null;
-      } catch {
-        return null;
+        const homepageResult = await scrapeWithFirecrawl(domain, undefined, 15000);
+        homepageSchemas = homepageResult.html ? extractJsonLdSchemas(homepageResult.html) : [];
+        log.info({ schemaCount: homepageSchemas.length }, 'Homepage schemas fetched separately via Firecrawl');
+      } catch (err) {
+        log.warn({ error: err, domain }, 'Failed to fetch homepage via Firecrawl');
+        homepageSchemas = [];
       }
-    };
+    }
 
-    const smartSchemaResult = await extractSchemasSmartly(html, url, scrapeProductPage);
-    const { schemas, schemaQuality } = smartSchemaResult;
-    const productValidation = validateProductSchema(smartSchemaResult.productValidation.schema);
+    // 2b: Product page schemas (for D4, X1, T2 return policy) — discovered deterministically
+    let productSchemas: ExtractedSchema[];
+    let productPageUrl: string | undefined;
+    let productDiscoveryMethod = 'none';
+
+    const submittedQuality = assessSchemaQuality(submittedSchemas);
+
+    if (submittedQuality.hasProduct) {
+      // Submitted URL has product data — use it directly
+      productSchemas = submittedSchemas;
+      productPageUrl = url;
+      productDiscoveryMethod = 'submitted_url';
+      log.info({ quality: submittedQuality.level }, 'Product schemas found on submitted URL');
+    } else {
+      productSchemas = [];
+
+      // Try 1: Find product link on the submitted page and scrape it
+      const productLink = findProductLinkOnPage(submittedHtml, url);
+      if (productLink) {
+        try {
+          const productResult = await scrapeWithFirecrawl(productLink, undefined, 15000);
+          if (productResult.html && productResult.html.length > 0) {
+            const pageSchemas = extractJsonLdSchemas(productResult.html);
+            if (assessSchemaQuality(pageSchemas).hasProduct) {
+              productSchemas = pageSchemas;
+              productPageUrl = productLink;
+              productDiscoveryMethod = 'page_link';
+              log.info({ productLink }, 'Product schemas found via page link');
+            }
+          }
+        } catch (err) {
+          log.warn({ productLink, error: err }, 'Failed to scrape product page from link');
+        }
+      }
+
+      // Try 2: Discover product URL from feed/sitemap
+      if (!assessSchemaQuality(productSchemas).hasProduct) {
+        const feedProductUrl = await discoverProductUrlFromFeed(domain);
+        if (feedProductUrl) {
+          try {
+            const feedResult = await scrapeWithFirecrawl(feedProductUrl, undefined, 15000);
+            if (feedResult.html && feedResult.html.length > 0) {
+              const feedSchemas = extractJsonLdSchemas(feedResult.html);
+              if (assessSchemaQuality(feedSchemas).hasProduct) {
+                productSchemas = feedSchemas;
+                productPageUrl = feedProductUrl;
+                productDiscoveryMethod = 'feed_discovery';
+                log.info({ feedProductUrl }, 'Product schemas found via feed discovery');
+              }
+            }
+          } catch (err) {
+            log.warn({ feedProductUrl, error: err }, 'Failed to scrape feed-discovered product page');
+          }
+        }
+      }
+
+      if (!assessSchemaQuality(productSchemas).hasProduct) {
+        log.info({ url }, 'No product schemas found from any source');
+      }
+    }
+
+    const productSchemaQuality = assessSchemaQuality(productSchemas);
+    const productSchema = findProductSchema(productSchemas);
+    const productValidation = validateProductSchema(productSchema);
 
     log.info({
-      schemaCount: schemas.length,
-      schemaQuality: schemaQuality.level,
+      homepageSchemaCount: homepageSchemas.length,
+      productSchemaCount: productSchemas.length,
+      productQuality: productSchemaQuality.level,
       hasProduct: productValidation.found,
-      checkedProductPage: smartSchemaResult.checkedProductPage,
-      sourceUrl: smartSchemaResult.sourceUrl,
-      message: smartSchemaResult.message,
-    }, 'Smart schema extraction complete');
+      productPageUrl,
+      productDiscoveryMethod,
+    }, 'Schema extraction complete (explicit page separation)');
 
-    // Step 3: Run checks
+    // ==========================================
+    // Step 3: Run checks with correct schema sets
+    // ==========================================
     await updateJobProgress(jobId, 'analyzing', 3, 'Running checks...');
 
-    // Parallel: Bot access + Sitemap
+    // Infrastructure checks (parallel)
     const [botAccessResult, sitemapResult] = await Promise.all([
       checkBotAccess(domain),
       checkSitemap(domain),
     ]);
 
-    // TTFB check (uses measurement from Step 1)
+    // TTFB check
     const ttfbResult = checkServerResponseTime(ttfbMs);
 
-    // Schema-based checks (sync, fast)
-    const productSchema = smartSchemaResult.productValidation.schema;
-    const productSchemaResult = checkProductSchema(schemas);
-    const websiteSchemaResult = checkWebSiteSchema(schemas);
-    const ucpResult = checkUcpCompliance(schemas, productSchema);
-    const trustSignalsResult = checkTrustSignals(url, schemas);
-    const paymentMethodsResult = checkPaymentMethods(html, domain);
+    // Homepage-based checks (D5 WebSite Schema, T1 Organization Schema)
+    const websiteSchemaResult = checkWebSiteSchema(homepageSchemas);
+    const orgSchemaResult = checkOrganizationSchema(homepageSchemas, { source: 'homepage' });
 
-    // T1 Organization check with homepage fallback
-    let orgSchemaResult = checkOrganizationSchema(schemas, { source: 'product_page' });
-    let homepageFetched = false;
+    // Product page-based checks (D4 Product Schema, X1 UCP Compliance, T2 Trust Signals)
+    const productSchemaResult = checkProductSchema(productSchemas);
+    const ucpResult = checkUcpCompliance(productSchemas, productSchema);
+    const trustSignalsResult = checkTrustSignals(url, productSchemas);
 
-    if (!orgSchemaResult.validation.found && !isHomepage(url)) {
-      log.info({ url, domain }, 'Organization schema not found on product page, checking homepage...');
-
-      const homepageResult = await fetchHomepageOrgSchema(domain);
-      homepageFetched = true;
-
-      const homepageOrgSchema = findOrganizationSchema(homepageResult.schemas);
-      if (homepageOrgSchema) {
-        log.info({ domain, orgName: homepageOrgSchema.name }, 'Found Organization schema on homepage');
-        orgSchemaResult = checkOrganizationSchema(homepageResult.schemas, { source: 'homepage' });
-      } else {
-        log.debug({ domain }, 'No Organization schema found on homepage either');
-      }
-    }
+    // Submitted URL-based checks (X4 Payment Methods)
+    const paymentMethodsResult = checkPaymentMethods(submittedHtml, domain);
 
     // Distribution signal checks (async)
     await updateJobProgress(jobId, 'analyzing', 4, 'Checking distribution signals...');
 
     const productFeedResult = await checkProductFeed(
-      domain, html, botAccessResult.rawRobotsTxt, paymentMethodsResult.platformDetection
+      domain, submittedHtml, botAccessResult.rawRobotsTxt, paymentMethodsResult.platformDetection
     );
     const commerceApiResult = await checkCommerceApi(
-      domain, html, productValidation, schemaQuality
+      domain, submittedHtml, productValidation, productSchemaQuality
     );
 
     // Step 4: Calculate scores (3-layer model)
@@ -281,7 +312,6 @@ export async function runAnalysis(payload: AnalyzeJobPayload): Promise<AnalyzeJo
         domain: new URL(url).hostname,
         total_score: totalScore,
         grade,
-        scoring_model: 'v2_3layer',
         // 3-layer scores
         discovery_score: discoveryScore,
         discovery_max: SCORING.discovery.max, // 45
@@ -304,17 +334,14 @@ export async function runAnalysis(payload: AnalyzeJobPayload): Promise<AnalyzeJo
         analysis_duration_ms: analysisDuration,
         job_id: jobId,
         scrape_metadata: {
-          firecrawlUsed,
           ttfbMs,
-          smartExtraction: {
-            checkedProductPage: smartSchemaResult.checkedProductPage,
-            productPageUrl: smartSchemaResult.productPageUrl,
-            sourceUrl: smartSchemaResult.sourceUrl,
-            message: smartSchemaResult.message,
-          },
-          homepageFallback: {
-            used: homepageFetched,
-            foundOrgSchema: orgSchemaResult.check.data?.source === 'homepage',
+          pageSeparation: {
+            urlIsHomepage,
+            productPageUrl,
+            productDiscoveryMethod,
+            homepageSchemaCount: homepageSchemas.length,
+            productSchemaCount: productSchemas.length,
+            productQuality: productSchemaQuality.level,
           },
           ...metadata,
         },
