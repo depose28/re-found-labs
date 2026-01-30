@@ -13,11 +13,11 @@ const About = () => {
         <section className="pt-32 pb-16 md:pt-40 md:pb-24">
           <div className="max-w-3xl">
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-foreground leading-tight mb-6">
-              Making commerce visible to AI.
+              We close the gap between how you sell and how AI buys.
             </h1>
             
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
-              re:found Labs builds the infrastructure for AI-native commerce. We help e-commerce brands get discovered, understood, and recommended by AI shopping agents—the new front door to online purchases.
+              re:found Labs helps e-commerce brands get found, trusted, and purchased through AI shopping agents — the new front door to online commerce. We built the Find / Trust / Buy framework to diagnose exactly where stores break down in the AI commerce pipeline.
             </p>
           </div>
         </section>
@@ -51,7 +51,7 @@ const About = () => {
             <div className="grid md:grid-cols-2 gap-8">
               <div className="space-y-4">
                 <p className="text-muted-foreground leading-relaxed">
-                  In our audits, <span className="text-foreground font-medium">73% of stores fail</span> basic agent readiness checks. Their structured data is incomplete. Their policies contradict each other. Their sites are too slow for agent interactions.
+                  In our checks, <span className="text-foreground font-medium">73% of stores fail</span> basic AI commerce readiness. Their structured data is incomplete. Their policies contradict each other. Their sites are too slow for agent interactions.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
                   AI agents can't confidently recommend what they can't understand.
@@ -62,7 +62,7 @@ const About = () => {
                   We're fixing that—one store at a time.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
-                  re:found Labs helps brands close the gap between how they present themselves to humans and how AI agents perceive them. Through diagnostics, simulation, and implementation, we make stores visible to the agents that increasingly shape purchase decisions.
+                  re:found Labs helps brands close the gap between how they present themselves to humans and how AI agents perceive them. Through diagnostics, simulation, and optimization, we make stores visible to the agents that increasingly shape purchase decisions.
                 </p>
               </div>
             </div>
@@ -168,7 +168,7 @@ const About = () => {
                 to="/"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
               >
-                Try the Free Audit
+                Check your store
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <a

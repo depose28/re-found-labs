@@ -59,13 +59,13 @@ const ConversionHeroSection = () => {
 
             {/* Headline - Benefit focused */}
             <h1 className="font-display text-4xl sm:text-5xl md:text-[3.5rem] text-foreground leading-[1.1] mb-4 animate-slide-up">
-              Is your store visible to AI shopping agents?
+              Your next customer won't browse. They'll ask.
             </h1>
 
             {/* Subheadline - Value proposition */}
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed mb-8 animate-slide-up" style={{
             animationDelay: "0.1s"
-          }}>Get your free Agent Readiness Score in 60 seconds.</p>
+          }}>ChatGPT, Perplexity, Google AI — they're already deciding who gets discovered, who gets trusted, and who gets the sale. We make sure it's you.</p>
 
             {/* URL Input Form - The main CTA */}
             <form onSubmit={handleSubmit} className="animate-slide-up" style={{
@@ -79,7 +79,7 @@ const ConversionHeroSection = () => {
                 }} className="h-14 pl-4 pr-4 text-base bg-background border-border focus:border-foreground transition-colors" />
                 </div>
                 <Button type="submit" size="lg" className="h-14 px-8 bg-foreground text-background hover:bg-foreground/90 font-medium text-base whitespace-nowrap">
-                      Get Your Score
+                      Check your store
                       <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
@@ -131,7 +131,7 @@ const ConversionHeroSection = () => {
             <div className="bg-card border border-border shadow-2xl rounded-lg overflow-hidden">
               {/* Report header */}
               <div className="bg-foreground text-background p-6 text-center">
-                <p className="text-sm uppercase tracking-wider opacity-70 mb-2">Agent Readiness Report</p>
+                <p className="text-sm uppercase tracking-wider opacity-70 mb-2">AI Commerce Score</p>
                 <div className="flex items-center justify-center gap-3">
                   <span className="text-6xl font-display font-bold">73</span>
                   <div className="text-left">
@@ -213,9 +213,9 @@ const ConversionHeroSection = () => {
             label: "AI bots checked"
           }, {
             value: "3",
-            label: "Layers analyzed"
+            label: "layers analyzed"
           }, {
-            value: "4",
+            value: "6",
             label: "Protocols tested"
           }, {
             value: "12",

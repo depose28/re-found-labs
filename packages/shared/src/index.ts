@@ -14,9 +14,9 @@ export const SCORING = {
 
   // Grade thresholds
   grades: {
-    agentNative: { min: 85, label: 'Agent-Native', description: 'MARKET LEADER' },
+    agentNative: { min: 85, label: 'AI-Ready', description: 'MARKET LEADER' },
     optimized: { min: 70, label: 'Optimized', description: 'COMPETITIVE' },
-    needsWork: { min: 50, label: 'Needs Work', description: 'LOSING GROUND' },
+    needsWork: { min: 50, label: 'Needs Optimization', description: 'LOSING GROUND' },
     invisible: { min: 0, label: 'Invisible', description: 'INVISIBLE TO AI' },
   },
 } as const;

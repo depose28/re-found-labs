@@ -45,20 +45,20 @@ const WhatWeCheckSection = () => {
         <div className="flex items-center gap-3 mb-8">
           <PulseDot size="md" />
           <span className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
-            What We Analyze
+            WHAT WE MEASURE
           </span>
         </div>
 
         {/* Section Title */}
         <h2 className="font-display text-4xl md:text-5xl text-foreground mb-4 max-w-3xl">
-          Three layers that determine whether AI agents recommend you—or your competitors.
+          Find. Trust. Buy.
         </h2>
         <p className="text-lg text-muted-foreground mb-16 max-w-2xl">
-          AI agents don't browse like humans. They scan structured data, check access permissions, verify trust signals, and make split-second decisions. Miss one signal, and you're filtered out.
+          The three questions every AI agent asks about your store.
         </p>
 
         {/* Categories Grid */}
-        <div className="grid md:grid-cols-2 gap-px bg-border">
+        <div className="grid md:grid-cols-2 gap-px bg-border mb-12">
           {categories.map((category, index) => (
             <div
               key={index}
@@ -103,6 +103,11 @@ const WhatWeCheckSection = () => {
             </div>
           ))}
         </div>
+
+        {/* Protocols line */}
+        <p className="text-sm text-muted-foreground text-center">
+          Powered by 6 protocols: UCP · ACP · MCP · Shopify Storefront · Google Merchant · Klarna APP
+        </p>
       </div>
     </section>
   );

@@ -6,15 +6,15 @@ import PulseDot from "@/components/ui/PulseDot";
 const services = [
   {
     icon: Scan,
-    title: "Free Audit",
+    title: "Pulse Check",
     price: "Free",
-    description: "8-point diagnostic. Results in 60 seconds.",
+    description: "12-point diagnostic. Results in 60 seconds.",
     cta: "Run Agent Pulse",
     ctaAction: "scroll", // scrolls to #agent-pulse
   },
   {
     icon: Bot,
-    title: "Deep Audit + Agent Simulation",
+    title: "Deep Scan",
     price: "From €750",
     description: "40+ checks. Real agent recordings. Expert review.",
     cta: "Learn More",
@@ -22,7 +22,7 @@ const services = [
   },
   {
     icon: Wrench,
-    title: "Implementation",
+    title: "Optimization",
     price: "From €2,500",
     description: "Done-for-you fixes. +20 point score guarantee.",
     cta: "Learn More",
@@ -45,18 +45,18 @@ const ServicesOverviewSection = () => {
         <div className="flex items-center gap-3 mb-8">
           <PulseDot size="md" />
           <span className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
-            Go Deeper
+            GO DEEPER
           </span>
         </div>
 
         {/* Section Header */}
         <div className="grid lg:grid-cols-2 gap-8 mb-16">
           <h2 className="font-display text-4xl md:text-5xl text-foreground leading-tight">
-            From diagnosis to implementation
+            From diagnosis to optimization.
           </h2>
           <div className="flex items-end">
             <p className="text-lg text-muted-foreground leading-relaxed max-w-lg">
-              Agent Pulse is just the beginning. When you're ready for a comprehensive audit or hands-on implementation, we're here.
+              Agent Pulse is the starting point. When you're ready for comprehensive analysis or hands-on optimization, we're here.
             </p>
           </div>
         </div>

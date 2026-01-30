@@ -17,10 +17,10 @@ const Services = () => {
                 Services
               </span>
               <h1 className="font-display text-3xl md:text-4xl lg:text-5xl text-foreground leading-tight mb-4">
-                Make Your Store Agent-Ready
+                From diagnosis to optimization.
               </h1>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                From diagnosis to implementation — we help e-commerce brands prepare for the agentic commerce era.
+                We help e-commerce brands prepare for AI commerce — whether you need a quick check, a deep analysis, or hands-on optimization.
               </p>
             </div>
           </div>
@@ -33,7 +33,7 @@ const Services = () => {
               {/* Free Audit Tier */}
               <div className="bg-card border border-border p-8 flex flex-col order-2 md:order-1">
                 <div className="mb-6">
-                  <h3 className="font-display text-2xl text-foreground">Free Audit</h3>
+                  <h3 className="font-display text-2xl text-foreground">Pulse Check</h3>
                   <span className="text-sm text-muted-foreground">Self-Serve</span>
                 </div>
 
@@ -49,11 +49,11 @@ const Services = () => {
                   <ul className="space-y-3 text-sm text-muted-foreground">
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span>Instant Agent Score (0-100)</span>
+                      <span>Instant AI Commerce Score (0-100)</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span>8 automated checks across 4 categories</span>
+                      <span>12 checks across 3 layers</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
@@ -61,7 +61,7 @@ const Services = () => {
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span>Core Web Vitals performance check</span>
+                      <span>Server response time check</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
@@ -79,7 +79,7 @@ const Services = () => {
                   </p>
                   <Link to="/">
                     <Button variant="outline" className="w-full border-foreground text-foreground hover:bg-foreground hover:text-background">
-                      Run Free Audit
+                      Run free check
                     </Button>
                   </Link>
                   <p className="text-xs text-muted-foreground mt-3 text-center">
@@ -97,7 +97,7 @@ const Services = () => {
                 </div>
 
                 <div className="mb-6">
-                  <h3 className="font-display text-2xl text-foreground">Deep Audit</h3>
+                  <h3 className="font-display text-2xl text-foreground">Deep Scan</h3>
                   <span className="text-sm text-muted-foreground">+ Agent Simulation</span>
                 </div>
 
@@ -113,7 +113,7 @@ const Services = () => {
                   <ul className="space-y-3 text-sm text-muted-foreground">
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span>Everything in Free Audit</span>
+                      <span>Everything in Pulse Check</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
@@ -159,7 +159,7 @@ const Services = () => {
               {/* Implementation Tier */}
               <div className="bg-card border border-border p-8 flex flex-col order-3">
                 <div className="mb-6">
-                  <h3 className="font-display text-2xl text-foreground">Implementation</h3>
+                  <h3 className="font-display text-2xl text-foreground">Optimization</h3>
                   <span className="text-sm text-muted-foreground">Done-for-You</span>
                 </div>
 
@@ -175,7 +175,7 @@ const Services = () => {
                   <ul className="space-y-3 text-sm text-muted-foreground">
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span>Everything in Deep Audit</span>
+                      <span>Everything in Deep Scan</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
@@ -242,21 +242,21 @@ const Services = () => {
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left py-4 pr-4 text-sm font-medium text-muted-foreground w-1/3">Feature</th>
-                    <th className="text-center py-4 px-4 text-sm font-medium text-foreground">Free Audit</th>
-                    <th className="text-center py-4 px-4 text-sm font-medium text-foreground bg-accent/5">Deep Audit</th>
-                    <th className="text-center py-4 px-4 text-sm font-medium text-foreground">Implementation</th>
+                    <th className="text-center py-4 px-4 text-sm font-medium text-foreground">Pulse Check</th>
+                    <th className="text-center py-4 px-4 text-sm font-medium text-foreground bg-accent/5">Deep Scan</th>
+                    <th className="text-center py-4 px-4 text-sm font-medium text-foreground">Optimization</th>
                   </tr>
                 </thead>
                 <tbody className="text-sm">
                   <tr className="border-b border-border/50">
-                    <td className="py-3 pr-4 text-muted-foreground">Agent Score (0-100)</td>
+                    <td className="py-3 pr-4 text-muted-foreground">AI Commerce Score (0-100)</td>
                     <td className="py-3 px-4 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
                     <td className="py-3 px-4 text-center bg-accent/5"><Check className="h-4 w-4 text-accent mx-auto" /></td>
                     <td className="py-3 px-4 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-3 pr-4 text-muted-foreground">Automated checks</td>
-                    <td className="py-3 px-4 text-center text-foreground">8</td>
+                    <td className="py-3 px-4 text-center text-foreground">12</td>
                     <td className="py-3 px-4 text-center bg-accent/5 text-foreground">40+</td>
                     <td className="py-3 px-4 text-center text-foreground">40+</td>
                   </tr>
@@ -380,7 +380,7 @@ const Services = () => {
               <p className="text-center text-muted-foreground">
                 Not sure if you qualify?{" "}
                 <Link to="/" className="text-foreground underline hover:text-accent transition-colors">
-                  Run the free audit first
+                  Run a free check first
                 </Link>
                 . If your score is below 70, we can help.
               </p>
@@ -396,7 +396,7 @@ const Services = () => {
                 How We Work
               </span>
               <h2 className="font-display text-3xl md:text-4xl text-foreground">
-                From diagnosis to implementation in 4-6 weeks.
+                From diagnosis to optimization in 4-6 weeks.
               </h2>
             </div>
 
@@ -415,7 +415,7 @@ const Services = () => {
 
               <div className="bg-card border border-border p-8">
                 <p className="text-xs font-medium uppercase tracking-widest text-accent mb-2">02</p>
-                <h3 className="font-display text-xl text-foreground mb-1">Deep Audit + Agent Simulation</h3>
+                <h3 className="font-display text-xl text-foreground mb-1">Deep Scan + Agent Simulation</h3>
                 <p className="text-sm text-muted-foreground mb-4">(1 week)</p>
                 <p className="text-sm text-muted-foreground mb-6">
                   40+ checks plus real agent testing. Platform-specific. Competitor benchmarked. Video walkthrough included.
@@ -427,13 +427,13 @@ const Services = () => {
 
               <div className="bg-card border border-border p-8">
                 <p className="text-xs font-medium uppercase tracking-widest text-accent mb-2">03</p>
-                <h3 className="font-display text-xl text-foreground mb-1">Implementation</h3>
+                <h3 className="font-display text-xl text-foreground mb-1">Optimization</h3>
                 <p className="text-sm text-muted-foreground mb-4">(2-4 weeks)</p>
                 <p className="text-sm text-muted-foreground mb-6">
                   We implement fixes directly in your codebase or via your platform's theme and app ecosystem.
                 </p>
                 <p className="text-sm text-foreground">
-                  <strong>Outcome:</strong> Agent-ready store with verified score improvement
+                  <strong>Outcome:</strong> AI-ready store with verified score improvement
                 </p>
               </div>
             </div>
@@ -509,10 +509,10 @@ const Services = () => {
 
                 <AccordionItem value="item-6" className="bg-card border border-border px-6">
                   <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
-                    What's the difference between 8 checks and 40+ checks?
+                    What's the difference between 12 checks and 40+ checks?
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground">
-                    <p className="mb-4">The free audit covers the 8 most critical signals. The deep audit adds:</p>
+                    <p className="mb-4">The Pulse Check covers the 12 most critical signals across 3 layers. The Deep Scan adds:</p>
                     <ul className="list-disc list-inside space-y-2">
                       <li>Protocol readiness (MCP, UCP, ACP endpoint detection)</li>
                       <li>Price consistency (schema vs. visible price matching)</li>
@@ -528,10 +528,10 @@ const Services = () => {
 
                 <AccordionItem value="item-7" className="bg-card border border-border px-6">
                   <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
-                    What if my score doesn't improve after Implementation?
+                    What if my score doesn't improve after Optimization?
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground">
-                    The Implementation tier includes a score guarantee. If your Agent Score doesn't improve by at least 20 points within 60 days of implementation, we'll continue working at no additional cost until it does.
+                    The Optimization tier includes a score guarantee. If your AI Commerce Score doesn't improve by at least 20 points within 60 days of optimization, we'll continue working at no additional cost until it does.
                   </AccordionContent>
                 </AccordionItem>
 
@@ -563,7 +563,7 @@ const Services = () => {
                 </a>
                 <Link to="/">
                   <Button variant="outline" className="border-foreground text-foreground hover:bg-foreground hover:text-background">
-                    Run the Free Audit First
+                    Run a free check first
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>

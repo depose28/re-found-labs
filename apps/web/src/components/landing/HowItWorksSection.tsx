@@ -11,13 +11,13 @@ const steps = [
   {
     icon: BarChart3,
     number: "02",
-    title: "Get your Agent Score",
-    description: "8 technical checks across 4 categories. Results in under 60 seconds.",
+    title: "Get your AI Commerce Score",
+    description: "12 checks across 3 layers. Results in under 60 seconds.",
   },
   {
     icon: Wrench,
     number: "03",
-    title: "See what's broken",
+    title: "See exactly what's broken",
     description: "Prioritized fixes with code examples. No guesswork, no generic advice.",
   },
 ];
@@ -36,7 +36,7 @@ const HowItWorksSection = () => {
 
         {/* Section Title */}
         <h2 className="font-display text-4xl md:text-5xl text-foreground mb-16 max-w-2xl">
-          Score. Diagnose. Fix.
+          Score. Understand. Fix.
         </h2>
 
         {/* Steps */}

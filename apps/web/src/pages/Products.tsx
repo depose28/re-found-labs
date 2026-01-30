@@ -33,7 +33,7 @@ const Products = () => {
                 to="/"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
               >
-                Try the Free Audit
+                Check your store
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link

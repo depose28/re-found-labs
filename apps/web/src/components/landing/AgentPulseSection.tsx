@@ -89,7 +89,7 @@ const AgentPulseSection = () => {
                     type="submit"
                     className="h-12 px-6 bg-foreground text-background hover:bg-foreground/90 font-medium w-full sm:w-auto"
                   >
-                    Get Your Score
+                    Check your store
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
@@ -167,7 +167,7 @@ const SampleReportPreview = () => {
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-border">
           <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            Agent Pulse Report
+            AI Commerce Score
           </span>
           <PulseDot size="sm" />
         </div>
@@ -186,7 +186,7 @@ const SampleReportPreview = () => {
 
         {/* Main Score - Animated */}
         <div className="p-6 border-b border-border text-center">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Agent Score</p>
+          <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">AI Commerce Score</p>
           <div className="flex items-baseline justify-center gap-2">
             <span className="font-display text-5xl text-foreground tabular-nums">{animatedScore}</span>
             <span className="text-xl text-muted-foreground">/ 100</span>

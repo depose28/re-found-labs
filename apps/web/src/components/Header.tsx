@@ -126,7 +126,7 @@ const Header = () => {
                     onClick={handleLinkClick}
                     className="block w-full text-center py-3 bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
                   >
-                    Get Your Agent Score
+                    Check your store
                   </Link>
                 </div>
               </div>

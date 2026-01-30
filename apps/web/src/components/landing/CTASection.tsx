@@ -26,7 +26,7 @@ const CTASection = () => {
 
           {/* Headline */}
           <h2 className="font-display text-4xl md:text-5xl text-background mb-6">
-            Ready to become agent-ready?
+            The AI commerce shift is happening. The question is whether you're ready for it.
           </h2>
 
           {/* Subheadline */}
@@ -41,7 +41,7 @@ const CTASection = () => {
               size="lg"
               className="h-14 px-8 bg-background text-foreground hover:bg-background/90 font-medium text-base w-full sm:w-auto"
             >
-              Run Free Audit
+              Check your store
               <ArrowDown className="ml-2 h-4 w-4" />
             </Button>
             <Button
@@ -52,7 +52,7 @@ const CTASection = () => {
             >
               <a href={calendlyUrl} target="_blank" rel="noopener noreferrer">
                 <Calendar className="mr-2 h-4 w-4" />
-                Book a Strategy Call
+                Book a call
               </a>
             </Button>
           </div>

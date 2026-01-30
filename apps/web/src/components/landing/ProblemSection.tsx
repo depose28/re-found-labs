@@ -23,7 +23,7 @@ const ProblemSection = () => {
         <div className="flex items-center gap-3 mb-8">
           <PulseDot size="md" />
           <span className="text-sm font-medium uppercase tracking-widest text-background/60">
-            The Problem
+            THE SHIFT
           </span>
         </div>
 
@@ -36,9 +36,7 @@ const ProblemSection = () => {
           </h2>
           <div className="flex items-end">
             <p className="text-lg text-background/70 leading-relaxed max-w-lg">
-              AI shopping agents are becoming the new front door to commerce. They read structured data, 
-              not product pages. They parse schemas, not marketing copy. If your store can't communicate 
-              in their language, you're invisible — and your competitors aren't.
+              AI shopping agents are becoming the new front door to commerce. They don't browse product pages — they read structured data. They don't respond to marketing copy — they parse schemas. If your store can't communicate in their language, you're invisible — and your competitors aren't.
             </p>
           </div>
         </div>

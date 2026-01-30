@@ -21,7 +21,7 @@ const AgencyHeroSection = () => {
             <div className="flex items-center justify-center lg:justify-start gap-3 mb-6 md:mb-8 animate-fade-in">
               <PulseDot size="md" />
               <span className="text-xs md:text-sm font-medium uppercase tracking-widest text-muted-foreground">
-                AI Agent Readiness for E-commerce
+                AI Commerce Readiness
               </span>
             </div>
 
@@ -42,7 +42,7 @@ const AgencyHeroSection = () => {
                 size="lg"
                 className="h-14 px-8 bg-foreground text-background hover:bg-foreground/90 font-medium text-base w-full sm:w-auto"
               >
-                Run Free Audit
+                Check your store
                 <ArrowDown className="ml-2 h-4 w-4" />
               </Button>
               <Button

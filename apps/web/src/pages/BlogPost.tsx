@@ -116,11 +116,11 @@ const BlogPost = () => {
                 Check your store's AI readiness
               </h3>
               <p className="text-muted-foreground mb-6">
-                Get your Agent Score and actionable recommendations in 60 seconds.
+                Get your AI Commerce Score and actionable recommendations in 60 seconds.
               </p>
               <Link to="/">
                 <Button className="bg-foreground text-background hover:bg-foreground/90">
-                  Run Free Audit
+                  Check your store
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>

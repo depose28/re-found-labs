@@ -20,7 +20,7 @@ const criteria = [
   {
     icon: Lightbulb,
     title: "Early Adopters",
-    description: "Brands ready to lead, not follow, in the AI commerce shift.",
+    description: "Brands who want to capture AI commerce before competitors catch up.",
   },
 ];
 
@@ -38,7 +38,7 @@ const WhoWeWorkWithSection = () => {
 
         {/* Section Header */}
         <h2 className="font-display text-4xl md:text-5xl text-foreground mb-16 max-w-2xl">
-          Built for mid-market e-commerce
+          Built for brands ready to lead, not follow.
         </h2>
 
         {/* Criteria Grid */}

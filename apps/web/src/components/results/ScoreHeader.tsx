@@ -47,9 +47,9 @@ const gradeConfig = {
 };
 
 const scoreLegend = [
-  { range: "85+", label: "Market Leader", color: "bg-success" },
-  { range: "70-84", label: "Competitive", color: "bg-accent" },
-  { range: "50-69", label: "Losing Ground", color: "bg-warning" },
+  { range: "85+", label: "AI-Ready", color: "bg-success" },
+  { range: "70-84", label: "Optimized", color: "bg-accent" },
+  { range: "50-69", label: "Needs Optimization", color: "bg-warning" },
   { range: "<50", label: "Invisible", color: "bg-destructive" },
 ];
 
@@ -126,7 +126,7 @@ const ScoreHeader = ({
           <div className="flex items-center gap-3">
             <PulseDot size="sm" />
             <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-              Agent Pulse Report
+              AI Commerce Score
             </span>
           </div>
           <div className="flex items-center gap-4">
@@ -152,7 +152,7 @@ const ScoreHeader = ({
           <div className="lg:col-span-5 space-y-8">
             <div>
               <h1 className="font-display text-3xl md:text-4xl text-foreground leading-tight mb-4">
-                AI Agent Readiness Report
+                AI Commerce Score
               </h1>
               <p className="text-muted-foreground leading-relaxed">
                 This report shows how well AI shopping agents can discover, understand, and transact on your site.
@@ -205,7 +205,7 @@ const ScoreHeader = ({
             <div className="bg-card border border-border p-8 md:p-10">
               {/* Score Label */}
               <p className="text-sm text-muted-foreground mb-4">
-                Agent Score
+                AI Commerce Score
               </p>
 
               {/* Large Score - Animated */}
