@@ -1,4 +1,4 @@
-import { ArrowRight, Scan, Bot, Wrench } from "lucide-react";
+import { ArrowRight, Scan, FileText, Bot } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import PulseDot from "@/components/ui/PulseDot";
@@ -8,23 +8,23 @@ const services = [
     icon: Scan,
     title: "Pulse Check",
     price: "Free",
-    description: "12-point diagnostic. Results in 60 seconds.",
+    description: "13-point diagnostic. Results in 60 seconds.",
     cta: "Run Agent Pulse",
     ctaAction: "scroll", // scrolls to #agent-pulse
   },
   {
-    icon: Bot,
-    title: "Deep Scan",
-    price: "From €750",
-    description: "40+ checks. Real agent recordings. Expert review.",
-    cta: "Learn More",
+    icon: FileText,
+    title: "Pro Report",
+    price: "€99",
+    description: "Branded PDF. Competitor benchmark. Shareable with your team.",
+    cta: "Get Pro Report",
     ctaAction: "/services",
   },
   {
-    icon: Wrench,
-    title: "Optimization",
-    price: "From €2,500",
-    description: "Done-for-you fixes. +20 point score guarantee.",
+    icon: Bot,
+    title: "Deep Scan",
+    price: "€1,500",
+    description: "40+ checks. Real agent recordings. Expert review.",
     cta: "Learn More",
     ctaAction: "/services",
   },

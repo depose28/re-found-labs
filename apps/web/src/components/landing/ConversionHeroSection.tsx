@@ -152,7 +152,7 @@ const ConversionHeroSection = () => {
                 icon: Search,
                 label: "Find",
                 score: 25,
-                max: 35,
+                max: 37,
                 color: "bg-warning"
               }, {
                 icon: Shield,

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Check, TrendingUp, Layers, Lightbulb } from "lucide-react";
+import { ArrowRight, Check, TrendingUp, Layers, Lightbulb, FileText, Activity } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -20,8 +20,42 @@ const Services = () => {
                 From diagnosis to optimization.
               </h1>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                We help e-commerce brands prepare for AI commerce — whether you need a quick check, a deep analysis, or hands-on optimization.
+                We help e-commerce brands prepare for AI commerce — whether you need a quick check, a detailed report, expert analysis, or hands-on optimization.
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Pro Report Banner */}
+        <section className="pb-8 md:pb-12">
+          <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
+            <div className="bg-accent/5 border border-accent/20 p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 flex items-center justify-center bg-accent/10 border border-accent/20 flex-shrink-0">
+                  <FileText className="h-5 w-5 text-accent" strokeWidth={1.5} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-medium uppercase tracking-wide bg-accent text-accent-foreground px-2 py-0.5">New</span>
+                    <h3 className="font-display text-xl text-foreground">Pro Report</h3>
+                    <span className="text-xl font-display text-accent">€99</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Branded PDF with competitor benchmark. Shareable with your team. Delivered in minutes.
+                  </p>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1"><Check className="h-3 w-3 text-accent" /> Branded PDF report</span>
+                    <span className="flex items-center gap-1"><Check className="h-3 w-3 text-accent" /> 2 competitor benchmarks</span>
+                    <span className="flex items-center gap-1"><Check className="h-3 w-3 text-accent" /> Priority matrix</span>
+                    <span className="flex items-center gap-1"><Check className="h-3 w-3 text-accent" /> Score by subcategory</span>
+                  </div>
+                </div>
+              </div>
+              <a href={CALENDLY_URL} target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
+                <Button className="bg-accent text-accent-foreground hover:bg-accent/90 whitespace-nowrap">
+                  Get Pro Report
+                </Button>
+              </a>
             </div>
           </div>
         </section>
@@ -88,7 +122,7 @@ const Services = () => {
                 </div>
               </div>
 
-              {/* Deep Audit + Agent Simulation Tier (Highlighted) */}
+              {/* Deep Scan + Agent Simulation Tier (Highlighted) */}
               <div className="bg-card border-2 border-accent p-8 flex flex-col relative order-1 md:order-2">
                 <div className="absolute -top-3 left-8">
                   <span className="bg-accent text-accent-foreground text-xs font-medium uppercase tracking-wide px-3 py-1">
@@ -102,7 +136,7 @@ const Services = () => {
                 </div>
 
                 <div className="mb-6">
-                  <p className="text-3xl font-display text-foreground">From €750</p>
+                  <p className="text-3xl font-display text-foreground">€1,500</p>
                   <span className="text-sm text-muted-foreground">One-time</span>
                 </div>
 
@@ -135,6 +169,10 @@ const Services = () => {
                       <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
                       <span>90-day implementation roadmap</span>
                     </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
+                      <span>1 follow-up call</span>
+                    </li>
                   </ul>
                 </div>
 
@@ -156,7 +194,7 @@ const Services = () => {
                 </div>
               </div>
 
-              {/* Implementation Tier */}
+              {/* Optimization Tier */}
               <div className="bg-card border border-border p-8 flex flex-col order-3">
                 <div className="mb-6">
                   <h3 className="font-display text-2xl text-foreground">Optimization</h3>
@@ -164,7 +202,7 @@ const Services = () => {
                 </div>
 
                 <div className="mb-6">
-                  <p className="text-3xl font-display text-foreground">From €2,500</p>
+                  <p className="text-3xl font-display text-foreground">€3,500</p>
                   <span className="text-sm text-muted-foreground">Project-based</span>
                 </div>
 
@@ -211,13 +249,13 @@ const Services = () => {
                   <p className="text-sm text-foreground mb-6">
                     Brands that want it done right, without internal lift.
                   </p>
-                  <a href="mailto:hello@agentpulse.com">
+                  <a href={CALENDLY_URL} target="_blank" rel="noopener noreferrer">
                     <Button variant="outline" className="w-full border-foreground text-foreground hover:bg-foreground hover:text-background">
                       Request Quote
                     </Button>
                   </a>
                   <p className="text-xs text-muted-foreground mt-3 text-center">
-                    Typical project: 2-4 weeks
+                    Custom scoping available
                   </p>
                 </div>
               </div>
@@ -238,96 +276,172 @@ const Services = () => {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px]">
+              <table className="w-full min-w-[800px]">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="text-left py-4 pr-4 text-sm font-medium text-muted-foreground w-1/3">Feature</th>
-                    <th className="text-center py-4 px-4 text-sm font-medium text-foreground">Pulse Check</th>
-                    <th className="text-center py-4 px-4 text-sm font-medium text-foreground bg-accent/5">Deep Scan</th>
-                    <th className="text-center py-4 px-4 text-sm font-medium text-foreground">Optimization</th>
+                    <th className="text-left py-4 pr-4 text-sm font-medium text-muted-foreground w-1/4">Feature</th>
+                    <th className="text-center py-4 px-3 text-sm font-medium text-foreground">Pulse Check</th>
+                    <th className="text-center py-4 px-3 text-sm font-medium text-foreground">Pro Report</th>
+                    <th className="text-center py-4 px-3 text-sm font-medium text-foreground bg-accent/5">Deep Scan</th>
+                    <th className="text-center py-4 px-3 text-sm font-medium text-foreground">Optimization</th>
                   </tr>
                 </thead>
                 <tbody className="text-sm">
                   <tr className="border-b border-border/50">
                     <td className="py-3 pr-4 text-muted-foreground">AI Commerce Score (0-100)</td>
-                    <td className="py-3 px-4 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
-                    <td className="py-3 px-4 text-center bg-accent/5"><Check className="h-4 w-4 text-accent mx-auto" /></td>
-                    <td className="py-3 px-4 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                    <td className="py-3 px-3 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                    <td className="py-3 px-3 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                    <td className="py-3 px-3 text-center bg-accent/5"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                    <td className="py-3 px-3 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-3 pr-4 text-muted-foreground">Automated checks</td>
-                    <td className="py-3 px-4 text-center text-foreground">12</td>
-                    <td className="py-3 px-4 text-center bg-accent/5 text-foreground">40+</td>
-                    <td className="py-3 px-4 text-center text-foreground">40+</td>
+                    <td className="py-3 px-3 text-center text-foreground">13</td>
+                    <td className="py-3 px-3 text-center text-foreground">13 + competitors</td>
+                    <td className="py-3 px-3 text-center bg-accent/5 text-foreground">40+</td>
+                    <td className="py-3 px-3 text-center text-foreground">40+</td>
+                  </tr>
+                  <tr className="border-b border-border/50">
+                    <td className="py-3 pr-4 text-muted-foreground">PDF report</td>
+                    <td className="py-3 px-3 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-3 text-center text-foreground">Branded</td>
+                    <td className="py-3 px-3 text-center bg-accent/5 text-foreground">Branded</td>
+                    <td className="py-3 px-3 text-center text-foreground">Branded</td>
+                  </tr>
+                  <tr className="border-b border-border/50">
+                    <td className="py-3 pr-4 text-muted-foreground">Competitor benchmark</td>
+                    <td className="py-3 px-3 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-3 text-center text-foreground">2 automated</td>
+                    <td className="py-3 px-3 text-center bg-accent/5 text-foreground">2-3 + agent sim</td>
+                    <td className="py-3 px-3 text-center text-foreground">2-3 + agent sim</td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-3 pr-4 text-muted-foreground">Schema & bot access analysis</td>
-                    <td className="py-3 px-4 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
-                    <td className="py-3 px-4 text-center bg-accent/5"><Check className="h-4 w-4 text-accent mx-auto" /></td>
-                    <td className="py-3 px-4 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
-                  </tr>
-                  <tr className="border-b border-border/50">
-                    <td className="py-3 pr-4 text-muted-foreground">Core Web Vitals check</td>
-                    <td className="py-3 px-4 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
-                    <td className="py-3 px-4 text-center bg-accent/5"><Check className="h-4 w-4 text-accent mx-auto" /></td>
-                    <td className="py-3 px-4 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                    <td className="py-3 px-3 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                    <td className="py-3 px-3 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                    <td className="py-3 px-3 text-center bg-accent/5"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                    <td className="py-3 px-3 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-3 pr-4 text-muted-foreground">Expert review</td>
-                    <td className="py-3 px-4 text-center text-muted-foreground">—</td>
-                    <td className="py-3 px-4 text-center bg-accent/5"><Check className="h-4 w-4 text-accent mx-auto" /></td>
-                    <td className="py-3 px-4 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                    <td className="py-3 px-3 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-3 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-3 text-center bg-accent/5"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                    <td className="py-3 px-3 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-3 pr-4 text-muted-foreground">Real AI agent testing</td>
-                    <td className="py-3 px-4 text-center text-muted-foreground">—</td>
-                    <td className="py-3 px-4 text-center bg-accent/5"><Check className="h-4 w-4 text-accent mx-auto" /></td>
-                    <td className="py-3 px-4 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
-                  </tr>
-                  <tr className="border-b border-border/50">
-                    <td className="py-3 pr-4 text-muted-foreground">Competitor comparison</td>
-                    <td className="py-3 px-4 text-center text-muted-foreground">—</td>
-                    <td className="py-3 px-4 text-center bg-accent/5 text-foreground">2-3 competitors</td>
-                    <td className="py-3 px-4 text-center text-foreground">2-3 competitors</td>
+                    <td className="py-3 px-3 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-3 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-3 text-center bg-accent/5"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                    <td className="py-3 px-3 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-3 pr-4 text-muted-foreground">Video walkthrough</td>
-                    <td className="py-3 px-4 text-center text-muted-foreground">—</td>
-                    <td className="py-3 px-4 text-center bg-accent/5 text-foreground">45 min</td>
-                    <td className="py-3 px-4 text-center text-foreground">45 min</td>
+                    <td className="py-3 px-3 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-3 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-3 text-center bg-accent/5 text-foreground">45 min</td>
+                    <td className="py-3 px-3 text-center text-foreground">45 min</td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-3 pr-4 text-muted-foreground">Implementation roadmap</td>
-                    <td className="py-3 px-4 text-center text-muted-foreground">—</td>
-                    <td className="py-3 px-4 text-center bg-accent/5 text-foreground">90-day plan</td>
-                    <td className="py-3 px-4 text-center text-foreground">90-day plan</td>
+                    <td className="py-3 px-3 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-3 text-center text-foreground">Priority matrix</td>
+                    <td className="py-3 px-3 text-center bg-accent/5 text-foreground">90-day plan</td>
+                    <td className="py-3 px-3 text-center text-foreground">90-day plan</td>
+                  </tr>
+                  <tr className="border-b border-border/50">
+                    <td className="py-3 pr-4 text-muted-foreground">Follow-up call</td>
+                    <td className="py-3 px-3 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-3 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-3 text-center bg-accent/5 text-foreground">1 call</td>
+                    <td className="py-3 px-3 text-center text-foreground">Included</td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-3 pr-4 text-muted-foreground">Done-for-you fixes</td>
-                    <td className="py-3 px-4 text-center text-muted-foreground">—</td>
-                    <td className="py-3 px-4 text-center bg-accent/5 text-muted-foreground">—</td>
-                    <td className="py-3 px-4 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
+                    <td className="py-3 px-3 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-3 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-3 text-center bg-accent/5 text-muted-foreground">—</td>
+                    <td className="py-3 px-3 text-center"><Check className="h-4 w-4 text-accent mx-auto" /></td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-3 pr-4 text-muted-foreground">Post-launch support</td>
-                    <td className="py-3 px-4 text-center text-muted-foreground">—</td>
-                    <td className="py-3 px-4 text-center bg-accent/5 text-muted-foreground">—</td>
-                    <td className="py-3 px-4 text-center text-foreground">30 days</td>
+                    <td className="py-3 px-3 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-3 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-3 text-center bg-accent/5 text-muted-foreground">—</td>
+                    <td className="py-3 px-3 text-center text-foreground">30 days</td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-3 pr-4 text-muted-foreground">Monthly check-ins</td>
-                    <td className="py-3 px-4 text-center text-muted-foreground">—</td>
-                    <td className="py-3 px-4 text-center bg-accent/5 text-muted-foreground">—</td>
-                    <td className="py-3 px-4 text-center text-foreground">3 months</td>
+                    <td className="py-3 px-3 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-3 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-3 text-center bg-accent/5 text-muted-foreground">—</td>
+                    <td className="py-3 px-3 text-center text-foreground">3 months</td>
                   </tr>
                   <tr>
                     <td className="py-3 pr-4 text-muted-foreground">Score guarantee</td>
-                    <td className="py-3 px-4 text-center text-muted-foreground">—</td>
-                    <td className="py-3 px-4 text-center bg-accent/5 text-muted-foreground">—</td>
-                    <td className="py-3 px-4 text-center text-foreground">+20 points</td>
+                    <td className="py-3 px-3 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-3 text-center text-muted-foreground">—</td>
+                    <td className="py-3 px-3 text-center bg-accent/5 text-muted-foreground">—</td>
+                    <td className="py-3 px-3 text-center text-foreground">+20 points</td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+          </div>
+        </section>
+
+        {/* Monitoring Add-on */}
+        <section className="py-12 md:py-16">
+          <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
+            <div className="bg-card border border-border p-8 md:p-10 max-w-4xl mx-auto">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8">
+                <div>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 flex items-center justify-center bg-secondary/50 border border-border">
+                      <Activity className="h-5 w-5 text-foreground" strokeWidth={1.5} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-mono uppercase tracking-widest text-muted-foreground">Add-on</p>
+                      <h3 className="font-display text-xl text-foreground">Ongoing Monitoring</h3>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Keep your AI readiness score on track. Available after any Deep Scan or Optimization engagement.
+                  </p>
+                  <ul className="grid sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-accent flex-shrink-0" />
+                      <span>Weekly automated re-scans</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-accent flex-shrink-0" />
+                      <span>Score tracking over time</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-accent flex-shrink-0" />
+                      <span>Alerts when your score drops</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-accent flex-shrink-0" />
+                      <span>Quarterly agent simulation</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-accent flex-shrink-0" />
+                      <span>Monthly summary report</span>
+                    </li>
+                  </ul>
+                </div>
+                <div className="flex-shrink-0 text-center md:text-right">
+                  <p className="text-3xl font-display text-foreground mb-1">€199</p>
+                  <p className="text-sm text-muted-foreground mb-4">per month</p>
+                  <a href={CALENDLY_URL} target="_blank" rel="noopener noreferrer">
+                    <Button variant="outline" className="border-foreground text-foreground hover:bg-foreground hover:text-background whitespace-nowrap">
+                      Add to any engagement
+                    </Button>
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -406,7 +520,7 @@ const Services = () => {
                 <h3 className="font-display text-xl text-foreground mb-1">Discovery Call</h3>
                 <p className="text-sm text-muted-foreground mb-4">(Free, 15 min)</p>
                 <p className="text-sm text-muted-foreground mb-6">
-                  Review your free audit score together. Identify quick wins. Decide if deeper analysis makes sense.
+                  Review your free audit score together. Identify quick wins. Decide if a Deep Scan or Pro Report makes sense.
                 </p>
                 <p className="text-sm text-foreground">
                   <strong>Outcome:</strong> Clarity on gaps and next steps
@@ -416,7 +530,7 @@ const Services = () => {
               <div className="bg-card border border-border p-8">
                 <p className="text-xs font-medium uppercase tracking-widest text-accent mb-2">02</p>
                 <h3 className="font-display text-xl text-foreground mb-1">Deep Scan + Agent Simulation</h3>
-                <p className="text-sm text-muted-foreground mb-4">(1 week)</p>
+                <p className="text-sm text-muted-foreground mb-4">(€1,500 · 1 week)</p>
                 <p className="text-sm text-muted-foreground mb-6">
                   40+ checks plus real agent testing. Platform-specific. Competitor benchmarked. Video walkthrough included.
                 </p>
@@ -428,7 +542,7 @@ const Services = () => {
               <div className="bg-card border border-border p-8">
                 <p className="text-xs font-medium uppercase tracking-widest text-accent mb-2">03</p>
                 <h3 className="font-display text-xl text-foreground mb-1">Optimization</h3>
-                <p className="text-sm text-muted-foreground mb-4">(2-4 weeks)</p>
+                <p className="text-sm text-muted-foreground mb-4">(From €3,500 · 2-4 weeks)</p>
                 <p className="text-sm text-muted-foreground mb-6">
                   We implement fixes directly in your codebase or via your platform's theme and app ecosystem.
                 </p>
@@ -454,6 +568,17 @@ const Services = () => {
               <Accordion type="single" collapsible className="space-y-4">
                 <AccordionItem value="item-1" className="bg-card border border-border px-6">
                   <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
+                    What is the Pro Report?
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground">
+                    <p className="mb-4">The Pro Report is a branded PDF of your AI Commerce Score results, plus automated competitor benchmarking and an implementation priority matrix. It's designed to be shared with your team or leadership.</p>
+                    <p className="mb-4">We run the same 13 checks on 2 competitor stores you choose and deliver the comparison in a professional, shareable format with subcategory breakdowns and prioritized next steps.</p>
+                    <p>It's the fastest way to get stakeholder buy-in for AI commerce optimization.</p>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-2" className="bg-card border border-border px-6">
+                  <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
                     Why does Agent Simulation matter?
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground">
@@ -464,7 +589,7 @@ const Services = () => {
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="item-2" className="bg-card border border-border px-6">
+                <AccordionItem value="item-3" className="bg-card border border-border px-6">
                   <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
                     What's included in the Agent Simulation?
                   </AccordionTrigger>
@@ -480,21 +605,12 @@ const Services = () => {
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="item-3" className="bg-card border border-border px-6">
+                <AccordionItem value="item-4" className="bg-card border border-border px-6">
                   <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
-                    Why is Agent Simulation bundled with the Deep Audit?
+                    Why is Agent Simulation bundled with the Deep Scan?
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground">
                     Static checks tell you what's broken. Simulation shows you the consequences. Together, they're actionable. Separately, they're incomplete. We bundle them because that's what actually helps you make decisions.
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="item-4" className="bg-card border border-border px-6">
-                  <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
-                    How long does the Deep Audit + Agent Simulation take?
-                  </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground">
-                    Typically 5-7 business days from kickoff to final deliverable. The simulation portion requires running real agent sessions, which we do manually to ensure accuracy.
                   </AccordionContent>
                 </AccordionItem>
 
@@ -503,7 +619,7 @@ const Services = () => {
                     Can I just use the free audit and fix it myself?
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground">
-                    Yes. The free audit gives you code examples for every issue. If you have a technical team comfortable with JSON-LD, robots.txt, and schema validation, you can implement everything yourself. The paid tiers are for brands that want expert guidance, platform-specific nuance, or simply don't have the bandwidth.
+                    Yes. The free audit gives you code examples for every issue. If you have a technical team comfortable with JSON-LD, robots.txt, and schema validation, you can implement everything yourself. The Pro Report adds competitor context and a shareable format. The paid tiers are for brands that want expert guidance, platform-specific nuance, or simply don't have the bandwidth.
                   </AccordionContent>
                 </AccordionItem>
 
@@ -512,7 +628,7 @@ const Services = () => {
                     What's the difference between 13 checks and 40+ checks?
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground">
-                    <p className="mb-4">The Pulse Check covers the 13 most critical signals across 3 layers. The Deep Scan adds:</p>
+                    <p className="mb-4">The Pulse Check and Pro Report cover the 13 most critical signals across 3 layers. The Deep Scan adds:</p>
                     <ul className="list-disc list-inside space-y-2">
                       <li>Protocol readiness (MCP, UCP, ACP endpoint detection)</li>
                       <li>Price consistency (schema vs. visible price matching)</li>
@@ -528,6 +644,17 @@ const Services = () => {
 
                 <AccordionItem value="item-7" className="bg-card border border-border px-6">
                   <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
+                    What does Monitoring include?
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground">
+                    <p className="mb-4">AI readiness isn't a one-time fix. Your store changes, competitors improve, and AI agents evolve. The Monitoring add-on keeps you ahead.</p>
+                    <p className="mb-4">For €199/month, you get weekly automated re-scans of your store, score tracking over time, alerts when your score drops, a quarterly agent simulation, and a monthly summary report.</p>
+                    <p>It's available after any Deep Scan or Optimization engagement.</p>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-8" className="bg-card border border-border px-6">
+                  <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
                     What if my score doesn't improve after Optimization?
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground">
@@ -535,7 +662,7 @@ const Services = () => {
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="item-8" className="bg-card border border-border px-6">
+                <AccordionItem value="item-9" className="bg-card border border-border px-6">
                   <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
                     Do you work with agencies?
                   </AccordionTrigger>
